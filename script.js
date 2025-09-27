@@ -4,6 +4,7 @@ class MinquiCardGacha {
     this.cardWrapper = document.getElementById('cardWrapper');
     this.isFlipped = false;
     this.cardData = null;
+    this.sounds = {};
     
     this.init();
   }
@@ -14,6 +15,9 @@ class MinquiCardGacha {
     
     // 카드 데이터 로드
     await this.loadCardData();
+    
+    // 효과음 초기화
+    this.initSounds();
     
     // 개발용 패널 초기화
     this.initDevPanel();
@@ -89,6 +93,72 @@ class MinquiCardGacha {
       };
       
       this.cardData = { ...this.gameData.cards[0] };
+    }
+  }
+  
+  initSounds() {
+    // 효과음 파일들 로드
+    this.sounds = {
+      cardFlip: new Audio('sounds/card_flip.mp3'),
+      cardDraw: new Audio('sounds/card_draw.mp3'),
+      sssObtain: new Audio('sounds/sss_obtain.mp3'),
+      ssObtain: new Audio('sounds/ss_obtain.mp3'),
+      sObtain: new Audio('sounds/s_obtain.mp3'),
+      aObtain: new Audio('sounds/a_obtain.mp3'),
+      bObtain: new Audio('sounds/b_obtain.mp3'),
+      particle: new Audio('sounds/particle.mp3'),
+      holo: new Audio('sounds/holo.mp3')
+    };
+    
+    // 효과음 볼륨 설정
+    Object.values(this.sounds).forEach(sound => {
+      sound.volume = 0.5; // 기본 볼륨 50%
+      sound.preload = 'auto';
+    });
+    
+    // 특별한 효과음 볼륨 조정
+    this.sounds.sssObtain.volume = 0.7;
+    this.sounds.ssObtain.volume = 0.6;
+    this.sounds.particle.volume = 0.3;
+    this.sounds.holo.volume = 0.4;
+  }
+  
+  playSound(soundName, volume = null) {
+    if (this.sounds[soundName]) {
+      const sound = this.sounds[soundName];
+      if (volume !== null) {
+        sound.volume = volume;
+      }
+      sound.currentTime = 0; // 처음부터 재생
+      sound.play().catch(e => {
+        console.log('효과음 재생 실패:', e);
+      });
+    }
+  }
+  
+  playRankSound(rank) {
+    // 랭크별 효과음 재생
+    switch(rank) {
+      case 'SSS':
+        this.playSound('sssObtain');
+        // 홀로그램 효과음도 함께 재생
+        setTimeout(() => this.playSound('holo'), 500);
+        break;
+      case 'SS':
+        this.playSound('ssObtain');
+        setTimeout(() => this.playSound('holo'), 300);
+        break;
+      case 'S':
+        this.playSound('sObtain');
+        break;
+      case 'A':
+        this.playSound('aObtain');
+        break;
+      case 'B':
+        this.playSound('bObtain');
+        break;
+      default:
+        this.playSound('cardDraw');
     }
   }
   
@@ -205,9 +275,11 @@ class MinquiCardGacha {
   handleClick() {
     if (!this.isFlipped) {
       // 뒷면에서 앞면으로 - 가챠 실행
+      this.playSound('cardDraw');
       this.performGacha();
     } else {
       // 앞면에서 뒷면으로 - 다시 뽑기
+      this.playSound('cardFlip');
       this.showBack();
     }
   }
@@ -227,6 +299,9 @@ class MinquiCardGacha {
     
     // 앞면으로 뒤집기
     this.showFront();
+    
+    // 랭크별 효과음 재생
+    this.playRankSound(selectedRank);
     
     // 랭크별 파티클 효과
     this.showRankParticles(selectedRank);
@@ -550,6 +625,11 @@ class MinquiCardGacha {
     
     // 랭크별 파티클 설정
     const particleConfig = this.getParticleConfig(rank);
+    
+    // 파티클 효과음 재생 (고랭크만)
+    if (rank === 'SSS' || rank === 'SS') {
+      setTimeout(() => this.playSound('particle'), 200);
+    }
     
     // 파티클 생성 - X축으로 퍼진 위치에서 시작
     for (let i = 0; i < particleConfig.count; i++) {
