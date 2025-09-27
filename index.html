@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>민킈 카드 가챠</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Animation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+</head>
+<body>
+    <!-- 파티클 배경 -->
+    <div id="particles-js"></div>
+
+    <!-- 가챠 이펙트 오버레이 -->
+    <div id="gacha-effects" class="gacha-effects"></div>
+
+
+    <div class="dev-panel">
+        <h3>개발용 카드 선택</h3>
+        <select id="cardSelector">
+            <option value="">카드 선택</option>
+        </select>
+        <button id="selectCardBtn">카드 선택</button>
+    </div>
+    
+    <div class="card-container">
+        <div class="card-wrapper" id="cardWrapper">
+            <!-- 앞면 -->
+            <div class="card-front">
+                <!-- 홀로그래픽 프레임 효과 -->
+                <div class="card__holo" aria-hidden="true"></div>
+                <!-- 배경 일러스트 -->
+                <div class="card-background-illustration">
+                    <img id="cardBackground" alt="카드 배경 일러스트" class="background-illust">
+                </div>
+                <!-- 글로스 효과 레이어 - 일러스트 위에 유지 -->
+                <div class="card__gloss" aria-hidden="true"></div>
+                
+                <!-- 카드 정보 박스 -->
+                <div class="card-info-box">
+                    <div class="card-number-box">
+                        <div class="card-number" id="cardNumber"></div>
+                    </div>
+                    <div class="card-name" id="cardName"></div>
+                </div>
+                
+                <!-- 카드 정보 박스 복사본 - 캐릭터 앞에 배치 -->
+                <div class="card-info-box-overlay">
+                    <div class="card-number-box">
+                        <div class="card-number" id="cardNumberOverlay"></div>
+                    </div>
+                    <div class="card-name" id="cardNameOverlay"></div>
+                </div>
+                
+                <!-- 랭크 표시 -->
+                <div class="card-rank" id="cardRank">
+                    <img id="rankImage" alt="랭크 이미지" class="rank-image">
+                </div>
+                
+                
+                <!-- 하단 투명 박스 -->
+                <div class="card-bottom-overlay">
+                    <div class="stats-container">
+                        <div class="stat-item hp-item">
+                            <span class="stat-label">HP</span>
+                            <span class="stat-value" id="cardHp"></span>
+                        </div>
+                        <div class="stat-item attack-item">
+                            <span class="stat-label">공격력</span>
+                            <span class="stat-value" id="cardAttack"></span>
+                        </div>
+                        <div class="stat-item type-item">
+                            <span class="stat-value" id="cardType"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- 스킬 박스 -->
+                    <div class="skill-box">
+                        <div class="skill-name" id="skillName"></div>
+                        <div class="skill-description" id="skillDescription"></div>
+                    </div>
+                </div>
+                
+                <!-- 분리된 캐릭터 -->
+                <div class="card-character">
+                    <img id="cardCharacter" alt="캐릭터 일러스트" class="character-illust">
+                </div>
+            </div>
+            
+            <!-- 뒷면 -->
+            <div class="card-back">
+                <img id="backIllust" alt="카드 뒷면 일러스트" class="back-illust" 
+                     onload="console.log('뒷면 이미지 로드 성공!')" 
+                     onerror="console.log('뒷면 이미지 로드 실패:', this.src)">
+            </div>
+        </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

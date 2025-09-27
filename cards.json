@@ -1,0 +1,241 @@
+{
+  "cards": [
+    {
+      "id": "001",
+      "name": "점령하는 민킈",
+      "type": "Creator",
+      "rank": "SS",
+      "baseHp": 150,
+      "baseAttack": 120,
+      "image": "illust/001.png",
+      "holoPattern": "stars",
+      "holoColor": "#ffa500",
+      "attacks": [
+        {
+          "name": "점령",
+          "description": "모든 플레이어의 턴을 생략한다."
+        }
+      ]
+    },
+    {
+      "id": "002",
+      "name": "오리 안경을 쓴 민킈",
+      "type": "Innovation",
+      "rank": "S",
+      "baseHp": 130,
+      "baseAttack": 140,
+      "image": "illust/002.png",
+      "holoPattern": "waves",
+      "holoColor": "#9c27b0",
+      "attacks": [
+        {
+          "name": "명사수",
+          "description": "공격은 반드시 명중한다"
+        }
+      ]
+    },
+    {
+      "id": "003",
+      "name": "눈물 민킈",
+      "type": "Art",
+      "rank": "S",
+      "baseHp": 120,
+      "baseAttack": 100,
+      "image": "illust/003.png",
+      "holoPattern": "waves",
+      "holoColor": "#9c27b0",
+      "attacks": [
+        {
+          "name": "힝",
+          "description": "그냥 운다."
+        }
+      ]
+    },
+    {
+      "id": "004",
+      "name": "대상혁 민킈",
+      "type": "Tech",
+      "rank": "A",
+      "baseHp": 100,
+      "baseAttack": 110,
+      "image": "illust/004.png",
+      "holoPattern": "circuits",
+      "holoColor": "#2196f3",
+      "attacks": [
+        {
+          "name": "버그 수정",
+          "description": "상대방의 능력을 1턴간 무력화한다."
+        }
+      ]
+    },
+    {
+      "id": "005",
+      "name": "잉멘",
+      "type": "Story",
+      "rank": "A",
+      "baseHp": 80,
+      "baseAttack": 70,
+      "image": "illust/005.png",
+      "holoPattern": "circuits",
+      "holoColor": "#2196f3",
+      "attacks": [
+        {
+          "name": "설득",
+          "description": "상대방의 공격력을 50% 감소시킨다."
+        }
+      ]
+    },
+    {
+      "id": "006",
+      "name": "깡",
+      "type": "Creator",
+      "rank": "A",
+      "baseHp": 180,
+      "baseAttack": 150,
+      "image": "illust/006.png",
+      "holoPattern": "circuits",
+      "holoColor": "#2196f3",
+      "attacks": [
+        {
+          "name": "전설의 힘",
+          "description": "모든 능력치가 2배가 된다."
+        }
+      ]
+    },
+    {
+      "id": "007",
+      "name": "개추!",
+      "type": "Innovation",
+      "rank": "B",
+      "baseHp": 160,
+      "baseAttack": 130,
+      "image": "illust/007.png",
+      "holoPattern": "sparkles",
+      "holoColor": "#4caf50",
+      "attacks": [
+        {
+          "name": "혁신",
+          "description": "게임 규칙을 바꾼다."
+        }
+      ]
+    },
+    {
+      "id": "008",
+      "name": "마법사 민킈",
+      "type": "Art",
+      "rank": "B",
+      "baseHp": 140,
+      "baseAttack": 160,
+      "image": "illust/008.png",
+      "holoPattern": "sparkles",
+      "holoColor": "#4caf50",
+      "attacks": [
+        {
+          "name": "마법 폭발",
+          "description": "상대방에게 200% 데미지를 준다."
+        }
+      ]
+    },
+    {
+      "id": "009",
+      "name": "롯데리아케쳡도둑민킈",
+      "type": "Tech",
+      "rank": "B",
+      "baseHp": 150,
+      "baseAttack": 120,
+      "image": "illust/009.png",
+      "holoPattern": "sparkles",
+      "holoColor": "#4caf50",
+      "attacks": [
+        {
+          "name": "강타",
+          "description": "상대방을 기절시킨다."
+        }
+      ]
+    },
+    {
+      "id": "010",
+      "name": "우정잉",
+      "type": "Story",
+      "rank": "SSS",
+      "baseHp": 130,
+      "baseAttack": 90,
+      "image": "illust/010.png",
+      "holoPattern": "crown",
+      "holoColor": "#ff6b6b",
+      "attacks": [
+        {
+          "name": "모든 잉모노의 신",
+          "description": "게임에서 즉시 승리한다."
+        }
+      ]
+    }
+  ],
+  "ranks": {
+    "SSS": {
+      "name": "SSS등급",
+      "hpMultiplier": 2.0,
+      "attackMultiplier": 2.0,
+      "color": "#ff6b6b",
+      "emoji": "👑",
+      "rarity": "Mythic",
+      "glowColor": "#ff6b6b",
+      "particleEffect": true,
+      "soundEffect": "sss_obtain.mp3"
+    },
+    "SS": {
+      "name": "SS등급",
+      "hpMultiplier": 1.8,
+      "attackMultiplier": 1.8,
+      "color": "#ffa500",
+      "emoji": "⭐",
+      "rarity": "Legendary",
+      "glowColor": "#ffa500",
+      "particleEffect": true,
+      "soundEffect": "ss_obtain.mp3"
+    },
+    "S": {
+      "name": "S등급",
+      "hpMultiplier": 1.5,
+      "attackMultiplier": 1.5,
+      "color": "#9c27b0",
+      "emoji": "💎",
+      "rarity": "Epic",
+      "glowColor": "#9c27b0",
+      "particleEffect": false,
+      "soundEffect": "s_obtain.mp3"
+    },
+    "A": {
+      "name": "A등급",
+      "hpMultiplier": 1.2,
+      "attackMultiplier": 1.2,
+      "color": "#2196f3",
+      "emoji": "🔵",
+      "rarity": "Rare",
+      "glowColor": "#2196f3",
+      "particleEffect": false,
+      "soundEffect": "a_obtain.mp3"
+    },
+    "B": {
+      "name": "B등급",
+      "hpMultiplier": 1.0,
+      "attackMultiplier": 1.0,
+      "color": "#4caf50",
+      "emoji": "🟢",
+      "rarity": "Common",
+      "glowColor": "#4caf50",
+      "particleEffect": false,
+      "soundEffect": "b_obtain.mp3"
+    }
+  },
+  "typeIcons": {
+    "Creator": "🎨",
+    "Art": "🖼️",
+    "Tech": "💻",
+    "Story": "📚",
+    "Design": "🎨",
+    "Idea": "💡",
+    "Team": "🤝",
+    "Innovation": "🚀"
+  }
+}
