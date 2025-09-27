@@ -258,17 +258,26 @@ body {
 /* 홀로그래픽 프레임 효과 - 일러스트 영역에만 표시 */
 .card__holo {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  right: 20px;
-  bottom: 20px;
-  border-radius: 16px;
+  top: var(--illust-top);
+  left: var(--illust-left);
+  right: var(--illust-right);
+  bottom: var(--illust-bottom);
+  border-radius: var(--illust-border-radius);
   pointer-events: none;
   z-index: 1;
   opacity: 1;
   /* 일러스트 영역에만 홀로그램 프레임 적용 */
-  clip-path: inset(0 round 16px);
+  clip-path: inset(0 round var(--illust-border-radius));
   aria-hidden: true;
+}
+
+/* 일러스트 영역 공통 변수 */
+:root {
+  --illust-top: 20px;
+  --illust-left: 20px;
+  --illust-right: 20px;
+  --illust-bottom: 20px;
+  --illust-border-radius: 16px;
 }
 
 /* 홀로그램 패턴별 스타일 */
@@ -386,12 +395,12 @@ body {
 /* 배경 일러스트 - 홀로그램 위에 배치 */
 .card-background-illustration {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  right: 20px;
-  bottom: 20px;
+  top: var(--illust-top);
+  left: var(--illust-left);
+  right: var(--illust-right);
+  bottom: var(--illust-bottom);
   z-index: 2;
-  border-radius: 16px;
+  border-radius: var(--illust-border-radius);
   overflow: hidden;
   /* 홀로그램이 프레임 역할 */
 }
@@ -399,7 +408,7 @@ body {
 .background-illust {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
   filter: blur(1px); /* 3px → 1px (블러 강도 감소) */
   transform: scale(1.05); /* 1.1 → 1.05 (스케일도 약간 감소) */
@@ -752,18 +761,13 @@ body {
     height: 100%;
   }
   
-  .card-background-illustration {
-    top: 20px;
-    left: 20px;
-    right: 20px;
-    bottom: 20px;
-  }
-  
-  .card__holo {
-    top: 20px;
-    left: 20px;
-    right: 20px;
-    bottom: 20px;
+  /* 모바일에서 일러스트 영역 변수 재정의 */
+  :root {
+    --illust-top: 20px;
+    --illust-left: 20px;
+    --illust-right: 20px;
+    --illust-bottom: 20px;
+    --illust-border-radius: 16px;
   }
   
   .card-info-box {
