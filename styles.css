@@ -660,6 +660,16 @@ body {
   justify-content: center;
 }
 
+/* 모바일에서 캐릭터 위치 조정 */
+@media (max-width: 768px) {
+  .card-character {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
 .card-character::before {
   content: '';
   position: absolute;
@@ -743,29 +753,29 @@ body {
   }
   
   .card-background-illustration {
-    top: 15px;
-    left: 15px;
-    right: 15px;
-    bottom: 15px;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
   }
   
   .card__holo {
-    top: 15px;
-    left: 15px;
-    right: 15px;
-    bottom: 15px;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
   }
   
   .card-info-box {
-    top: 10px;
-    left: 10px;
+    top: 15px;
+    left: 15px;
     padding: 8px 12px;
     min-width: 100px;
   }
   
   .card-info-box-overlay {
-    top: 10px;
-    left: 10px;
+    top: 15px;
+    left: 15px;
     padding: 8px 12px;
     min-width: 100px;
   }
@@ -833,15 +843,15 @@ body {
   }
   
   .card-info-box {
-    top: 8px;
-    left: 8px;
+    top: 15px;
+    left: 15px;
     padding: 6px 10px;
     min-width: 90px;
   }
   
   .card-info-box-overlay {
-    top: 8px;
-    left: 8px;
+    top: 15px;
+    left: 15px;
     padding: 6px 10px;
     min-width: 90px;
   }
