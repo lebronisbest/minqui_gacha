@@ -722,34 +722,195 @@ body {
 }
 
 
-/* 반응형 */
-@media (max-width: 480px) {
-  .card {
+/* 반응형 - 모바일 최적화 */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+  
+  .card-container {
+    margin-top: 10px;
+  }
+  
+  .card-wrapper {
     width: 280px;
     height: 390px;
   }
   
-  .character-illust {
-    width: 180px;
-    height: 250px;
+  .card-front {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .card-background-illustration {
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    bottom: 15px;
+  }
+  
+  .card__holo {
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    bottom: 15px;
+  }
+  
+  .card-info-box {
+    top: 10px;
+    left: 10px;
+    padding: 8px 12px;
+    min-width: 100px;
+  }
+  
+  .card-info-box-overlay {
+    top: 10px;
+    left: 10px;
+    padding: 8px 12px;
+    min-width: 100px;
+  }
+  
+  .card-name {
+    font-size: 18px;
+  }
+  
+  .card-number {
+    font-size: 9px;
+  }
+  
+  .card-bottom-overlay {
+    bottom: 0.3em;
+    left: 0.3em;
+    right: 0.3em;
+    padding: 0.4em;
+  }
+  
+  .stats-container {
+    gap: 0.3em;
+  }
+  
+  .stat-item {
+    padding: 0.1em 0.4em;
+    min-height: 1.2em;
+  }
+  
+  .stat-label {
+    font-size: 0.6em;
+  }
+  
+  .stat-value {
+    font-size: 0.8em;
+  }
+  
+  .skill-box {
+    padding: 0.3em 0.5em;
+  }
+  
+  .skill-name {
+    font-size: 0.7em;
+  }
+  
+  .skill-description {
+    font-size: 0.6em;
+  }
+  
+  .rank-image {
+    width: 60px;
+  }
+  
+  .dev-panel {
+    position: relative;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-wrapper {
+    width: 250px;
+    height: 350px;
+  }
+  
+  .card-info-box {
+    top: 8px;
+    left: 8px;
+    padding: 6px 10px;
+    min-width: 90px;
+  }
+  
+  .card-info-box-overlay {
+    top: 8px;
+    left: 8px;
+    padding: 6px 10px;
+    min-width: 90px;
   }
   
   .card-name {
     font-size: 16px;
   }
   
-  .card-top-bar {
-    padding: 8px 12px;
-    min-height: 50px;
+  .card-number {
+    font-size: 8px;
   }
   
-  .card-attacks {
-    padding: 12px;
+  .rank-image {
+    width: 50px;
   }
   
-  .card-bottom-info {
-    padding: 6px 10px;
-    min-height: 35px;
+  .card-bottom-overlay {
+    bottom: 0.2em;
+    left: 0.2em;
+    right: 0.2em;
+    padding: 0.3em;
+  }
+  
+  .stats-container {
+    gap: 0.2em;
+  }
+  
+  .stat-item {
+    padding: 0.05em 0.3em;
+    min-height: 1.1em;
+  }
+  
+  .stat-label {
+    font-size: 0.55em;
+  }
+  
+  .stat-value {
+    font-size: 0.75em;
+  }
+  
+  .skill-box {
+    padding: 0.25em 0.4em;
+  }
+  
+  .skill-name {
+    font-size: 0.65em;
+  }
+  
+  .skill-description {
+    font-size: 0.55em;
+  }
+}
+
+@media (max-width: 360px) {
+  .card-wrapper {
+    width: 220px;
+    height: 308px;
+  }
+  
+  .card-name {
+    font-size: 14px;
+  }
+  
+  .card-number {
+    font-size: 7px;
+  }
+  
+  .rank-image {
+    width: 45px;
   }
 }
 

@@ -97,12 +97,38 @@ class MinquiCardGacha {
       this.handleClick();
     });
     
+    // 터치 이벤트 추가 (모바일)
+    this.cardWrapper.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+    });
+    
+    this.cardWrapper.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      this.handleClick();
+    });
+    
     // 3D 마우스 인터랙션 - 카드 래퍼에 적용
     this.cardWrapper.addEventListener('mousemove', (e) => {
       this.handleMouseMove(e);
     });
     
     this.cardWrapper.addEventListener('mouseleave', () => {
+      this.resetTilt();
+    });
+    
+    // 모바일 터치 인터랙션
+    this.cardWrapper.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousemove', {
+          clientX: touch.clientX,
+          clientY: touch.clientY
+        });
+        this.handleMouseMove(mouseEvent);
+      }
+    });
+    
+    this.cardWrapper.addEventListener('touchend', () => {
       this.resetTilt();
     });
     
