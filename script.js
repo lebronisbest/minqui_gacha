@@ -97,17 +97,16 @@ class MinquiCardGacha {
   }
   
   initSounds() {
-    // 효과음 파일들 로드
+    // 효과음 파일들 로드 (WAV 파일 사용)
     this.sounds = {
-      cardFlip: new Audio('sounds/card_flip.mp3'),
-      cardDraw: new Audio('sounds/card_draw.mp3'),
-      sssObtain: new Audio('sounds/sss_obtain.mp3'),
-      ssObtain: new Audio('sounds/ss_obtain.mp3'),
-      sObtain: new Audio('sounds/s_obtain.mp3'),
-      aObtain: new Audio('sounds/a_obtain.mp3'),
-      bObtain: new Audio('sounds/b_obtain.mp3'),
-      particle: new Audio('sounds/particle.mp3'),
-      holo: new Audio('sounds/holo.mp3')
+      cardFlip: new Audio('sounds/card_flip.wav'),
+      sssObtain: new Audio('sounds/sss_obtain.wav'),
+      ssObtain: new Audio('sounds/ss_obtain.wav'),
+      sObtain: new Audio('sounds/s_obtain.wav'),
+      aObtain: new Audio('sounds/a_obtain.wav'),
+      bObtain: new Audio('sounds/b_obtain.wav'),
+      particle: new Audio('sounds/particle.wav'),
+      holo: new Audio('sounds/holo.wav')
     };
     
     // 효과음 볼륨 설정
@@ -158,7 +157,7 @@ class MinquiCardGacha {
         this.playSound('bObtain');
         break;
       default:
-        this.playSound('cardDraw');
+        // 카드 드로우 효과음 제거
     }
   }
   
@@ -213,7 +212,48 @@ class MinquiCardGacha {
       return false;
     });
     
+    this.cardWrapper.addEventListener('drag', (e) => {
+      e.preventDefault();
+      return false;
+    });
+    
+    this.cardWrapper.addEventListener('dragend', (e) => {
+      e.preventDefault();
+      return false;
+    });
+    
     this.cardWrapper.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      return false;
+    });
+    
+    // 추가 드래그 방지
+    this.cardWrapper.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    
+    this.cardWrapper.addEventListener('mouseup', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    
+    this.cardWrapper.addEventListener('mousemove', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    
+    this.cardWrapper.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      return false;
+    });
+    
+    this.cardWrapper.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      return false;
+    });
+    
+    this.cardWrapper.addEventListener('drop', (e) => {
       e.preventDefault();
       return false;
     });
@@ -275,7 +315,6 @@ class MinquiCardGacha {
   handleClick() {
     if (!this.isFlipped) {
       // 뒷면에서 앞면으로 - 가챠 실행
-      this.playSound('cardDraw');
       this.performGacha();
     } else {
       // 앞면에서 뒷면으로 - 다시 뽑기

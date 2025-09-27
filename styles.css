@@ -46,17 +46,23 @@
 /* 기본 스타일 */
 * {
   /* 모든 요소에 선택 비활성화 적용 */
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  -webkit-user-drag: none;
-  -khtml-user-drag: none;
-  -moz-user-drag: none;
-  -o-user-drag: none;
-  user-drag: none;
-  -webkit-touch-callout: none;
-  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-user-drag: none !important;
+  -khtml-user-drag: none !important;
+  -moz-user-drag: none !important;
+  -o-user-drag: none !important;
+  user-drag: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-user-modify: read-only !important;
+  -moz-user-modify: read-only !important;
+  -ms-user-modify: read-only !important;
+  user-modify: read-only !important;
+  -webkit-touch-action: manipulation !important;
+  touch-action: manipulation !important;
 }
 
 body {
@@ -124,15 +130,25 @@ body {
   height: 420px;
   position: relative;
   /* 드래그 선택 비활성화 */
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  -webkit-user-drag: none;
-  -khtml-user-drag: none;
-  -moz-user-drag: none;
-  -o-user-drag: none;
-  user-drag: none;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-user-drag: none !important;
+  -khtml-user-drag: none !important;
+  -moz-user-drag: none !important;
+  -o-user-drag: none !important;
+  user-drag: none !important;
+  -webkit-user-modify: read-only !important;
+  -moz-user-modify: read-only !important;
+  -ms-user-modify: read-only !important;
+  user-modify: read-only !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-action: manipulation !important;
+  touch-action: manipulation !important;
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 /* 카드 래퍼의 3D 그림자 */
@@ -409,6 +425,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  object-position: center center;
   display: block;
   filter: blur(1px); /* 3px → 1px (블러 강도 감소) */
   transform: scale(1.05); /* 1.1 → 1.05 (스케일도 약간 감소) */
@@ -658,35 +675,35 @@ body {
 /* 분리된 캐릭터 - 위에 얹기 */
 .card-character {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: var(--illust-top);
+  left: var(--illust-left);
+  right: var(--illust-right);
+  bottom: var(--illust-bottom);
   z-index: 3;
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--illust-border-radius);
+  /* 배경 일러스트와 완전히 동일한 설정 */
+  display: block;
 }
 
 /* 모바일에서 캐릭터 위치 조정 */
 @media (max-width: 768px) {
   .card-character {
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: var(--illust-top);
+    left: var(--illust-left);
+    right: var(--illust-right);
+    bottom: var(--illust-bottom);
   }
 }
 
 .card-character::before {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 120%;
-  height: 120%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: 
     radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 50% 50%, rgba(255, 107, 107, 0.08) 0%, transparent 60%),
@@ -694,6 +711,7 @@ body {
   border-radius: 50%;
   z-index: -1;
   animation: characterGlow 4s ease-in-out infinite;
+  pointer-events: none;
 }
 
 @keyframes characterGlow {
@@ -711,6 +729,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  object-position: center center;
   display: block;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
   position: relative;
