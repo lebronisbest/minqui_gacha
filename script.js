@@ -94,62 +94,12 @@ class MinquiCardGacha {
     const loadingScreen = document.createElement('div');
     loadingScreen.id = 'loadingScreen';
     loadingScreen.innerHTML = `
-      <div style="
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        color: white;
-        font-family: 'Inter', sans-serif;
-      ">
-        <div style="font-size: 3rem; font-weight: 700; margin-bottom: 1rem; background: linear-gradient(45deg, #FFD700, #FFA500, #FF69B4); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
-          🎮 민킈 가챠
+      <div class="minimal-loading">
+        <div class="loading-bar">
+          <div id="loadingProgress" class="loading-fill"></div>
         </div>
-        <div style="font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.8;">
-          게임을 불러오는 중...
-        </div>
-        <div style="
-          width: 60px;
-          height: 60px;
-          border: 4px solid rgba(255, 255, 255, 0.1);
-          border-left: 4px solid #FFD700;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-bottom: 2rem;
-        "></div>
-        <div style="
-          width: 300px;
-          height: 6px;
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 3px;
-          overflow: hidden;
-          margin-bottom: 1rem;
-        ">
-          <div id="loadingProgress" style="
-            height: 100%;
-            background: linear-gradient(90deg, #FFD700, #FFA500);
-            width: 0%;
-            transition: width 0.3s ease;
-            border-radius: 3px;
-          "></div>
-        </div>
-        <div id="loadingPercentage" style="font-size: 1rem; font-weight: 600; color: #FFD700;">
-          0%
-        </div>
+        <div id="loadingPercentage" class="loading-text">0%</div>
       </div>
-      <style>
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      </style>
     `;
     
     document.body.appendChild(loadingScreen);
