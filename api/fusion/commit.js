@@ -129,9 +129,17 @@ module.exports = async (req, res) => {
     }
   } catch (error) {
     console.error('Fusion commit error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error name:', error.name);
+    console.error('Error code:', error.code);
+    console.error('Request body:', req.body);
+    console.error('User ID:', req.headers['x-user-id']);
+    
     res.status(500).json({
       success: false,
       error: 'Internal server error',
+      details: error.message,
+      errorCode: error.code,
       timestamp: new Date().toISOString(),
       requestId: req.headers['x-request-id'] || uuidv4()
     });
