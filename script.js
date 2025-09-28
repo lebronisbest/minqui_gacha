@@ -1,47 +1,286 @@
-// 민킈 카드 가챠게임
+// 민킈 카드 가챠게임 - 서버 기반 버전
 class MinquiCardGacha {
   constructor() {
     this.cardWrapper = document.getElementById('cardWrapper');
     this.isFlipped = false;
     this.cardData = null;
     this.sounds = {};
+    this.collectedCards = []; // 로컬 캐시 (서버가 진실원천)
+    this.currentFilter = 'all';
+    this.selectedFusionCards = [];
+    this.maxFusionCards = 10;
+    this.minFusionCards = 3;
+    
+    // 티켓 시스템 (서버에서 관리)
+    this.tickets = 0;
+    this.maxTickets = 10;
+    this.nextRefillAt = null;
+    this.isAdminMode = window.location.pathname.includes('/admin');
+    this.ticketTimer = null;
+    
+    // API 클라이언트
+    this.apiClient = window.apiClient;
+    
+    // 무한 가챠 시크릿 코드 (개발용)
+    this.secretCode = 'friendshiping';
+    this.enteredCode = '';
+    this.isSecretMode = false;
     
     this.init();
   }
   
   async init() {
-    // 이벤트 리스너 등록
-    this.bindEvents();
-    
-    // 카드 데이터 로드
-    await this.loadCardData();
-    
-    // 효과음 초기화
-    this.initSounds();
-    
-    // 개발용 패널 초기화
-    this.initDevPanel();
-    
-    // 초기 상태: 뒷면으로 시작
-    this.showBack();
-    
-    // 뒷면 이미지 설정
-    this.setBackImage();
-  }
-  
-  async loadCardData() {
     try {
-      // JSON 파일에서 데이터 로드
+      // 로딩 화면 표시
+      this.showLoadingScreen();
+      
+      // 이벤트 리스너 등록
+      this.bindEvents();
+      
+      // 서버 연결 시도
+      try {
+        await this.initializeServerConnection();
+        await this.loadCardDataFromServer();
+        await this.loadCollectionFromServer();
+        await this.initTicketSystemFromServer();
+        console.log('서버 모드로 실행');
+      } catch (error) {
+        console.error('서버 연결 실패:', error);
+        alert('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      
+      // 효과음 초기화
+      this.initSounds();
+      
+      // 컬렉션 UI 초기화
+      this.initCollectionUI();
+      
+      // 조합 시스템 초기화
+      this.initFusionSystem();
+    
+      // 시크릿 코드 이벤트 리스너 등록
+      this.initSecretCode();
+      
+      // 초기 티켓 시스템 표시 설정 (가챠 탭이 기본)
+      this.updateTicketVisibility('gacha');
+      
+      // 초기 상태: 뒷면으로 시작
+      this.showBack();
+      
+      // 뒷면 이미지 설정
+      this.setBackImage();
+      
+      // 로딩 화면 숨기기
+      this.hideLoadingScreen();
+      
+      console.log('민킈 가챠 게임 초기화 완료 (서버 기반)');
+    } catch (error) {
+      console.error('게임 초기화 실패:', error);
+      this.hideLoadingScreen();
+      alert('게임을 시작할 수 없습니다. 서버 연결을 확인해주세요.');
+    }
+  }
+
+  // 로딩 화면 표시
+  showLoadingScreen() {
+    // 로딩 화면이 이미 있으면 제거
+    const existingLoading = document.getElementById('loadingScreen');
+    if (existingLoading) {
+      existingLoading.remove();
+    }
+    
+    // 로딩 화면 생성
+    const loadingScreen = document.createElement('div');
+    loadingScreen.id = 'loadingScreen';
+    loadingScreen.innerHTML = `
+      <div style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        color: white;
+        font-family: 'Inter', sans-serif;
+      ">
+        <div style="font-size: 3rem; font-weight: 700; margin-bottom: 1rem; background: linear-gradient(45deg, #FFD700, #FFA500, #FF69B4); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+          🎮 민킈 가챠
+        </div>
+        <div style="font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.8;">
+          게임을 불러오는 중...
+        </div>
+        <div style="
+          width: 60px;
+          height: 60px;
+          border: 4px solid rgba(255, 255, 255, 0.1);
+          border-left: 4px solid #FFD700;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-bottom: 2rem;
+        "></div>
+        <div style="
+          width: 300px;
+          height: 6px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 3px;
+          overflow: hidden;
+          margin-bottom: 1rem;
+        ">
+          <div id="loadingProgress" style="
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 3px;
+          "></div>
+        </div>
+        <div id="loadingPercentage" style="font-size: 1rem; font-weight: 600; color: #FFD700;">
+          0%
+        </div>
+      </div>
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+    `;
+    
+    document.body.appendChild(loadingScreen);
+    
+    // 로딩 진행률 시뮬레이션
+    this.simulateLoadingProgress();
+  }
+
+  // 로딩 화면 숨기기
+  hideLoadingScreen() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+      loadingScreen.style.opacity = '0';
+      loadingScreen.style.transition = 'opacity 0.5s ease';
+      setTimeout(() => {
+        loadingScreen.remove();
+      }, 500);
+    }
+  }
+
+  // 가챠 로딩 상태 표시
+  showGachaLoading() {
+    const cardWrapper = this.cardWrapper;
+    if (cardWrapper) {
+      cardWrapper.classList.add('gacha-loading');
+      
+      // 로딩 스피너 추가
+      const existingSpinner = cardWrapper.querySelector('.gacha-spinner');
+      if (!existingSpinner) {
+        const spinner = document.createElement('div');
+        spinner.className = 'gacha-spinner';
+        spinner.innerHTML = `
+          <div class="spinner-ring"></div>
+          <div class="spinner-text">뽑는 중...</div>
+        `;
+        cardWrapper.appendChild(spinner);
+      }
+    }
+  }
+
+  // 가챠 로딩 상태 숨기기
+  hideGachaLoading() {
+    const cardWrapper = this.cardWrapper;
+    if (cardWrapper) {
+      cardWrapper.classList.remove('gacha-loading');
+      
+      // 로딩 스피너 제거
+      const spinner = cardWrapper.querySelector('.gacha-spinner');
+      if (spinner) {
+        spinner.remove();
+      }
+    }
+  }
+
+  // 로딩 진행률 시뮬레이션
+  simulateLoadingProgress() {
+    let progress = 0;
+    const progressBar = document.getElementById('loadingProgress');
+    const loadingPercentage = document.getElementById('loadingPercentage');
+    
+    const updateProgress = () => {
+      progress += Math.random() * 15;
+      if (progress > 100) progress = 100;
+      
+      if (progressBar) {
+        progressBar.style.width = progress + '%';
+      }
+      if (loadingPercentage) {
+        loadingPercentage.textContent = Math.round(progress) + '%';
+      }
+      
+      if (progress < 100) {
+        setTimeout(updateProgress, Math.random() * 500 + 200);
+      }
+    };
+    
+    updateProgress();
+  }
+
+
+  
+  // 서버 연결 및 인증 초기화
+  async initializeServerConnection() {
+    try {
+      // 기존 세션 복원 시도
+      const sessionValid = await this.apiClient.restoreSession();
+      
+      if (!sessionValid) {
+        // 새 게스트 세션 생성
+        await this.apiClient.guestLogin();
+        console.log('새 게스트 세션 생성됨');
+      } else {
+        console.log('기존 세션 복원됨');
+      }
+    } catch (error) {
+      console.error('서버 연결 실패:', error);
+      throw error;
+    }
+  }
+
+  // 서버에서 카드 데이터 로드
+  async loadCardDataFromServer() {
+    try {
+      const catalog = await this.apiClient.getCatalog();
+      this.gameData = { 
+        cards: catalog.cards,
+        ranks: catalog.ranks,
+        types: catalog.types
+      };
+      this.cardData = { ...this.gameData.cards[0] };
+      console.log('서버에서 카드 데이터 로드 완료:', this.gameData.cards.length, '장');
+      console.log('확률 데이터:', this.gameData.ranks);
+      console.log('타입 데이터:', this.gameData.types);
+    } catch (error) {
+      console.error('서버 카드 데이터 로드 실패:', error);
+      throw error;
+    }
+  }
+
+  // 로컬 카드 데이터 로드 (폴백)
+  async loadCardDataFromLocal() {
+    try {
       const response = await fetch('cards.json');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       this.gameData = await response.json();
-      
-      // 기본 카드 데이터 설정
       this.cardData = { ...this.gameData.cards[0] };
+      console.log('로컬 카드 데이터 로드 완료:', this.gameData.cards.length, '장');
     } catch (error) {
-      console.error('카드 데이터 로드 실패:', error);
+      console.error('로컬 카드 데이터 로드 실패:', error);
       
       // 폴백: 하드코딩된 데이터 사용
       this.gameData = {
@@ -162,18 +401,33 @@ class MinquiCardGacha {
   }
   
   bindEvents() {
-    this.cardWrapper.addEventListener('click', () => {
+    // 클릭 이벤트
+    this.cardWrapper.addEventListener('click', (e) => {
+      e.preventDefault();
       this.handleClick();
     });
     
-    // 터치 이벤트 추가 (모바일)
+    // 터치 이벤트 추가 (모바일 최적화)
+    let touchStartTime = 0;
+    let touchStartPos = { x: 0, y: 0 };
+    
     this.cardWrapper.addEventListener('touchstart', (e) => {
       e.preventDefault();
+      const touch = e.touches[0];
+      touchStartTime = Date.now();
+      touchStartPos = { x: touch.clientX, y: touch.clientY };
     });
     
     this.cardWrapper.addEventListener('touchend', (e) => {
       e.preventDefault();
-      this.handleClick();
+      const touchEndTime = Date.now();
+      const touchDuration = touchEndTime - touchStartTime;
+      
+      // 짧은 터치만 클릭으로 인식 (스와이프 방지)
+      if (touchDuration < 300) {
+        this.handleClick();
+      }
+      this.resetTilt();
     });
     
     // 3D 마우스 인터랙션 - 카드 래퍼에 적용
@@ -185,8 +439,9 @@ class MinquiCardGacha {
       this.resetTilt();
     });
     
-    // 모바일 터치 인터랙션
+    // 모바일 터치 인터랙션 (3D 효과)
     this.cardWrapper.addEventListener('touchmove', (e) => {
+      e.preventDefault();
       if (e.touches.length === 1) {
         const touch = e.touches[0];
         const mouseEvent = new MouseEvent('mousemove', {
@@ -197,7 +452,13 @@ class MinquiCardGacha {
       }
     });
     
+    // 터치 종료 시 틸트 리셋
     this.cardWrapper.addEventListener('touchend', () => {
+      this.resetTilt();
+    });
+    
+    // 터치 취소 시에도 리셋
+    this.cardWrapper.addEventListener('touchcancel', () => {
       this.resetTilt();
     });
     
@@ -258,9 +519,19 @@ class MinquiCardGacha {
       return false;
     });
     
-    // 개발용 카드 선택 버튼
-    document.getElementById('selectCardBtn').addEventListener('click', () => {
-      this.selectSpecificCard();
+    
+    // 탭 전환 이벤트
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.addEventListener('click', (e) => {
+        this.switchTab(e.target.dataset.tab);
+      });
+    });
+    
+    // 컬렉션 필터 이벤트
+    document.querySelectorAll('.filter-btn').forEach(button => {
+      button.addEventListener('click', (e) => {
+        this.setFilter(e.target.dataset.filter);
+      });
     });
   }
   
@@ -323,35 +594,71 @@ class MinquiCardGacha {
     }
   }
   
-  performGacha() {
-    // 랜덤 랭크 선택 (가중치 적용)
-    const selectedRank = this.selectRandomRank();
-    
-    // 선택된 랭크의 카드 중에서 랜덤 선택
-    const selectedCard = this.selectRandomCard(selectedRank);
-    
-    // 선택된 카드와 랭크로 데이터 업데이트
-    this.updateCardData(selectedCard, selectedRank);
-    
-    // 카드 정보 업데이트
-    this.updateCardInfo();
-    
-    // 앞면으로 뒤집기
-    this.showFront();
-    
-    // 랭크별 효과음 재생
-    this.playRankSound(selectedRank);
-    
-    // 랭크별 파티클 효과
-    this.showRankParticles(selectedRank);
-    
-    // SSS 랭크 특별 애니메이션
-    if (selectedRank === 'SSS') {
-      this.showSSSSpecialAnimation();
+  async performGacha() {
+    try {
+      // 즉시 카드 뒤집기 시작 (사용자 경험 개선)
+      this.showFront();
+      this.playSound('cardFlip');
+      
+      // 로딩 상태 표시
+      this.showGachaLoading();
+      
+      // 서버에서 가챠 실행 (백그라운드)
+      const result = await this.apiClient.drawGacha();
+      
+      // 로딩 상태 숨기기
+      this.hideGachaLoading();
+      
+      if (!result.success) {
+        // 티켓 부족 등의 이유로 실패 - 뒷면으로 되돌리기
+        this.showBack();
+        alert('티켓이 부족합니다! 12시에 다시 충전됩니다.');
+        return;
+      }
+      
+      // 서버에서 받은 카드 결과 처리
+      const cardResult = result.cards[0];
+      const selectedCard = cardResult.card;
+      const selectedRank = cardResult.rank;
+      
+      // 선택된 카드와 랭크로 데이터 업데이트
+      this.updateCardData(selectedCard, selectedRank);
+      
+      // 카드 정보 업데이트
+      this.updateCardInfo();
+      
+      // 랭크별 효과음 재생
+      this.playRankSound(selectedRank);
+      
+      // 랭크별 파티클 효과
+      this.showRankParticles(selectedRank);
+      
+      // SSS 랭크 특별 애니메이션
+      if (selectedRank === 'SSS') {
+        this.showSSSSpecialAnimation();
+      }
+      
+      // 가챠 결과 알림 (우측 상단, 미니멀)
+      this.showResult();
+      
+      // 카드 컬렉션에 추가 (로컬 캐시)
+      this.addToCollection(selectedCard.id);
+      
+      // 티켓 정보 업데이트
+      this.tickets = result.ticketsRemaining;
+      this.updateTicketDisplay();
+      
+      // 다음 충전 시간 업데이트
+      this.nextRefillAt = result.nextRefillAt;
+      // updateRefillTimer 함수는 서버 모드에서는 불필요
+      
+    } catch (error) {
+      console.error('가챠 실행 실패:', error);
+      // 에러 시 뒷면으로 되돌리기
+      this.showBack();
+      this.hideGachaLoading();
+      alert('가챠 실행 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
-    
-    // 가챠 결과 알림 (우측 상단, 미니멀)
-    this.showResult();
   }
   
   selectRandomCard(rank) {
@@ -366,28 +673,19 @@ class MinquiCardGacha {
   }
   
   selectRandomRank() {
-    // 가중치 기반 랭크 선택 (현실적인 가챠 확률)
-    const weights = {
-      'SSS': 1,    // 1% 확률 (매우 희귀)
-      'SS': 4,     // 4% 확률 (희귀)
-      'S': 15,     // 15% 확률 (보통)
-      'A': 30,     // 30% 확률 (자주)
-      'B': 50      // 50% 확률 (매우 자주)
-    };
-    
-    const totalWeight = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
-    let random = Math.random() * totalWeight;
-    
-    // 가중치를 누적하면서 비교
-    let cumulativeWeight = 0;
-    for (const [rank, weight] of Object.entries(weights)) {
-      cumulativeWeight += weight;
-      if (random <= cumulativeWeight) {
-        return rank;
-      }
+    // 서버에서 받은 확률 사용
+    if (!this.gameData.ranks) {
+      console.error('확률 데이터가 없습니다!');
+      return 'B'; // 폴백
     }
     
-    return 'B'; // 기본값
+    const probabilities = {};
+    for (const [rank, data] of Object.entries(this.gameData.ranks)) {
+      probabilities[rank] = data.probability;
+    }
+    
+    console.log('사용할 확률:', probabilities);
+    return this.selectRankByProbability(probabilities);
   }
   
   
@@ -460,15 +758,88 @@ class MinquiCardGacha {
             document.getElementById('cardNumberOverlay').textContent = cardNumber;
             document.getElementById('cardNameOverlay').textContent = cardName;
             
-            // 홀로그램 패턴 업데이트
-            this.updateHoloPattern();
+            // 디버깅: 이미지 요소들 확인
+            console.log('=== 카드 이미지 디버깅 ===');
+            const backgroundIllust = document.querySelector('.background-illust');
+            const characterIllust = document.querySelector('.character-illust');
+            const cardCharacterEl = document.querySelector('.card-character');
+            const cardBackgroundEl = document.querySelector('.card-background-illustration');
+            
+            console.log('배경 이미지:', backgroundIllust);
+            console.log('캐릭터 이미지:', characterIllust);
+            console.log('캐릭터 컨테이너:', cardCharacterEl);
+            console.log('배경 컨테이너:', cardBackgroundEl);
+            
+            if (backgroundIllust) {
+                console.log('배경 이미지 실제 크기:', backgroundIllust.naturalWidth, 'x', backgroundIllust.naturalHeight);
+                console.log('배경 이미지 표시 크기:', backgroundIllust.offsetWidth, 'x', backgroundIllust.offsetHeight);
+                console.log('배경 이미지 src:', backgroundIllust.src);
+                console.log('배경 이미지 완전 로드됨:', backgroundIllust.complete);
+            }
+            
+            if (characterIllust) {
+                console.log('캐릭터 이미지 실제 크기:', characterIllust.naturalWidth, 'x', characterIllust.naturalHeight);
+                console.log('캐릭터 이미지 표시 크기:', characterIllust.offsetWidth, 'x', characterIllust.offsetHeight);
+                console.log('캐릭터 이미지 src:', characterIllust.src);
+                console.log('캐릭터 이미지 완전 로드됨:', characterIllust.complete);
+            }
+            
+            if (cardCharacterEl) {
+                const computedStyle = window.getComputedStyle(cardCharacterEl);
+                console.log('캐릭터 overflow:', computedStyle.overflow);
+                console.log('캐릭터 position:', computedStyle.position);
+                console.log('캐릭터 top:', computedStyle.top);
+                console.log('캐릭터 left:', computedStyle.left);
+                console.log('캐릭터 right:', computedStyle.right);
+                console.log('캐릭터 bottom:', computedStyle.bottom);
+            }
+            
+            if (cardBackgroundEl) {
+                const computedStyle = window.getComputedStyle(cardBackgroundEl);
+                console.log('배경 overflow:', computedStyle.overflow);
+                console.log('배경 position:', computedStyle.position);
+                console.log('배경 top:', computedStyle.top);
+                console.log('배경 left:', computedStyle.left);
+                console.log('배경 right:', computedStyle.right);
+                console.log('배경 bottom:', computedStyle.bottom);
+            }
+            
+            // 부모 요소들 확인
+            const cardFront = document.querySelector('.card-front');
+            const card = document.querySelector('.card');
+            const cardWrapper = document.querySelector('.card-wrapper');
+            
+            console.log('card-front 요소:', cardFront);
+            console.log('card 요소:', card);
+            console.log('card-wrapper 요소:', cardWrapper);
+            
+            if (cardFront) {
+                const computedStyle = window.getComputedStyle(cardFront);
+                console.log('card-front overflow:', computedStyle.overflow);
+            }
+            
+            if (card) {
+                const computedStyle = window.getComputedStyle(card);
+                console.log('card overflow:', computedStyle.overflow);
+            } else {
+                console.log('card 요소를 찾을 수 없음!');
+            }
+            
+            if (cardWrapper) {
+                const computedStyle = window.getComputedStyle(cardWrapper);
+                console.log('card-wrapper overflow:', computedStyle.overflow);
+                console.log('card-wrapper width:', computedStyle.width);
+                console.log('card-wrapper height:', computedStyle.height);
+            }
+            
+            // 홀로그램 패턴 제거됨
             
             // 하단 통계 정보 업데이트
             document.getElementById('cardHp').textContent = this.cardData.hp || 300;
             document.getElementById('cardAttack').textContent = this.cardData.attack || 240;
             
             // 타입 정보 업데이트 (이모지)
-            const typeIcon = this.gameData.typeIcons[this.cardData.type] || '🎨';
+            const typeIcon = this.gameData.types?.[this.cardData.type]?.icon || '🎨';
             document.getElementById('cardType').textContent = typeIcon;
             
             // 스킬 정보 업데이트
@@ -500,29 +871,7 @@ class MinquiCardGacha {
             this.updateRankDisplay();
         }
         
-        updateHoloPattern() {
-            const holoElement = document.querySelector('.card__holo');
-            if (!holoElement || !this.cardData) {
-                console.log('홀로그램 요소 또는 카드 데이터가 없습니다');
-                return;
-            }
-            
-            // 기존 패턴 클래스 제거
-            holoElement.classList.remove('pattern-crown', 'pattern-stars', 'pattern-waves', 'pattern-circuits', 'pattern-sparkles');
-            
-            // 새로운 패턴 클래스 추가
-            const pattern = this.cardData.holoPattern || 'crown';
-            console.log('적용할 패턴:', pattern, '카드 데이터:', this.cardData);
-            holoElement.classList.add(`pattern-${pattern}`);
-            
-            // 홀로그램 색상 업데이트
-            if (this.cardData.holoColor) {
-                holoElement.style.setProperty('--holo-color', this.cardData.holoColor);
-            }
-            
-            // 클래스가 제대로 적용되었는지 확인
-            console.log('홀로그램 요소 클래스:', holoElement.className);
-        }
+        // 홀로그램 패턴 메서드 제거됨
   
   
   updateRankDisplay() {
@@ -615,46 +964,7 @@ class MinquiCardGacha {
     }, 2000);
   }
   
-  initDevPanel() {
-    if (!this.gameData) return;
-    
-    const cardSelector = document.getElementById('cardSelector');
-    cardSelector.innerHTML = '<option value="">카드 선택</option>';
-    
-    // 각 카드별로 옵션 추가
-    this.gameData.cards.forEach(card => {
-      const option = document.createElement('option');
-      option.value = card.id;
-      option.textContent = `${card.name} (${card.rank})`;
-      cardSelector.appendChild(option);
-    });
-  }
   
-  selectSpecificCard() {
-    const cardSelector = document.getElementById('cardSelector');
-    const selectedCardId = cardSelector.value;
-    
-    if (!selectedCardId) {
-      // 카드가 선택되지 않음
-      return;
-    }
-    
-    // 특정 카드 선택
-    const selectedCard = this.gameData.cards.find(card => card.id === selectedCardId);
-    if (!selectedCard) return;
-    
-    // 선택된 카드와 랭크로 데이터 업데이트
-    this.updateCardData(selectedCard, selectedCard.rank);
-    
-    // 카드 정보 업데이트
-    this.updateCardInfo();
-    
-    // 앞면으로 뒤집기
-    this.showFront();
-    
-    // 가챠 결과 알림
-    this.showResult();
-  }
   
   showRankParticles(rank) {
     const cardWrapper = this.cardWrapper;
@@ -804,6 +1114,1266 @@ class MinquiCardGacha {
     };
     
     return configs[rank] || configs['B'];
+  }
+  
+  // 서버에서 컬렉션 데이터 로드
+  async loadCollectionFromServer() {
+    try {
+      const response = await this.apiClient.getCollection();
+      this.collectedCards = response.collection || [];
+      console.log('서버에서 컬렉션 로드 완료:', this.collectedCards.length, '장');
+    } catch (error) {
+      console.error('컬렉션 로드 실패:', error);
+      this.collectedCards = [];
+    }
+  }
+
+  // 기존 컬렉션 메서드 (폴백용)
+  loadCollectionData() {
+    // localStorage에서 컬렉션 데이터 로드
+    const saved = localStorage.getItem('minqui_collection');
+    if (saved) {
+      this.collectedCards = JSON.parse(saved);
+    }
+  }
+  
+  saveCollectionData() {
+    // 컬렉션 데이터를 localStorage에 저장
+    localStorage.setItem('minqui_collection', JSON.stringify(this.collectedCards));
+  }
+  
+  addToCollection(cardId) {
+    // 카드를 컬렉션에 추가 (중복 허용)
+    this.collectedCards.push(cardId);
+    this.saveCollectionData();
+    
+    // 컬렉션 UI 항상 업데이트
+    this.updateCollectionUI();
+  }
+  
+  initCollectionUI() {
+    // 컬렉션 UI 초기화
+    this.updateCollectionStats();
+    this.renderCollectionCards();
+  }
+  
+  switchTab(tabName) {
+    // 탭 전환
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    document.getElementById(`${tabName}-tab`).classList.add('active');
+    
+    // 티켓 시스템 표시/숨김 제어
+    this.updateTicketVisibility(tabName);
+    
+    // 컬렉션 탭으로 전환 시 UI 업데이트
+    if (tabName === 'collection') {
+      this.updateCollectionUI();
+    }
+    
+  }
+  
+  setFilter(filter) {
+    // 필터 설정
+    this.currentFilter = filter;
+    
+    // 필터 버튼 활성화 상태 업데이트
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+    
+    // 컬렉션 카드 다시 렌더링
+    this.renderCollectionCards();
+  }
+  
+  updateCollectionStats() {
+    // 컬렉션 통계 업데이트
+    const totalCards = this.gameData.cards.length;
+    const collectedCount = this.collectedCards.length; // 중복 포함한 총 카드 수
+    const uniqueCards = new Set(this.collectedCards).size; // 고유 카드 수
+    const collectionRate = Math.round((uniqueCards / totalCards) * 100);
+    
+    document.getElementById('totalCards').textContent = collectedCount;
+    document.getElementById('collectionRate').textContent = `${collectionRate}% (${uniqueCards}/${totalCards})`;
+  }
+  
+  updateCollectionUI() {
+    // 컬렉션 UI 전체 업데이트
+    this.updateCollectionStats();
+    this.renderCollectionCards();
+  }
+  
+  renderCollectionCards() {
+    // 컬렉션 카드들 렌더링
+    const grid = document.getElementById('collectionGrid');
+    grid.innerHTML = '';
+    
+    let cardsToShow = this.gameData.cards;
+    
+    // 필터 적용
+    if (this.currentFilter !== 'all') {
+      cardsToShow = cardsToShow.filter(card => card.rank === this.currentFilter);
+    }
+    
+    console.log('렌더링할 카드 수:', cardsToShow.length);
+    console.log('수집된 카드:', this.collectedCards);
+    
+    cardsToShow.forEach(card => {
+      const isOwned = this.collectedCards.includes(card.id);
+      console.log(`카드 ${card.name} (${card.id}): 소유=${isOwned}`);
+      const cardElement = this.createCollectionCardElement(card, isOwned);
+      grid.appendChild(cardElement);
+    });
+  }
+  
+  createCollectionCardElement(card, isOwned) {
+    // 컬렉션 카드 요소 생성 - 가챠 카드와 동일한 구조
+    const cardDiv = document.createElement('div');
+    cardDiv.className = `collection-card ${isOwned ? 'owned' : 'not-owned'}`;
+    
+    const rankInfo = this.gameData.ranks[card.rank];
+    const typeIcon = this.gameData.types?.[card.type]?.icon || '🎨';
+    
+    // 중복 횟수 계산
+    const duplicateCount = this.collectedCards.filter(id => id === card.id).length;
+    
+    // 스킬 정보
+    const skill = card.attacks && card.attacks[0];
+    const skillName = skill ? skill.name : '창작 마법';
+    const skillDescription = skill ? skill.description : '무한한 상상력으로 새로운 세계를 창조한다.';
+    
+    cardDiv.innerHTML = `
+      <!-- 카드 앞면 - 가챠 카드와 동일한 구조 -->
+      <div class="collection-card-front">
+        <!-- 배경 일러스트 -->
+        <div class="collection-card-background-illustration">
+          <img src="${card.image}" alt="${card.name} 배경 일러스트" class="collection-background-illust">
+        </div>
+        
+        <!-- 카드 정보 박스 -->
+        <div class="collection-card-info-box">
+          <div class="collection-card-number-box">
+            <div class="collection-card-number">#${card.id}</div>
+          </div>
+          <div class="collection-card-name">${card.name}</div>
+        </div>
+        
+        <!-- 카드 정보 박스 오버레이 - 가챠와 동일한 구조 -->
+        <div class="collection-card-info-box-overlay">
+          <div class="collection-card-number-box">
+            <div class="collection-card-number">#${card.id}</div>
+          </div>
+          <div class="collection-card-name">${card.name}</div>
+        </div>
+        
+        <!-- 랭크 표시 -->
+        <div class="collection-card-rank">
+          <img src="illust/${card.rank}.png" alt="${card.rank} 랭크" class="collection-rank-image">
+        </div>
+        
+        <!-- 하단 투명 박스 -->
+        <div class="collection-card-bottom-overlay">
+          <div class="collection-stats-container">
+            <div class="collection-stat-item">
+              <span class="collection-stat-label">HP</span>
+              <span class="collection-stat-value">${Math.floor(card.baseHp * rankInfo.hpMultiplier)}</span>
+            </div>
+            <div class="collection-stat-item">
+              <span class="collection-stat-label">공격력</span>
+              <span class="collection-stat-value">${Math.floor(card.baseAttack * rankInfo.attackMultiplier)}</span>
+            </div>
+            <div class="collection-stat-item">
+              <span class="collection-stat-value">${typeIcon}</span>
+            </div>
+          </div>
+          
+          <!-- 스킬 박스 -->
+          <div class="collection-skill-box">
+            <div class="collection-skill-name">${skillName}</div>
+            <div class="collection-skill-description">${skillDescription}</div>
+          </div>
+        </div>
+        
+        <!-- 캐릭터 -->
+        <div class="collection-card-character">
+          <img src="${card.image.replace('.png', '_2.png')}" alt="${card.name} 캐릭터" class="collection-character-illust">
+        </div>
+        
+        ${isOwned ? '<div class="owned-badge">획득</div>' : ''}
+      </div>
+      
+      <!-- 중복 횟수 원형 팝업 (2개 이상일 때만 표시) -->
+      ${isOwned && duplicateCount > 1 ? `<div class="duplicate-count-popup">${duplicateCount}</div>` : ''}
+    `;
+    
+    // 카드 클릭 이벤트 제거 - 팝업 없음
+    
+    return cardDiv;
+  }
+  
+  showCardDetail(card, duplicateCount = 1) {
+    // 카드 상세 정보 표시 (간단한 알림)
+    const rankInfo = this.gameData.ranks[card.rank];
+    const skill = card.attacks && card.attacks[0];
+    
+    alert(`${card.name} (${card.rank})${duplicateCount > 1 ? ` x${duplicateCount}` : ''}
+타입: ${card.type}
+HP: ${Math.floor(card.baseHp * rankInfo.hpMultiplier)}
+공격력: ${Math.floor(card.baseAttack * rankInfo.attackMultiplier)}
+스킬: ${skill ? skill.name : '없음'}
+${skill ? skill.description : ''}`);
+  }
+  
+  // 조합 시스템 메서드들
+  initFusionSystem() {
+    // 조합 버튼 클릭 이벤트
+    document.getElementById('fusionButton').addEventListener('click', () => {
+      this.performFusion();
+    });
+    
+    // 확인 버튼 클릭 이벤트
+    document.getElementById('confirmButton').addEventListener('click', () => {
+      this.hideFusionResult();
+    });
+    
+    
+    // 필터 버튼 이벤트
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        this.setFusionFilter(e.target.dataset.filter);
+      });
+    });
+    
+    // 확률 정보 토글 이벤트
+    document.getElementById('infoToggle').addEventListener('mouseenter', () => {
+      this.showProbabilityTooltip();
+    });
+    
+    document.getElementById('infoToggle').addEventListener('mouseleave', () => {
+      this.hideProbabilityTooltip();
+    });
+    
+    // 초기화
+    this.currentFusionFilter = 'all';
+    this.updateFusionSlots(); // 10개 고정 슬롯 생성
+    this.renderFusionCards();
+    this.updateFusionInfo();
+  }
+  
+  // 10개 고정 슬롯 시스템
+  updateFusionSlots() {
+    const container = document.getElementById('fusionSlots');
+    if (!container) {
+      console.error('fusionSlots container not found!');
+      return;
+    }
+    
+    container.innerHTML = '';
+    
+    // 10개 고정 슬롯 생성
+    this.selectedFusionCards = new Array(10).fill(null);
+    
+    for (let i = 0; i < 10; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'fusion-slot';
+      slot.dataset.slot = i;
+      slot.innerHTML = '<div class="slot-placeholder">카드 선택</div>';
+      
+      slot.addEventListener('click', () => {
+        this.removeCardFromFusion(i);
+      });
+      
+      container.appendChild(slot);
+    }
+    
+    this.updateFusionInfo();
+  }
+  
+  // 카드 그리드 렌더링
+  renderFusionCards() {
+    const container = document.getElementById('fusionCardGrid');
+    const availableCards = this.getAvailableCardsForFusion();
+    const filteredCards = this.filterCardsForFusion(availableCards);
+    
+    container.innerHTML = '';
+    
+    filteredCards.forEach(card => {
+      const cardElement = this.createFusionCardElement(card);
+      container.appendChild(cardElement);
+    });
+  }
+  
+  createFusionCardElement(card) {
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'fusion-card-item';
+    cardDiv.dataset.cardId = card.id;
+    
+    // 해당 카드를 몇 장 가지고 있는지 계산
+    const cardCount = this.collectedCards.filter(id => id === card.id).length;
+    
+    // 카드가 0장이면 disabled 클래스 추가
+    if (cardCount <= 0) {
+      cardDiv.classList.add('disabled');
+    }
+    
+    cardDiv.innerHTML = `
+      <img src="${card.image}" alt="${card.name}" class="fusion-card-image">
+      <div class="fusion-card-name">${card.name}</div>
+      <div class="fusion-card-rank">${card.rank}</div>
+      <div class="fusion-card-count">${cardCount}장</div>
+    `;
+    
+    cardDiv.addEventListener('click', () => {
+      this.selectCardForFusion(card);
+    });
+    
+    return cardDiv;
+  }
+  
+  filterCardsForFusion(cards) {
+    if (this.currentFusionFilter === 'all') {
+      return cards;
+    }
+    return cards.filter(card => card.rank === this.currentFusionFilter);
+  }
+  
+  setFusionFilter(filter) {
+    this.currentFusionFilter = filter;
+    
+    // 필터 버튼 활성화 상태 업데이트
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+    
+    this.renderFusionCards();
+  }
+  
+  selectCardForFusion(card) {
+    // 해당 카드를 몇 장 가지고 있는지 확인
+    const totalCardCount = this.collectedCards.filter(id => id === card.id).length;
+    
+    if (totalCardCount <= 0) {
+      alert('해당 카드를 보유하고 있지 않습니다!');
+      return;
+    }
+    
+    // 이미 선택된 해당 카드의 개수 확인
+    const selectedCardCount = this.selectedFusionCards.filter(selectedCard => 
+      selectedCard && selectedCard.id === card.id
+    ).length;
+    
+    // 보유한 카드 수를 초과해서 선택하려고 하면 차단
+    if (selectedCardCount >= totalCardCount) {
+      alert(`해당 카드는 최대 ${totalCardCount}장까지만 선택할 수 있습니다!`);
+      return;
+    }
+    
+    // 좌측부터 빈 슬롯 찾기
+    const emptySlotIndex = this.selectedFusionCards.findIndex(slot => slot === null);
+    
+    if (emptySlotIndex === -1) {
+      alert('모든 슬롯이 가득 찼습니다! (최대 10장)');
+      return;
+    }
+    
+    // 카드 추가
+    this.selectedFusionCards[emptySlotIndex] = card;
+    this.updateFusionSlot(emptySlotIndex, card);
+    this.updateFusionInfo();
+    
+    // 카드 그리드에서 선택된 카드 표시 및 개수 업데이트
+    this.updateCardSelection();
+    this.updateCardCounts();
+  }
+  
+  updateCardSelection() {
+    document.querySelectorAll('.fusion-card-item').forEach(item => {
+      const cardId = item.dataset.cardId;
+      const isSelected = this.selectedFusionCards.some(card => card && card.id === cardId);
+      item.classList.toggle('selected', isSelected);
+    });
+  }
+  
+  updateCardCounts() {
+    document.querySelectorAll('.fusion-card-item').forEach(item => {
+      const cardId = item.dataset.cardId;
+      const totalCardCount = this.collectedCards.filter(id => id === cardId).length;
+      const selectedCardCount = this.selectedFusionCards.filter(selectedCard => 
+        selectedCard && selectedCard.id === cardId
+      ).length;
+      
+      const countElement = item.querySelector('.fusion-card-count');
+      if (countElement) {
+        countElement.textContent = `${totalCardCount}장`;
+      }
+      
+      // 카드 개수에 따라 disabled 상태 업데이트
+      if (totalCardCount <= 0) {
+        item.classList.add('disabled');
+      } else if (selectedCardCount >= totalCardCount) {
+        // 최대 선택 가능한 개수에 도달했을 때도 disabled
+        item.classList.add('disabled');
+      } else {
+        item.classList.remove('disabled');
+      }
+    });
+  }
+  
+  removeCardFromFusion(slotIndex) {
+    if (this.selectedFusionCards[slotIndex]) {
+      this.selectedFusionCards[slotIndex] = null;
+      this.updateFusionSlot(slotIndex, null);
+      this.updateFusionInfo();
+      this.updateCardSelection();
+      this.updateCardCounts();
+    }
+  }
+  
+  updateFusionSlot(slotIndex, card) {
+    const slot = document.querySelector(`[data-slot="${slotIndex}"]`);
+    
+    if (card) {
+      slot.classList.add('filled');
+      slot.innerHTML = `
+        <div class="slot-card">
+          <img src="${card.image}" alt="${card.name}" class="slot-card-image">
+          <div class="slot-card-info">
+            <div class="slot-card-name">${card.name}</div>
+          </div>
+          <div class="slot-card-rank">${card.rank}</div>
+        </div>
+      `;
+    } else {
+      slot.classList.remove('filled');
+      slot.innerHTML = '<div class="slot-placeholder">카드 선택</div>';
+    }
+  }
+  
+  
+  
+  
+  getAvailableCardsForFusion() {
+    // 소유한 카드 중에서 중복 제거하여 반환
+    const ownedCardIds = [...new Set(this.collectedCards)];
+    return ownedCardIds.map(cardId => {
+      return this.gameData.cards.find(card => card.id === cardId);
+    }).filter(card => card);
+  }
+  
+  // 복잡한 수학적 확률 계산 함수 - 랭크 중심
+  calculateFusionProbability(selectedCards) {
+    if (selectedCards.length < this.minFusionCards) {
+      return { success: false, message: `최소 ${this.minFusionCards}장의 카드가 필요합니다.` };
+    }
+    
+    // 랭크별 기본 가중치 (낮은 확률로 시작)
+    const baseWeights = {
+      'B': 0.50,  // 50%
+      'A': 0.30,  // 30%
+      'S': 0.15,  // 15%
+      'SS': 0.04, // 4%
+      'SSS': 0.01 // 1%
+    };
+    
+    // 랭크별 가중치 (높은 랭크일수록 더 강력한 영향)
+    const rankWeights = {
+      'B': 1.0,
+      'A': 2.0,
+      'S': 4.0,
+      'SS': 8.0,
+      'SSS': 16.0
+    };
+    
+    // 랭크 분포 분석
+    const rankDistribution = this.analyzeRankDistribution(selectedCards);
+    
+    // 복잡한 수학적 공식 - 랭크 중심
+    const probabilities = {};
+    
+    for (const targetRank in baseWeights) {
+      let probability = baseWeights[targetRank];
+      
+      // 1. 고급 랭크 카드의 영향력 계산 (지수적 증가)
+      let advancedInfluence = 0;
+      for (const [rank, count] of Object.entries(rankDistribution)) {
+        const rankValue = rankWeights[rank] || 1;
+        // 고급 랭크일수록 더 강력한 영향
+        advancedInfluence += count * Math.pow(rankValue, 1.5);
+      }
+      
+      // 2. 타겟 랭크와의 시너지 계산
+      const targetRankValue = rankWeights[targetRank] || 1;
+      const synergyBonus = this.calculateRankSynergy(rankDistribution, targetRank);
+      
+      // 3. 고급 랭크 보너스 (SS, SSS가 있으면 해당 랭크 확률 대폭 증가)
+      let highRankBonus = 1.0;
+      if (targetRank === 'SS' || targetRank === 'SSS') {
+        const hasHighRankCards = selectedCards.some(card => 
+          card.rank === 'SS' || card.rank === 'SSS'
+        );
+        if (hasHighRankCards) {
+          // 고급 랭크 카드가 있으면 해당 랭크 확률 3배 증가
+          highRankBonus = 3.0;
+        }
+      }
+      
+      // 4. 복합 계산
+      probability *= (1 + advancedInfluence * 0.1); // 고급 랭크 영향
+      probability *= (1 + synergyBonus * 0.2); // 시너지 보너스
+      probability *= highRankBonus; // 고급 랭크 보너스
+      
+      // 6. 카드 수는 최소한의 영향만 (0.95 ~ 1.05)
+      const cardCountFactor = 0.95 + (selectedCards.length / this.maxFusionCards) * 0.1;
+      probability *= cardCountFactor;
+      
+      // 7. 랭크별 특별 계산
+      if (targetRank === 'SSS') {
+        // SSS는 매우 특별한 조건 필요
+        const sssCards = rankDistribution['SSS'] || 0;
+        const ssCards = rankDistribution['SS'] || 0;
+        if (sssCards > 0) {
+          probability *= 5.0; // SSS 카드가 있으면 SSS 확률 5배
+        } else if (ssCards >= 2) {
+          probability *= 2.0; // SS 카드 2장 이상이면 SSS 확률 2배
+        }
+      } else if (targetRank === 'SS') {
+        // SS는 S나 SS 카드의 영향
+        const ssCards = rankDistribution['SS'] || 0;
+        const sCards = rankDistribution['S'] || 0;
+        if (ssCards > 0) {
+          probability *= 3.0; // SS 카드가 있으면 SS 확률 3배
+        } else if (sCards >= 2) {
+          probability *= 1.5; // S 카드 2장 이상이면 SS 확률 1.5배
+        }
+      }
+      
+      // 최종 확률 정규화
+      probabilities[targetRank] = Math.min(probability, 0.90); // 최대 90%로 제한
+    }
+    
+    // 정규화 (합이 100%가 되도록)
+    const totalProbability = Object.values(probabilities).reduce((sum, prob) => sum + prob, 0);
+    for (const rank in probabilities) {
+      probabilities[rank] = (probabilities[rank] / totalProbability) * 100;
+    }
+    
+    return {
+      success: true,
+      probabilities: probabilities,
+      cardCount: selectedCards.length,
+      rankDistribution: rankDistribution
+    };
+  }
+  
+  // 랭크 시너지 계산
+  calculateRankSynergy(rankDistribution, targetRank) {
+    const rankHierarchy = { 'B': 1, 'A': 2, 'S': 3, 'SS': 4, 'SSS': 5 };
+    const targetLevel = rankHierarchy[targetRank] || 1;
+    
+    let synergy = 0;
+    for (const [rank, count] of Object.entries(rankDistribution)) {
+      const rankLevel = rankHierarchy[rank] || 1;
+      // 같은 레벨이나 높은 레벨의 카드가 있으면 시너지 증가
+      if (rankLevel >= targetLevel) {
+        synergy += count * (rankLevel / targetLevel);
+      }
+    }
+    
+    return synergy;
+  }
+  
+  
+  analyzeRankDistribution(selectedCards) {
+    const distribution = {};
+    selectedCards.forEach(card => {
+      distribution[card.rank] = (distribution[card.rank] || 0) + 1;
+    });
+    return distribution;
+  }
+  
+  
+  updateFusionInfo() {
+    const filledSlots = this.selectedFusionCards.filter(card => card !== null);
+    const fusionButton = document.getElementById('fusionButton');
+    
+    const result = this.calculateFusionProbability(filledSlots);
+    
+    if (result.success) {
+      const { probabilities, cardCount, rankDistribution } = result;
+      
+      // 확률 데이터 저장 (툴팁용)
+      this.currentProbabilities = probabilities;
+      this.currentRankDistribution = rankDistribution;
+      
+      fusionButton.disabled = false;
+    } else {
+      this.currentProbabilities = null;
+      this.currentRankDistribution = null;
+      fusionButton.disabled = true;
+    }
+  }
+  
+  showProbabilityTooltip() {
+    if (!this.currentProbabilities) return;
+    
+    const tooltip = document.getElementById('probabilityTooltip');
+    const rankOrder = ['B', 'A', 'S', 'SS', 'SSS'];
+    
+    let tooltipContent = '';
+    rankOrder.forEach(rank => {
+      if (this.currentProbabilities[rank]) {
+        tooltipContent += `
+          <div class="rank-probability-item">
+            <span class="rank-name">${rank}</span>
+            <span class="rank-probability">${this.currentProbabilities[rank].toFixed(1)}%</span>
+          </div>
+        `;
+      }
+    });
+    
+    tooltip.innerHTML = tooltipContent;
+    tooltip.style.display = 'block';
+  }
+  
+  hideProbabilityTooltip() {
+    const tooltip = document.getElementById('probabilityTooltip');
+    tooltip.style.display = 'none';
+  }
+  
+  async performFusion() {
+    const filledSlots = this.selectedFusionCards.filter(card => card !== null);
+    
+    if (filledSlots.length < this.minFusionCards) {
+      alert(`최소 ${this.minFusionCards}장의 카드를 선택해주세요!`);
+      return;
+    }
+    
+    try {
+      // 서버에서 조합 실행
+      const materialCardIds = filledSlots.map(card => card.id);
+      const result = await this.apiClient.commitFusion(materialCardIds);
+      
+      if (!result.success) {
+        alert('조합에 실패했습니다. 다시 시도해주세요.');
+        return;
+      }
+      
+      // 룰렛으로 결과 표시
+      this.showRoulette(filledSlots, result.resultCard);
+      
+      // 성공 시 재료 카드 제거
+      if (result.resultCard) {
+        this.removeCardsFromCollection(materialCardIds);
+        this.addToCollection(result.resultCard.card.id);
+      }
+      
+      // 티켓 정보 업데이트
+      this.tickets = result.ticketsRemaining;
+      this.updateTicketDisplay();
+      
+    } catch (error) {
+      console.error('조합 실행 실패:', error);
+      alert('조합 실행 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
+  }
+  
+  showRoulette(selectedCards, resultCard) {
+    const rouletteModal = document.getElementById('rouletteModal');
+    const rouletteWheel = document.getElementById('rouletteWheel');
+    const rouletteResult = document.getElementById('rouletteResult');
+    
+    // 룰렛에 표시할 카드들 생성 (결과 카드 포함)
+    const rouletteCards = this.createRouletteCards(selectedCards, resultCard);
+    
+    // 룰렛 초기화
+    rouletteWheel.innerHTML = '';
+    rouletteResult.innerHTML = '';
+    rouletteResult.classList.remove('show');
+    
+    // 룰렛 카드들 배치
+    rouletteCards.forEach((card, index) => {
+      const cardElement = this.createRouletteCardElement(card, index, rouletteCards.length);
+      rouletteWheel.appendChild(cardElement);
+    });
+    
+    // 룰렛 모달 표시
+    rouletteModal.style.display = 'flex';
+    
+    // 룰렛 애니메이션 시작
+    setTimeout(() => {
+      this.startRouletteAnimation(rouletteWheel, resultCard, selectedCards);
+    }, 500);
+  }
+  
+  createRouletteCards(selectedCards, resultCard) {
+    // 모든 가능한 카드 후보들
+    const allCards = [...this.gameData.cards];
+    
+    // 결과 카드가 있으면 포함 (중복 방지)
+    if (resultCard && !allCards.some(card => card.id === resultCard.id)) {
+      allCards.push(resultCard);
+    }
+    
+    // 50장의 랜덤 카드 선택 (중복 허용)
+    const rouletteCards = [];
+    for (let i = 0; i < 50; i++) {
+      const randomCard = allCards[Math.floor(Math.random() * allCards.length)];
+      rouletteCards.push(randomCard);
+    }
+    
+    return rouletteCards;
+  }
+  
+  createRouletteCardElement(card, index, totalCards) {
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'roulette-card';
+    cardDiv.dataset.cardId = card.id;
+    
+    cardDiv.innerHTML = `
+      <img src="${card.image}" alt="${card.name}">
+      <div class="card-name">${card.name}</div>
+      <div class="card-rank">${card.rank}</div>
+    `;
+    
+    return cardDiv;
+  }
+  
+  startRouletteAnimation(rouletteWheel, resultCard, selectedCards) {
+    const cards = rouletteWheel.children;
+    const cardWidth = 108; // 카드 너비 + 마진 (100px + 8px)
+    const containerWidth = 500;
+    
+    // 결과 카드의 인덱스 찾기
+    let resultIndex = -1;
+    for (let i = 0; i < cards.length; i++) {
+      if (cards[i].dataset.cardId === resultCard?.id) {
+        resultIndex = i;
+        break;
+      }
+    }
+    
+    let finalPosition;
+    
+    if (resultIndex !== -1) {
+      // 결과 카드가 룰렛에 있으면 그 카드가 중앙에 오도록
+      finalPosition = -(resultIndex * cardWidth) + (containerWidth / 2) - (cardWidth / 2);
+    } else {
+      // 결과 카드가 룰렛에 없으면 랜덤한 위치에서 정지
+      resultIndex = Math.floor(Math.random() * cards.length);
+      finalPosition = -(resultIndex * cardWidth) + (containerWidth / 2) - (cardWidth / 2);
+      
+      // 실제 결과는 룰렛에 표시된 카드 중에서 선택
+      const selectedCard = cards[resultIndex];
+      resultCard = this.gameData.cards.find(card => card.id === selectedCard.dataset.cardId);
+    }
+    
+    // 추가로 몇 바퀴 더 돌리기 (5-8바퀴, 50장이므로 더 많이)
+    const extraSpins = 5 + Math.random() * 3;
+    const extraDistance = extraSpins * cards.length * cardWidth;
+    const totalDistance = finalPosition - extraDistance;
+    
+    // 애니메이션 시작
+    rouletteWheel.style.transition = 'none';
+    rouletteWheel.style.transform = 'translateX(0px)';
+    
+    // 룰렛 효과음 재생
+    this.playRouletteSound();
+    
+    // 다음 프레임에서 애니메이션 시작
+    requestAnimationFrame(() => {
+      rouletteWheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+      rouletteWheel.style.transform = `translateX(${totalDistance}px)`;
+      
+      // 애니메이션 완료 후 결과 표시 (4초로 연장)
+      setTimeout(() => {
+        this.showRouletteResult(resultCard, selectedCards);
+      }, 4000);
+    });
+  }
+  
+  playRouletteSound() {
+    // 룰렛 회전 효과음 (기존 카드 플립 사운드 사용)
+    const audio = new Audio('sounds/card_flip.wav');
+    audio.volume = 0.3;
+    audio.play().catch(e => console.log('Audio play failed:', e));
+  }
+  
+  showRouletteResult(resultCard, selectedCards) {
+    const rouletteResult = document.getElementById('rouletteResult');
+    
+    if (resultCard) {
+      // 성공 결과
+      rouletteResult.innerHTML = `
+        <div class="roulette-result-card">
+          <img src="${resultCard.image}" alt="${resultCard.name}">
+          <div class="card-name">${resultCard.name}</div>
+          <div class="card-rank">${resultCard.rank}</div>
+        </div>
+        <p style="color: #4CAF50; font-size: 1.2rem; font-weight: 700;">조합 성공!</p>
+      `;
+      
+      // 컬렉션에 추가
+      this.addToCollection(resultCard.id);
+      
+      // 컬렉션 UI 즉시 업데이트
+      this.updateCollectionUI();
+    } else {
+      // 실패 결과
+      rouletteResult.innerHTML = `
+        <div style="color: #f44336; font-size: 1.2rem; font-weight: 700;">
+          조합 실패...
+        </div>
+      `;
+    }
+    
+    rouletteResult.classList.add('show');
+    
+    // 사용된 카드들 제거
+    selectedCards.forEach(card => {
+      const cardIndex = this.collectedCards.indexOf(card.id);
+      if (cardIndex > -1) {
+        this.collectedCards.splice(cardIndex, 1);
+      }
+    });
+    
+    this.saveCollectionData();
+    
+    // 3초 후 룰렛 닫기
+    setTimeout(() => {
+      this.closeRoulette();
+    }, 3000);
+  }
+  
+  closeRoulette() {
+    const rouletteModal = document.getElementById('rouletteModal');
+    rouletteModal.style.display = 'none';
+    
+    // 조합 슬롯 초기화
+    this.selectedFusionCards = new Array(this.selectedFusionCards.length).fill(null);
+    this.updateFusionSlots();
+    
+    // 컬렉션 UI 강제 업데이트
+    this.updateCollectionStats();
+    this.renderCollectionCards();
+    
+    // 조합 카드 개수 업데이트
+    this.updateCardCounts();
+  }
+  
+  shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+
+  // 서버에서 티켓 시스템 초기화
+  async initTicketSystemFromServer() {
+    try {
+      const ticketInfo = await this.apiClient.getTicketInfo();
+      this.tickets = ticketInfo.current;
+      this.maxTickets = ticketInfo.max;
+      this.nextRefillAt = ticketInfo.nextRefillAt;
+      
+      this.updateTicketDisplay();
+      this.startTicketTimer();
+    } catch (error) {
+      console.error('티켓 정보 로드 실패:', error);
+      // 폴백: 로컬 티켓 시스템 사용
+      this.initTicketSystem();
+    }
+  }
+
+  // 기존 티켓 시스템 (폴백용)
+  initTicketSystem() {
+    this.loadTicketData();
+    this.updateTicketDisplay();
+    this.startTicketTimer();
+  }
+
+  // 티켓 데이터 로드
+  loadTicketData() {
+    if (this.isAdminMode) {
+      this.tickets = 999; // 관리자 모드에서는 무한 티켓
+      this.maxTickets = 999;
+      return;
+    }
+
+    // maxTickets가 설정되지 않았다면 기본값 설정
+    if (!this.maxTickets) {
+      this.maxTickets = 10;
+    }
+
+    const savedTickets = localStorage.getItem('minqui_tickets');
+    const lastReset = localStorage.getItem('minqui_last_ticket_reset');
+    
+    if (savedTickets !== null && lastReset !== null) {
+      this.tickets = parseInt(savedTickets);
+      this.checkTicketReset(lastReset);
+    } else {
+      // 첫 방문자에게 10장 지급
+      this.tickets = this.maxTickets;
+      this.saveTicketData();
+      console.log('첫 방문자에게 티켓 10장 지급');
+    }
+  }
+
+  // 티켓 리셋 확인
+  checkTicketReset(lastReset) {
+    const now = new Date();
+    const lastResetDate = new Date(lastReset);
+    
+    // 한국시간으로 12시가 지났는지 확인
+    const koreanTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Seoul"}));
+    const lastResetKorean = new Date(lastResetDate.toLocaleString("en-US", {timeZone: "Asia/Seoul"}));
+    
+    // 날짜가 바뀌었거나 12시간이 지났으면 리셋
+    if (koreanTime.getDate() !== lastResetKorean.getDate() || 
+        (koreanTime.getTime() - lastResetKorean.getTime()) >= 12 * 60 * 60 * 1000) {
+      this.tickets = this.maxTickets;
+      this.saveTicketData();
+    }
+  }
+
+  // 티켓 데이터 저장
+  saveTicketData() {
+    if (!this.isAdminMode) {
+      localStorage.setItem('minqui_tickets', this.tickets.toString());
+      localStorage.setItem('minqui_last_ticket_reset', new Date().toISOString());
+    }
+  }
+
+  // 티켓 사용
+  useTicket() {
+    if (this.isAdminMode || this.isSecretMode) {
+      return true; // 관리자 모드 또는 시크릿 모드에서는 항상 사용 가능
+    }
+    
+    if (this.tickets > 0) {
+      this.tickets--;
+      this.saveTicketData();
+      this.updateTicketDisplay();
+      return true;
+    }
+    return false;
+  }
+
+  // 티켓 표시 업데이트
+  updateTicketDisplay() {
+    const ticketCountElement = document.getElementById('ticketCount');
+    const ticketTimerElement = document.getElementById('ticketTimer');
+    
+    if (ticketCountElement) {
+      ticketCountElement.textContent = this.tickets;
+      
+      // 티켓이 0일 때 시각적 피드백
+      if (this.tickets <= 0 && !this.isAdminMode && !this.isSecretMode) {
+        ticketCountElement.style.color = '#ff6b6b';
+        ticketCountElement.style.textShadow = '0 0 10px rgba(255, 107, 107, 0.5)';
+      } else {
+        ticketCountElement.style.color = '#ffd700';
+        ticketCountElement.style.textShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+      }
+    }
+    
+    if (ticketTimerElement && !this.isAdminMode) {
+      this.updateTicketTimer();
+    }
+    
+    // 카드 클릭 가능 여부 업데이트
+    this.updateCardClickability();
+  }
+
+  // 카드 클릭 가능 여부 업데이트
+  updateCardClickability() {
+    const cardWrapper = this.cardWrapper;
+    
+    // 관리자 모드 또는 시크릿 모드에서는 항상 활성화
+    if (this.isAdminMode || this.isSecretMode) {
+      cardWrapper.classList.remove('disabled');
+      cardWrapper.style.cursor = 'pointer';
+      return;
+    }
+    
+    // 일반 모드에서는 항상 클릭 가능 (티켓이 없어도 카드 앞면은 볼 수 있음)
+    cardWrapper.classList.remove('disabled');
+    cardWrapper.style.cursor = 'pointer';
+  }
+
+  // 티켓 시스템 표시/숨김 제어
+  updateTicketVisibility(tabName) {
+    const ticketSystem = document.querySelector('.ticket-system');
+    if (ticketSystem) {
+      if (tabName === 'gacha') {
+        ticketSystem.style.display = 'block';
+      } else {
+        ticketSystem.style.display = 'none';
+      }
+    }
+  }
+
+  // 티켓 타이머 시작
+  startTicketTimer() {
+    if (this.isAdminMode) {
+      const ticketTimerElement = document.getElementById('ticketTimer');
+      if (ticketTimerElement) {
+        ticketTimerElement.textContent = '관리자 모드 - 무한 티켓';
+      }
+      return;
+    }
+    
+    if (this.isSecretMode) {
+      const ticketTimerElement = document.getElementById('ticketTimer');
+      if (ticketTimerElement) {
+        ticketTimerElement.textContent = '시크릿 모드 - 무한 가챠';
+      }
+      return;
+    }
+
+    this.ticketTimer = setInterval(() => {
+      this.updateTicketTimer();
+    }, 1000);
+  }
+
+  // 티켓 타이머 업데이트
+  updateTicketTimer() {
+    const ticketTimerElement = document.getElementById('ticketTimer');
+    if (!ticketTimerElement) return;
+
+    if (this.tickets >= this.maxTickets) {
+      ticketTimerElement.textContent = '티켓이 가득 찼습니다!';
+      return;
+    }
+
+    const now = new Date();
+    const koreanTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Seoul"}));
+    
+    // 다음 12시까지의 시간 계산
+    const nextReset = new Date(koreanTime);
+    nextReset.setHours(12, 0, 0, 0);
+    
+    // 이미 12시가 지났으면 다음날 12시로 설정
+    if (koreanTime.getHours() >= 12) {
+      nextReset.setDate(nextReset.getDate() + 1);
+    }
+    
+    const timeDiff = nextReset.getTime() - koreanTime.getTime();
+    
+    if (timeDiff <= 0) {
+      // 12시가 되었으면 티켓 리셋
+      this.tickets = this.maxTickets;
+      this.saveTicketData();
+      this.updateTicketDisplay();
+      return;
+    }
+    
+    const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+    
+    ticketTimerElement.textContent = `다음 충전까지: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  selectRankByProbability(probabilities) {
+    const random = Math.random() * 100;
+    let cumulative = 0;
+    
+    for (const [rank, probability] of Object.entries(probabilities)) {
+      cumulative += probability;
+      if (random <= cumulative) {
+        return rank;
+      }
+    }
+    
+    // 폴백: 가장 높은 확률의 랭크
+    return Object.keys(probabilities).reduce((a, b) => 
+      probabilities[a] > probabilities[b] ? a : b
+    );
+  }
+  
+  generateRandomCard(rank) {
+    // 해당 랭크의 카드 중에서 랜덤 선택
+    const cardsOfRank = this.gameData.cards.filter(card => card.rank === rank);
+    if (cardsOfRank.length === 0) {
+      return this.gameData.cards[0]; // 폴백
+    }
+    const randomIndex = Math.floor(Math.random() * cardsOfRank.length);
+    return cardsOfRank[randomIndex];
+  }
+  
+  showFusionResult(card, success) {
+    const modal = document.getElementById('fusionResultModal');
+    const resultCardDiv = document.getElementById('resultCardDisplay');
+    const resultMessage = document.getElementById('resultMessage');
+    
+    if (success && card) {
+      resultCardDiv.innerHTML = `
+        <div class="collection-card owned">
+          <div class="collection-card-front">
+            <div class="collection-card-background-illustration">
+              <img src="${card.image}" alt="${card.name} 배경 일러스트" class="collection-background-illust">
+            </div>
+            <div class="collection-card-info-box">
+              <div class="collection-card-number-box">
+                <div class="collection-card-number">#${card.id}</div>
+              </div>
+              <div class="collection-card-name">${card.name}</div>
+            </div>
+            <div class="collection-card-rank">
+              <img src="illust/${card.rank}.png" alt="${card.rank} 랭크" class="collection-rank-image">
+            </div>
+            <div class="collection-card-character">
+              <img src="${card.image.replace('.png', '_2.png')}" alt="${card.name} 캐릭터" class="collection-character-illust">
+            </div>
+            <div class="owned-badge">획득</div>
+          </div>
+        </div>
+      `;
+      resultMessage.textContent = '조합 결과 해당 카드가 나왔습니다.';
+    } else {
+      resultCardDiv.innerHTML = `
+        <div class="fusion-failure" style="color: #ff6b6b; font-size: 1.2rem; font-weight: 700;">
+          <div style="font-size: 3rem; margin-bottom: 10px;">❌</div>
+          <div>조합 실패!</div>
+        </div>
+      `;
+      resultMessage.textContent = '카드가 소모되었지만 조합에 실패했습니다.';
+    }
+    
+    modal.style.display = 'flex';
+  }
+  
+  hideFusionResult() {
+    const modal = document.getElementById('fusionResultModal');
+    modal.style.display = 'none';
+  }
+
+  // 시크릿 코드 초기화
+  initSecretCode() {
+    // keyup 이벤트로 한글 입력 감지 (조합 완료 후)
+    document.addEventListener('keyup', (event) => {
+      this.handleSecretCodeKeyup(event);
+    });
+    
+    // keydown 이벤트로 백스페이스 감지
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Backspace') {
+        this.enteredCode = this.enteredCode.slice(0, -1);
+        console.log('백스페이스 - 현재 입력된 코드:', this.enteredCode);
+      }
+    });
+  }
+
+  // keyup 이벤트로 영어 입력 처리
+  handleSecretCodeKeyup(event) {
+    // 영어 문자만 처리
+    if (event.key && event.key.length === 1 && /[a-zA-Z]/.test(event.key)) {
+      this.enteredCode += event.key.toLowerCase();
+      console.log('영어 입력 감지:', event.key, '현재 코드:', this.enteredCode);
+      
+      // 시크릿 코드 확인
+      if (this.enteredCode === this.secretCode) {
+        console.log('시크릿 코드 일치!');
+        this.activateSecretMode();
+      }
+      
+      // 코드가 너무 길어지면 앞에서부터 자르기
+      if (this.enteredCode.length > this.secretCode.length) {
+        this.enteredCode = this.enteredCode.slice(-this.secretCode.length);
+      }
+    }
+  }
+
+  // 시크릿 코드 처리 (기존 keydown 방식)
+  handleSecretCode(event) {
+    // 디버깅을 위한 로그
+    console.log('키 입력:', event.key, '코드:', event.code);
+    
+    // 백스페이스 처리
+    if (event.key === 'Backspace') {
+      this.enteredCode = this.enteredCode.slice(0, -1);
+      console.log('현재 입력된 코드:', this.enteredCode);
+      return;
+    }
+    
+    // 모든 문자 처리 (한글, 영문, 숫자 등)
+    if (event.key && event.key.length === 1) {
+      this.enteredCode += event.key;
+      console.log('현재 입력된 코드:', this.enteredCode);
+      
+      // 시크릿 코드 확인
+      if (this.enteredCode === this.secretCode) {
+        console.log('시크릿 코드 일치!');
+        this.activateSecretMode();
+      }
+      
+      // 코드가 너무 길어지면 앞에서부터 자르기
+      if (this.enteredCode.length > this.secretCode.length) {
+        this.enteredCode = this.enteredCode.slice(-this.secretCode.length);
+      }
+    }
+  }
+
+  // 시크릿 모드 활성화
+  activateSecretMode() {
+    this.isSecretMode = true;
+    this.enteredCode = ''; // 코드 초기화
+    
+    // 시각적 피드백
+    this.showSecretModeNotification();
+    
+    // 카드 클릭 가능 여부 업데이트
+    this.updateCardClickability();
+    
+    // 티켓 표시 업데이트
+    this.updateTicketDisplay();
+  }
+
+  // 시크릿 모드 알림 표시
+  showSecretModeNotification() {
+    // 기존 알림 제거
+    const existingNotification = document.querySelector('.secret-mode-notification');
+    if (existingNotification) {
+      existingNotification.remove();
+    }
+    
+    // 새 알림 생성
+    const notification = document.createElement('div');
+    notification.className = 'secret-mode-notification';
+    notification.innerHTML = `
+      <div style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 15px;
+        font-size: 18px;
+        font-weight: bold;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(255, 107, 107, 0.5);
+        z-index: 10000;
+        animation: secretModePulse 0.5s ease-out;
+      ">
+        🎉 시크릿 모드 활성화! 🎉<br>
+        <small style="font-size: 14px; opacity: 0.9;">무한 가챠가 가능합니다!</small>
+      </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // 3초 후 제거
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.remove();
+      }
+    }, 3000);
   }
   
 }

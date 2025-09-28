@@ -2,18 +2,18 @@
   "cards": [
     {
       "id": "001",
-      "name": "점령하는 민킈",
-      "type": "Creator",
-      "rank": "SS",
-      "baseHp": 150,
-      "baseAttack": 120,
-      "image": "illust/001.png",
-      "holoPattern": "stars",
-      "holoColor": "#ffa500",
+      "name": "우정잉",
+      "type": "Story",
+      "rank": "SSS",
+      "baseHp": 130,
+      "baseAttack": 90,
+      "image": "illust/010.png",
+      "holoPattern": "crown",
+      "holoColor": "#ff6b6b",
       "attacks": [
         {
-          "name": "점령",
-          "description": "모든 플레이어의 턴을 생략한다."
+          "name": "모든 잉모노의 신",
+          "description": "게임에서 즉시 승리한다."
         }
       ]
     },
@@ -155,18 +155,358 @@
     },
     {
       "id": "010",
-      "name": "우정잉",
-      "type": "Story",
-      "rank": "SSS",
-      "baseHp": 130,
-      "baseAttack": 90,
-      "image": "illust/010.png",
-      "holoPattern": "crown",
-      "holoColor": "#ff6b6b",
+      "name": "점령하는 민킈",
+      "type": "Creator",
+      "rank": "SS",
+      "baseHp": 150,
+      "baseAttack": 120,
+      "image": "illust/001.png",
+      "holoPattern": "stars",
+      "holoColor": "#ffa500",
       "attacks": [
         {
-          "name": "모든 잉모노의 신",
-          "description": "게임에서 즉시 승리한다."
+          "name": "점령",
+          "description": "모든 플레이어의 턴을 생략한다."
+        }
+      ]
+    },
+    {
+      "id": "011",
+      "name": "크트",
+      "type": "Tech",
+      "rank": "S",
+      "baseHp": 110,
+      "baseAttack": 130,
+      "image": "illust/011.png",
+      "holoPattern": "circuits",
+      "holoColor": "#00ff88",
+      "attacks": [
+        {
+          "name": "버그 생성",
+          "description": "상대방의 공격을 무효화한다."
+        }
+      ]
+    },
+    {
+      "id": "012",
+      "name": "아이돌 민킈",
+      "type": "Life",
+      "rank": "A",
+      "baseHp": 100,
+      "baseAttack": 90,
+      "image": "illust/012.png",
+      "holoPattern": "waves",
+      "holoColor": "#ff9500",
+      "attacks": [
+        {
+          "name": "맛있는 요리",
+          "description": "HP를 50 회복한다."
+        }
+      ]
+    },
+    {
+      "id": "013",
+      "name": "랩스타 민킈",
+      "type": "Art",
+      "rank": "B",
+      "baseHp": 80,
+      "baseAttack": 70,
+      "image": "illust/013.png",
+      "holoPattern": "sparkles",
+      "holoColor": "#ff69b4",
+      "attacks": [
+        {
+          "name": "리듬 타기",
+          "description": "다음 공격의 데미지가 2배가 된다."
+        }
+      ]
+    },
+    {
+      "id": "014",
+      "name": "승리요정 민킈",
+      "type": "Knowledge",
+      "rank": "A",
+      "baseHp": 90,
+      "baseAttack": 110,
+      "image": "illust/014.png",
+      "holoPattern": "pages",
+      "holoColor": "#8b4513",
+      "attacks": [
+        {
+          "name": "지식 흡수",
+          "description": "상대방의 공격력을 50% 감소시킨다."
+        }
+      ]
+    },
+    {
+      "id": "015",
+      "name": "치ㅡ타",
+      "type": "Fitness",
+      "rank": "S",
+      "baseHp": 140,
+      "baseAttack": 100,
+      "image": "illust/015.png",
+      "holoPattern": "energy",
+      "holoColor": "#ff4500",
+      "attacks": [
+        {
+          "name": "파워 스트라이크",
+          "description": "강력한 물리 공격을 가한다."
+        }
+      ]
+    },
+    {
+      "id": "016",
+      "name": "초롱아귀를 낚다",
+      "type": "Gaming",
+      "rank": "B",
+      "baseHp": 70,
+      "baseAttack": 85,
+      "image": "illust/016.png",
+      "holoPattern": "pixels",
+      "holoColor": "#00bfff",
+      "attacks": [
+        {
+          "name": "콤보 어택",
+          "description": "연속으로 3번 공격한다."
+        }
+      ]
+    },
+    {
+      "id": "017",
+      "name": "조사병단 민킈",
+      "type": "Music",
+      "rank": "A",
+      "baseHp": 95,
+      "baseAttack": 95,
+      "image": "illust/017.png",
+      "holoPattern": "notes",
+      "holoColor": "#9370db",
+      "attacks": [
+        {
+          "name": "음파 공격",
+          "description": "범위 공격으로 모든 적에게 데미지를 준다."
+        }
+      ]
+    },
+    {
+      "id": "018",
+      "name": "료이키 텐카이",
+      "type": "Art",
+      "rank": "S",
+      "baseHp": 85,
+      "baseAttack": 125,
+      "image": "illust/018.png",
+      "holoPattern": "brush",
+      "holoColor": "#ff1493",
+      "attacks": [
+        {
+          "name": "창조의 붓",
+          "description": "새로운 카드를 생성한다."
+        }
+      ]
+    },
+    {
+      "id": "019",
+      "name": "그저 김밥먹는 민킈",
+      "type": "Science",
+      "rank": "SS",
+      "baseHp": 120,
+      "baseAttack": 140,
+      "image": "illust/019.png",
+      "holoPattern": "equations",
+      "holoColor": "#4169e1",
+      "attacks": [
+        {
+          "name": "수식 폭발",
+          "description": "복잡한 계산으로 강력한 데미지를 준다."
+        }
+      ]
+    },
+    {
+      "id": "020",
+      "name": "어라랍스타",
+      "type": "Rest",
+      "rank": "B",
+      "baseHp": 60,
+      "baseAttack": 30,
+      "image": "illust/020.png",
+      "holoPattern": "zzz",
+      "holoColor": "#dda0dd",
+      "attacks": [
+        {
+          "name": "꿈속 공격",
+          "description": "상대방을 잠들게 만든다."
+        }
+      ]
+    },
+    {
+      "id": "021",
+      "name": "민킈의 퇴근",
+      "type": "Adventure",
+      "rank": "A",
+      "baseHp": 105,
+      "baseAttack": 80,
+      "image": "illust/021.png",
+      "holoPattern": "compass",
+      "holoColor": "#32cd32",
+      "attacks": [
+        {
+          "name": "탐험",
+          "description": "새로운 지역을 발견한다."
+        }
+      ]
+    },
+    {
+      "id": "022",
+      "name": "사진 찍는 민킈",
+      "type": "Photography",
+      "rank": "B",
+      "baseHp": 75,
+      "baseAttack": 65,
+      "image": "illust/022.png",
+      "holoPattern": "camera",
+      "holoColor": "#ff8c00",
+      "attacks": [
+        {
+          "name": "플래시",
+          "description": "상대방을 일시적으로 실명시킨다."
+        }
+      ]
+    },
+    {
+      "id": "023",
+      "name": "영화 보는 민킈",
+      "type": "Entertainment",
+      "rank": "B",
+      "baseHp": 65,
+      "baseAttack": 55,
+      "image": "illust/023.png",
+      "holoPattern": "film",
+      "holoColor": "#000000",
+      "attacks": [
+        {
+          "name": "영화 마법",
+          "description": "상대방을 영화 속으로 끌어들인다."
+        }
+      ]
+    },
+    {
+      "id": "024",
+      "name": "쇼핑하는 민킈",
+      "type": "Shopping",
+      "rank": "A",
+      "baseHp": 85,
+      "baseAttack": 75,
+      "image": "illust/024.png",
+      "holoPattern": "money",
+      "holoColor": "#ffd700",
+      "attacks": [
+        {
+          "name": "돈의 힘",
+          "description": "돈으로 모든 것을 해결한다."
+        }
+      ]
+    },
+    {
+      "id": "025",
+      "name": "운전하는 민킈",
+      "type": "Transport",
+      "rank": "B",
+      "baseHp": 90,
+      "baseAttack": 60,
+      "image": "illust/025.png",
+      "holoPattern": "wheels",
+      "holoColor": "#ff6347",
+      "attacks": [
+        {
+          "name": "고속 충돌",
+          "description": "빠른 속도로 돌진한다."
+        }
+      ]
+    },
+    {
+      "id": "026",
+      "name": "요가하는 민킈",
+      "type": "Wellness",
+      "rank": "A",
+      "baseHp": 110,
+      "baseAttack": 70,
+      "image": "illust/026.png",
+      "holoPattern": "zen",
+      "holoColor": "#98fb98",
+      "attacks": [
+        {
+          "name": "명상",
+          "description": "모든 상태 이상을 해제한다."
+        }
+      ]
+    },
+    {
+      "id": "027",
+      "name": "프로그래밍하는 민킈",
+      "type": "Tech",
+      "rank": "SS",
+      "baseHp": 130,
+      "baseAttack": 150,
+      "image": "illust/027.png",
+      "holoPattern": "code",
+      "holoColor": "#00ff00",
+      "attacks": [
+        {
+          "name": "코드 실행",
+          "description": "프로그램을 실행하여 강력한 효과를 발동한다."
+        }
+      ]
+    },
+    {
+      "id": "028",
+      "name": "노래하는 민킈",
+      "type": "Music",
+      "rank": "S",
+      "baseHp": 100,
+      "baseAttack": 120,
+      "image": "illust/028.png",
+      "holoPattern": "melody",
+      "holoColor": "#ff69b4",
+      "attacks": [
+        {
+          "name": "음성 공격",
+          "description": "고음으로 상대방을 기절시킨다."
+        }
+      ]
+    },
+    {
+      "id": "029",
+      "name": "공부하는 민킈",
+      "type": "Education",
+      "rank": "A",
+      "baseHp": 95,
+      "baseAttack": 105,
+      "image": "illust/029.png",
+      "holoPattern": "books",
+      "holoColor": "#8b4513",
+      "attacks": [
+        {
+          "name": "지식 폭발",
+          "description": "축적된 지식으로 강력한 공격을 한다."
+        }
+      ]
+    },
+    {
+      "id": "030",
+      "name": "최종 보스 민킈",
+      "type": "Boss",
+      "rank": "SS",
+      "baseHp": 180,
+      "baseAttack": 160,
+      "image": "illust/030.png",
+      "holoPattern": "crown",
+      "holoColor": "#ff0000",
+      "attacks": [
+        {
+          "name": "절대 권력",
+          "description": "모든 것을 지배하는 최강의 공격."
         }
       ]
     }

@@ -1,0 +1,17 @@
+{
+  "name": "minqui-gacha-api",
+  "version": "1.0.0",
+  "description": "민킈 가챠 게임 Vercel Functions API",
+  "main": "index.js",
+  "dependencies": {
+    "@vercel/node": "^3.0.0",
+    "cors": "^2.8.5",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "pg": "^8.11.3",
+    "redis": "^4.6.10",
+    "crypto": "^1.0.1",
+    "uuid": "^9.0.1",
+    "joi": "^17.11.0"
+  }
+}

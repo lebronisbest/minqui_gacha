@@ -6,7 +6,39 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>민킈 카드 가챠</title>
+    <title>민킈 카드 가챠게임</title>
+    
+    <!-- PWA 설정 -->
+    <meta name="description" content="민킈 캐릭터들의 카드를 수집하고 조합하는 가챠 게임">
+    <meta name="keywords" content="민킈, 가챠, 카드게임, 수집게임, 조합게임">
+    <meta name="author" content="민킈 가챠 게임">
+    <meta name="theme-color" content="#16213e">
+    <meta name="apple-mobile-web-app-title" content="민킈 가챠">
+    <meta name="msapplication-TileColor" content="#16213e">
+    
+    <!-- Open Graph 메타 태그 -->
+    <meta property="og:title" content="민킈 카드 가챠게임">
+    <meta property="og:description" content="민킈 캐릭터들의 카드를 수집하고 조합하는 가챠 게임">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://minqui-gacha.vercel.app">
+    <meta property="og:image" content="/icons/icon-512x512.png">
+    <meta property="og:site_name" content="민킈 가챠 게임">
+    
+    <!-- Twitter 카드 -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="민킈 카드 가챠게임">
+    <meta name="twitter:description" content="민킈 캐릭터들의 카드를 수집하고 조합하는 가챠 게임">
+    <meta name="twitter:image" content="/icons/icon-512x512.png">
+    
+    <!-- PWA 매니페스트 -->
+    
+    <!-- 아이콘 -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-192x192.png">
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,20 +56,36 @@
     <div id="gacha-effects" class="gacha-effects"></div>
 
 
-    <div class="dev-panel">
-        <h3>개발용 카드 선택</h3>
-        <select id="cardSelector">
-            <option value="">카드 선택</option>
-        </select>
-        <button id="selectCardBtn">카드 선택</button>
+    <!-- 탭 네비게이션 -->
+    <div class="tab-navigation">
+        <button class="tab-button active" data-tab="gacha">가챠</button>
+        <button class="tab-button" data-tab="collection">컬렉션</button>
+        <button class="tab-button" data-tab="fusion">조합</button>
     </div>
+
+    <!-- 티켓 시스템 -->
+    <div class="ticket-system">
+        <div class="ticket-display">
+            <div class="ticket-icon">🎫</div>
+            <div class="ticket-info">
+                <div class="ticket-count">
+                    <span id="ticketCount">0</span>/10
+                </div>
+                <div class="ticket-timer" id="ticketTimer">
+                    다음 충전까지: --:--:--
+                </div>
+            </div>
+        </div>
+    </div>
+
     
-    <div class="card-container">
+    <!-- 가챠 탭 컨텐츠 -->
+    <div class="tab-content active" id="gacha-tab">
+        <div class="card-container">
             <div class="card-wrapper" id="cardWrapper" draggable="false" ondragstart="return false;" onselectstart="return false;" oncontextmenu="return false;" onmousedown="return false;">
             <!-- 앞면 -->
             <div class="card-front">
-                <!-- 홀로그래픽 프레임 효과 -->
-                <div class="card__holo" aria-hidden="true"></div>
+                <!-- 홀로그래픽 프레임 효과 제거됨 -->
                 <!-- 배경 일러스트 -->
                 <div class="card-background-illustration">
                     <img id="cardBackground" alt="카드 배경 일러스트" class="background-illust">
@@ -104,8 +152,237 @@
             </div>
         </div>
         </div>
+        </div>
     </div>
     
+    <!-- 컬렉션 탭 컨텐츠 -->
+    <div class="tab-content" id="collection-tab">
+        <div class="collection-container">
+            <div class="collection-header">
+                <div class="collection-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">총 카드</span>
+                        <span class="stat-value" id="totalCards">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">획득률</span>
+                        <span class="stat-value" id="collectionRate">0% (0/10)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="collection-filters">
+                <button class="filter-btn active" data-filter="all">전체</button>
+                <button class="filter-btn" data-filter="SSS">SSS</button>
+                <button class="filter-btn" data-filter="SS">SS</button>
+                <button class="filter-btn" data-filter="S">S</button>
+                <button class="filter-btn" data-filter="A">A</button>
+                <button class="filter-btn" data-filter="B">B</button>
+            </div>
+            
+            <div class="collection-grid" id="collectionGrid">
+                <!-- 카드들이 여기에 동적으로 추가됩니다 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 조합 탭 컨텐츠 -->
+    <div class="tab-content" id="fusion-tab">
+        <div class="fusion-container">
+            
+            <!-- 조합 대상 카드 영역 -->
+            <div class="fusion-target-section">
+                <div class="target-header">
+                    <span class="target-label">조합대상카드</span>
+                </div>
+                
+                <!-- 카드 필터 -->
+                <div class="card-filters">
+                    <button class="filter-btn active" data-filter="all">대상</button>
+                    <button class="filter-btn" data-filter="B">B</button>
+                    <button class="filter-btn" data-filter="A">A</button>
+                    <button class="filter-btn" data-filter="S">S</button>
+                    <button class="filter-btn" data-filter="SS">SS</button>
+                    <button class="filter-btn" data-filter="SSS">SSS</button>
+                </div>
+                
+                <!-- 카드 그리드 -->
+                <div class="fusion-card-grid" id="fusionCardGrid">
+                    <!-- 사용 가능한 카드들이 여기에 표시됩니다 -->
+                </div>
+            </div>
+            
+            <!-- 조합 슬롯 영역 -->
+            <div class="fusion-slot-section">
+                <div class="slot-header">
+                    <span class="slot-label">조합 슬롯 (최소 3장)</span>
+                </div>
+                
+                <div class="fusion-slots" id="fusionSlots">
+                    <!-- 조합 슬롯들이 여기에 표시됩니다 -->
+                </div>
+                
+                <div class="fusion-info" id="fusionInfo">
+                    <div class="info-toggle" id="infoToggle">i</div>
+                    <div class="probability-tooltip" id="probabilityTooltip" style="display: none;">
+                        <!-- 전체 랭크별 확률이 여기에 표시됩니다 -->
+                    </div>
+                </div>
+                
+                <button class="fusion-button" id="fusionButton" disabled>
+                    <span class="button-text">조합하기</span>
+                    <span class="button-icon">⚡</span>
+                </button>
+            </div>
+            
+            <!-- 룰렛 모달 -->
+            <div class="roulette-modal" id="rouletteModal" style="display: none;">
+                <div class="roulette-content">
+                    <div class="roulette-header">
+                        <h2>조합 중...</h2>
+                    </div>
+                    <div class="roulette-body">
+                        <div class="roulette-container">
+                            <div class="roulette-wheel" id="rouletteWheel">
+                                <!-- 룰렛 카드들이 여기에 표시됩니다 -->
+                            </div>
+                            <div class="roulette-pointer"></div>
+                        </div>
+                        <div class="roulette-result" id="rouletteResult">
+                            <!-- 최종 결과가 여기에 표시됩니다 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 조합 결과 모달 -->
+            <div class="fusion-result-modal" id="fusionResultModal" style="display: none;">
+                <div class="modal-content">
+                    <div class="result-card-display" id="resultCardDisplay">
+                        <!-- 조합 결과 카드가 여기에 표시됩니다 -->
+                    </div>
+                    <div class="result-message">
+                        <p id="resultMessage">조합 결과 해당 카드가 나왔습니다.</p>
+                    </div>
+                    <button class="confirm-button" id="confirmButton">확인</button>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    
+    <script src="api-client.js"></script>
     <script src="script.js"></script>
+    
+    <!-- PWA Service Worker 등록 -->
+    <script>
+      // Service Worker 등록
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('Service Worker 등록 성공:', registration.scope);
+            })
+            .catch((error) => {
+              console.log('Service Worker 등록 실패:', error);
+            });
+        });
+      }
+      
+      // PWA 설치 프롬프트
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // 설치 버튼 표시 (선택사항)
+        const installButton = document.createElement('button');
+        installButton.textContent = '앱 설치';
+        installButton.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 1000;
+          background: #4CAF50;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 14px;
+        `;
+        
+        installButton.addEventListener('click', () => {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('PWA 설치됨');
+            }
+            deferredPrompt = null;
+            installButton.remove();
+          });
+        });
+        
+        document.body.appendChild(installButton);
+        
+        // 5초 후 자동으로 버튼 숨기기
+        setTimeout(() => {
+          if (installButton.parentNode) {
+            installButton.remove();
+          }
+        }, 5000);
+      });
+      
+      // PWA 설치 완료 이벤트
+      window.addEventListener('appinstalled', (evt) => {
+        console.log('PWA가 설치되었습니다');
+      });
+      
+      // 오프라인 상태 감지
+      window.addEventListener('online', () => {
+        console.log('온라인 상태');
+        document.body.classList.remove('offline');
+      });
+      
+      window.addEventListener('offline', () => {
+        console.log('오프라인 상태');
+        document.body.classList.add('offline');
+      });
+      
+      // 게임 성능 최적화
+      let lastTime = 0;
+      function gameLoop(currentTime) {
+        const deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+        
+        // 60fps로 제한
+        if (deltaTime >= 16.67) {
+          // 게임 로직 업데이트
+          if (window.game && window.game.update) {
+            window.game.update(deltaTime);
+          }
+        }
+        
+        requestAnimationFrame(gameLoop);
+      }
+      
+      // 게임 루프 시작
+      requestAnimationFrame(gameLoop);
+      
+      // 페이지 가시성 변경 감지 (성능 최적화)
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          // 페이지가 숨겨졌을 때 게임 일시정지
+          if (window.game && window.game.pause) {
+            window.game.pause();
+          }
+        } else {
+          // 페이지가 다시 보일 때 게임 재개
+          if (window.game && window.game.resume) {
+            window.game.resume();
+          }
+        }
+      });
+    </script>
 </body>
 </html>
