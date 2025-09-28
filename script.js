@@ -5,7 +5,7 @@ class MinquiCardGacha {
     this.isFlipped = false;
     this.cardData = null;
     this.sounds = {};
-    this.collectedCards = []; // 로컬 캐시 (서버가 진실원천)
+    // collectedCards 배열 제거됨 - 서버 데이터만 사용
     this.currentFilter = 'all';
     this.selectedFusionCards = [];
     this.maxFusionCards = 10;
@@ -1076,48 +1076,29 @@ class MinquiCardGacha {
       const response = await this.apiClient.getCollection();
       // 서버에서 받은 완전한 카드 데이터를 저장
       this.serverCollectionData = response.collection || [];
-      this.collectedCards = this.serverCollectionData.map(card => card.id);
-      console.log('서버에서 컬렉션 로드 완료:', this.collectedCards.length, '장');
+      console.log('서버에서 컬렉션 로드 완료:', this.serverCollectionData.length, '장');
       console.log('컬렉션 카드 데이터:', this.serverCollectionData);
     } catch (error) {
       console.error('컬렉션 로드 실패:', error);
       this.serverCollectionData = [];
-      this.collectedCards = [];
     }
   }
 
-  // 기존 컬렉션 메서드 (폴백용)
-  loadCollectionData() {
-    // localStorage에서 컬렉션 데이터 로드
-    const saved = localStorage.getItem('minqui_collection');
-    if (saved) {
-      this.collectedCards = JSON.parse(saved);
-    }
-  }
-  
-  saveCollectionData() {
-    // 컬렉션 데이터를 localStorage에 저장
-    localStorage.setItem('minqui_collection', JSON.stringify(this.collectedCards));
-  }
+  // 로컬 저장소 제거됨 - 서버 데이터만 사용
   
   addToCollection(cardId) {
-    // 카드를 컬렉션에 추가 (중복 허용)
-    this.collectedCards.push(cardId);
-    this.saveCollectionData();
+    // 서버 데이터만 사용 - 로컬 배열 제거
+    // 실제 카드 추가는 서버에서 처리됨
+    console.log('카드 추가됨 (서버에서 처리):', cardId);
     
-    // 컬렉션 UI 항상 업데이트
+    // 컬렉션 UI 업데이트
     this.updateCollectionUI();
   }
   
   removeCardsFromCollection(cardIds) {
-    // 여러 카드를 컬렉션에서 제거
-    cardIds.forEach(cardId => {
-      const index = this.collectedCards.indexOf(cardId);
-      if (index > -1) {
-        this.collectedCards.splice(index, 1);
-      }
-    });
-    this.saveCollectionData();
+    // 서버 데이터만 사용 - 로컬 배열 제거
+    // 실제 카드 제거는 서버에서 처리됨
+    console.log('카드 제거됨 (서버에서 처리):', cardIds);
     
     // 컬렉션 UI 업데이트
     this.updateCollectionUI();
@@ -1173,8 +1154,9 @@ class MinquiCardGacha {
       document.getElementById('collectionRate').textContent = `${collectionRate}% (${uniqueCards}/${totalCards})`;
     } else {
       // 로컬 데이터 기반 통계 (폴백)
-      const collectedCount = this.collectedCards.length;
-      const uniqueCards = new Set(this.collectedCards).size;
+      const collectedCount = this.serverCollectionData ? 
+        this.serverCollectionData.reduce((sum, card) => sum + card.count, 0) : 0;
+      const uniqueCards = this.serverCollectionData ? this.serverCollectionData.length : 0;
       const collectionRate = Math.round((uniqueCards / totalCards) * 100);
 
       document.getElementById('totalCards').textContent = collectedCount;
@@ -1236,7 +1218,9 @@ class MinquiCardGacha {
     console.log(`attacks=`, card.attacks);
     
     // 중복 횟수 계산
-    const duplicateCount = this.collectedCards.filter(id => id === card.id).length;
+    const ownedCard = this.serverCollectionData ? 
+      this.serverCollectionData.find(c => c.id === card.id) : null;
+    const duplicateCount = ownedCard ? ownedCard.count : 0;
     
     // 스킬 정보
     const skill = card.attacks && card.attacks[0];
@@ -1410,7 +1394,9 @@ ${skill ? skill.description : ''}`);
     cardDiv.dataset.cardId = card.id;
     
     // 해당 카드를 몇 장 가지고 있는지 계산
-    const cardCount = this.collectedCards.filter(id => id === card.id).length;
+    const ownedCard = this.serverCollectionData ? 
+      this.serverCollectionData.find(c => c.id === card.id) : null;
+    const cardCount = ownedCard ? ownedCard.count : 0;
     
     // 카드가 0장이면 disabled 클래스 추가
     if (cardCount <= 0) {
@@ -1451,17 +1437,10 @@ ${skill ? skill.description : ''}`);
   }
   
   selectCardForFusion(card) {
-    // 서버 컬렉션 데이터에서 실제 보유 개수 확인
+    // 서버 컬렉션 데이터에서만 개수 확인
     const ownedCard = this.serverCollectionData ? 
       this.serverCollectionData.find(c => c.id === card.id) : null;
-    const serverCount = ownedCard ? ownedCard.count : 0;
-    
-    // 로컬 컬렉션에서 개수 확인
-    const localCount = this.collectedCards ? 
-      this.collectedCards.filter(id => id === card.id).length : 0;
-    
-    // 더 큰 값을 사용 (서버 데이터 우선, 없으면 로컬 데이터)
-    const totalCardCount = Math.max(serverCount, localCount);
+    const totalCardCount = ownedCard ? ownedCard.count : 0;
     
     if (totalCardCount <= 0) {
       alert('해당 카드를 보유하고 있지 않습니다!');
@@ -1509,17 +1488,10 @@ ${skill ? skill.description : ''}`);
     document.querySelectorAll('.fusion-card-item').forEach(item => {
       const cardId = item.dataset.cardId;
       
-      // 서버 컬렉션 데이터에서 실제 보유 개수 확인
+      // 서버 컬렉션 데이터에서만 개수 확인
       const ownedCard = this.serverCollectionData ? 
         this.serverCollectionData.find(card => card.id === cardId) : null;
-      const serverCount = ownedCard ? ownedCard.count : 0;
-      
-      // 로컬 컬렉션에서 개수 확인
-      const localCount = this.collectedCards ? 
-        this.collectedCards.filter(id => id === cardId).length : 0;
-      
-      // 더 큰 값을 사용 (서버 데이터 우선, 없으면 로컬 데이터)
-      const totalCardCount = Math.max(serverCount, localCount);
+      const totalCardCount = ownedCard ? ownedCard.count : 0;
       
       const selectedCardCount = this.selectedFusionCards.filter(selectedCard => 
         selectedCard && selectedCard.id === cardId
@@ -1576,17 +1548,13 @@ ${skill ? skill.description : ''}`);
   
   
   getAvailableCardsForFusion() {
-    // 서버 컬렉션 데이터와 로컬 컬렉션 데이터를 모두 확인
-    const serverCards = this.serverCollectionData || [];
-    const localCards = this.collectedCards || [];
+    // 서버 컬렉션 데이터만 사용
+    if (!this.serverCollectionData || this.serverCollectionData.length === 0) {
+      return [];
+    }
     
-    // 서버 데이터가 있으면 서버 데이터 사용, 없으면 로컬 데이터 사용
-    const availableCardIds = serverCards.length > 0 ? 
-      serverCards.map(card => card.id) : 
-      [...new Set(localCards)];
-    
-    return availableCardIds.map(cardId => {
-      return this.gameData.cards.find(card => card.id === cardId);
+    return this.serverCollectionData.map(ownedCard => {
+      return this.gameData.cards.find(card => card.id === ownedCard.id);
     }).filter(card => card);
   }
   
@@ -1963,13 +1931,11 @@ ${skill ? skill.description : ''}`);
     
     // 사용된 카드들 제거
     selectedCards.forEach(card => {
-      const cardIndex = this.collectedCards.indexOf(card.id);
-      if (cardIndex > -1) {
-        this.collectedCards.splice(cardIndex, 1);
-      }
+      // 서버 데이터만 사용 - 로컬 배열 제거됨
+      console.log('카드 제거됨 (서버에서 처리):', card.id);
     });
     
-    this.saveCollectionData();
+    // 로컬 저장소 제거됨 - 서버 데이터만 사용
     
     // 3초 후 룰렛 닫기
     setTimeout(() => {
