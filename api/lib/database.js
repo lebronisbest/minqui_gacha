@@ -14,7 +14,10 @@ if (connectionString) {
 
 const pool = new Pool({
   connectionString: connectionString,
-  ssl: connectionString ? { rejectUnauthorized: false } : false,
+  ssl: connectionString ? { 
+    rejectUnauthorized: false,
+    checkServerIdentity: () => undefined
+  } : false,
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
