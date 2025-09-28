@@ -596,22 +596,17 @@ class MinquiCardGacha {
   
   async performGacha() {
     try {
-      // 즉시 카드 뒤집기 시작 (사용자 경험 개선)
-      this.showFront();
-      this.playSound('cardFlip');
-      
-      // 로딩 상태 표시
+      // 로딩 상태 표시 (카드 뒤집기 전에)
       this.showGachaLoading();
       
-      // 서버에서 가챠 실행 (백그라운드)
+      // 서버에서 가챠 실행
       const result = await this.apiClient.drawGacha();
       
       // 로딩 상태 숨기기
       this.hideGachaLoading();
       
       if (!result.success) {
-        // 티켓 부족 등의 이유로 실패 - 뒷면으로 되돌리기
-        this.showBack();
+        // 티켓 부족 등의 이유로 실패
         alert('티켓이 부족합니다! 12시에 다시 충전됩니다.');
         return;
       }
@@ -626,6 +621,10 @@ class MinquiCardGacha {
       
       // 카드 정보 업데이트
       this.updateCardInfo();
+      
+      // 이제 카드 뒤집기 (뽑기 완료 후)
+      this.showFront();
+      this.playSound('cardFlip');
       
       // 랭크별 효과음 재생
       this.playRankSound(selectedRank);
@@ -654,8 +653,7 @@ class MinquiCardGacha {
       
     } catch (error) {
       console.error('가챠 실행 실패:', error);
-      // 에러 시 뒷면으로 되돌리기
-      this.showBack();
+      // 에러 시 로딩 상태만 숨기기
       this.hideGachaLoading();
       alert('가챠 실행 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
