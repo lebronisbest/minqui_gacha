@@ -42,6 +42,9 @@ class MinquiCardGacha {
       
       // 서버 연결 시도
       try {
+        // 먼저 데이터베이스 초기화 시도
+        await this.forceInitializeDatabase();
+        
         await this.initializeServerConnection();
         await this.loadCardDataFromServer();
         await this.loadCollectionFromServer();
@@ -184,6 +187,34 @@ class MinquiCardGacha {
 
 
   
+  // 강제 데이터베이스 초기화
+  async forceInitializeDatabase() {
+    try {
+      console.log('강제 데이터베이스 초기화 시작...');
+      
+      // 데이터베이스 초기화
+      try {
+        await this.apiClient.initializeDatabase();
+        console.log('✅ 데이터베이스 초기화 완료');
+      } catch (initError) {
+        console.log('⚠️ 데이터베이스 초기화 실패 (무시):', initError.message);
+      }
+      
+      // 카드 데이터 시드
+      try {
+        await this.apiClient.seedCards();
+        console.log('✅ 카드 데이터 시드 완료');
+      } catch (seedError) {
+        console.log('⚠️ 카드 데이터 시드 실패 (무시):', seedError.message);
+      }
+      
+      console.log('강제 데이터베이스 초기화 완료');
+    } catch (error) {
+      console.error('강제 데이터베이스 초기화 실패:', error);
+      // 실패해도 계속 진행
+    }
+  }
+
   // 서버 연결 및 인증 초기화
   async initializeServerConnection() {
     try {
@@ -222,13 +253,33 @@ class MinquiCardGacha {
       
       // 데이터베이스 초기화
       console.log('데이터베이스 초기화 시작...');
-      await this.apiClient.initializeDatabase();
-      console.log('데이터베이스 초기화 완료');
+      try {
+        await this.apiClient.initializeDatabase();
+        console.log('데이터베이스 초기화 완료');
+      } catch (initError) {
+        console.error('데이터베이스 초기화 실패:', initError);
+        // 초기화 실패해도 계속 진행
+      }
       
       // 카드 데이터 시드
       console.log('카드 데이터 시드 시작...');
-      await this.apiClient.seedCards();
-      console.log('카드 데이터 시드 완료');
+      try {
+        await this.apiClient.seedCards();
+        console.log('카드 데이터 시드 완료');
+      } catch (seedError) {
+        console.error('카드 데이터 시드 실패:', seedError);
+        // 시드 실패해도 계속 진행
+      }
+      
+      // 다시 카탈로그 시도
+      console.log('카탈로그 재시도...');
+      try {
+        await this.apiClient.getCatalog();
+        console.log('카탈로그 로드 성공');
+      } catch (finalError) {
+        console.error('최종 카탈로그 로드 실패:', finalError);
+        throw finalError;
+      }
       
     } catch (error) {
       console.error('데이터베이스 초기화 실패:', error);
