@@ -41,9 +41,12 @@ module.exports = async (req, res) => {
       try {
         console.log('fetch API 사용 가능:', typeof fetch);
 
-        const response = await fetch('https://minqui-gacha.vercel.app/cards.json');
+        const response = await fetch('https://minqui-gacha-cy29zyr8u-gunnar-lees-projects.vercel.app/cards.json');
         console.log('Response status:', response.status);
-        console.log('Response headers:', [...response.headers.entries()]);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
 
         const cardsJsonContent = await response.text();
         console.log('Response text length:', cardsJsonContent.length);
@@ -57,10 +60,12 @@ module.exports = async (req, res) => {
           if (cardsData.cards.length > 1) {
             console.log('두 번째 카드:', cardsData.cards[1]);
           }
+        } else {
+          throw new Error('cards.json에 카드 데이터가 없습니다.');
         }
       } catch (error) {
         console.error('cards.json 로드 실패:', error);
-        // 폴백: 기본 카드 5장
+        // 폴백: 기본 카드 데이터
         cardsData = {
           cards: [
             {
@@ -74,9 +79,58 @@ module.exports = async (req, res) => {
               holoPattern: 'crown',
               holoColor: '#ff6b6b',
               attacks: [{ name: '모든 잉모노의 신', description: '게임에서 즉시 승리한다.' }]
+            },
+            {
+              id: '002',
+              name: '오리 안경을 쓴 민킈',
+              type: 'Innovation',
+              rank: 'S',
+              baseHp: 130,
+              baseAttack: 140,
+              image: 'illust/002.png',
+              holoPattern: 'waves',
+              holoColor: '#9c27b0',
+              attacks: [{ name: '명사수', description: '공격은 반드시 명중한다' }]
+            },
+            {
+              id: '003',
+              name: '눈물 민킈',
+              type: 'Art',
+              rank: 'S',
+              baseHp: 120,
+              baseAttack: 100,
+              image: 'illust/003.png',
+              holoPattern: 'waves',
+              holoColor: '#9c27b0',
+              attacks: [{ name: '힝', description: '그냥 운다.' }]
+            },
+            {
+              id: '004',
+              name: '민킈 개발자',
+              type: 'Tech',
+              rank: 'A',
+              baseHp: 100,
+              baseAttack: 120,
+              image: 'illust/004.png',
+              holoPattern: 'sparkles',
+              holoColor: '#2196f3',
+              attacks: [{ name: '코딩 마법', description: '버그를 즉시 수정한다' }]
+            },
+            {
+              id: '005',
+              name: '민킈 디자이너',
+              type: 'Design',
+              rank: 'A',
+              baseHp: 110,
+              baseAttack: 110,
+              image: 'illust/005.png',
+              holoPattern: 'sparkles',
+              holoColor: '#2196f3',
+              attacks: [{ name: '아름다운 디자인', description: '모든 것을 예쁘게 만든다' }]
             }
           ]
         };
+        console.log('폴백 카드 데이터 사용, 카드 수:', cardsData.cards.length);
       }
 
       // cards.json 형식을 데이터베이스 형식으로 변환
