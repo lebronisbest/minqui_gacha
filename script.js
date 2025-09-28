@@ -741,6 +741,11 @@ class MinquiCardGacha {
       this.cardData.image = 'illust/001.png'; // 기본 이미지
     }
 
+    // 홀로그램 패턴이 없으면 기본값 설정
+    if (!this.cardData.holoPattern) {
+      this.cardData.holoPattern = 'sparkles'; // 기본 홀로그램 패턴
+    }
+
     // 랭크에 따른 스탯 조정
     this.cardData.rank = selectedRank;
     this.cardData.hp = Math.floor(selectedCard.baseHp * rankInfo.hpMultiplier);
@@ -799,7 +804,13 @@ class MinquiCardGacha {
             
             // 홀로그램 패턴 적용
             if (cardBackgroundIllustration && this.cardData.holoPattern) {
+                console.log('홀로그램 패턴 적용:', this.cardData.holoPattern);
                 cardBackgroundIllustration.setAttribute('data-pattern', this.cardData.holoPattern);
+            } else {
+                console.log('홀로그램 패턴 적용 실패:', {
+                    cardBackgroundIllustration: !!cardBackgroundIllustration,
+                    holoPattern: this.cardData.holoPattern
+                });
             }
             
             if (cardCharacter) {
