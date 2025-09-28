@@ -1089,6 +1089,20 @@ class MinquiCardGacha {
     this.updateCollectionUI();
   }
   
+  removeCardsFromCollection(cardIds) {
+    // 여러 카드를 컬렉션에서 제거
+    cardIds.forEach(cardId => {
+      const index = this.collectedCards.indexOf(cardId);
+      if (index > -1) {
+        this.collectedCards.splice(index, 1);
+      }
+    });
+    this.saveCollectionData();
+    
+    // 컬렉션 UI 업데이트
+    this.updateCollectionUI();
+  }
+  
   initCollectionUI() {
     // 컬렉션 UI 초기화
     this.updateCollectionStats();
@@ -1417,8 +1431,10 @@ ${skill ? skill.description : ''}`);
   }
   
   selectCardForFusion(card) {
-    // 해당 카드를 몇 장 가지고 있는지 확인
-    const totalCardCount = this.collectedCards.filter(id => id === card.id).length;
+    // 서버 컬렉션 데이터에서 실제 보유 개수 확인
+    const ownedCard = this.serverCollectionData ? 
+      this.serverCollectionData.find(c => c.id === card.id) : null;
+    const totalCardCount = ownedCard ? ownedCard.count : 0;
     
     if (totalCardCount <= 0) {
       alert('해당 카드를 보유하고 있지 않습니다!');
@@ -1465,7 +1481,12 @@ ${skill ? skill.description : ''}`);
   updateCardCounts() {
     document.querySelectorAll('.fusion-card-item').forEach(item => {
       const cardId = item.dataset.cardId;
-      const totalCardCount = this.collectedCards.filter(id => id === cardId).length;
+      
+      // 서버 컬렉션 데이터에서 실제 보유 개수 확인
+      const ownedCard = this.serverCollectionData ? 
+        this.serverCollectionData.find(card => card.id === cardId) : null;
+      const totalCardCount = ownedCard ? ownedCard.count : 0;
+      
       const selectedCardCount = this.selectedFusionCards.filter(selectedCard => 
         selectedCard && selectedCard.id === cardId
       ).length;
@@ -1521,10 +1542,13 @@ ${skill ? skill.description : ''}`);
   
   
   getAvailableCardsForFusion() {
-    // 소유한 카드 중에서 중복 제거하여 반환
-    const ownedCardIds = [...new Set(this.collectedCards)];
-    return ownedCardIds.map(cardId => {
-      return this.gameData.cards.find(card => card.id === cardId);
+    // 서버 컬렉션 데이터에서 소유한 카드들 반환
+    if (!this.serverCollectionData || this.serverCollectionData.length === 0) {
+      return [];
+    }
+    
+    return this.serverCollectionData.map(ownedCard => {
+      return this.gameData.cards.find(card => card.id === ownedCard.id);
     }).filter(card => card);
   }
   
@@ -1729,10 +1753,13 @@ ${skill ? skill.description : ''}`);
       // 룰렛으로 결과 표시
       this.showRoulette(filledSlots, result.resultCard);
       
-      // 성공 시 재료 카드 제거
+      // 성공 시 재료 카드 제거 및 결과 카드 추가
       if (result.resultCard) {
         this.removeCardsFromCollection(materialCardIds);
-        this.addToCollection(result.resultCard.card.id);
+        this.addToCollection(result.resultCard.id);
+        
+        // 서버 컬렉션 데이터 업데이트
+        await this.loadCollectionFromServer();
       }
       
       // 티켓 정보 업데이트

@@ -399,7 +399,7 @@
       "baseHp": 85,
       "baseAttack": 75,
       "image": "illust/024.png",
-      "holoPattern": "money",
+      "holoPattern": "sparkles",
       "holoColor": "#ffd700",
       "attacks": [
         {
@@ -416,7 +416,7 @@
       "baseHp": 90,
       "baseAttack": 60,
       "image": "illust/025.png",
-      "holoPattern": "wheels",
+      "holoPattern": "circuits",
       "holoColor": "#ff6347",
       "attacks": [
         {
