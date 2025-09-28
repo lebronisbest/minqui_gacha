@@ -47,6 +47,21 @@ module.exports = async (req, res) => {
       console.log('카드 데이터 조회 완료, 행 수:', result.rows.length);
 
       const cards = result.rows.map(row => {
+        // attacks 필드가 이미 객체인지 문자열인지 확인
+        let attacks = [];
+        if (row.attacks) {
+          if (typeof row.attacks === 'string') {
+            try {
+              attacks = JSON.parse(row.attacks);
+            } catch (e) {
+              console.warn(`카드 ${row.id}의 attacks 파싱 실패:`, e.message);
+              attacks = [];
+            }
+          } else if (Array.isArray(row.attacks)) {
+            attacks = row.attacks;
+          }
+        }
+
         const card = {
           id: row.id,
           name: row.name,
@@ -55,7 +70,7 @@ module.exports = async (req, res) => {
           baseHp: parseInt(row.base_hp),
           baseAttack: parseInt(row.base_attack),
           image: row.image,
-          attacks: JSON.parse(row.attacks || '[]'),
+          attacks: attacks,
           holoPattern: row.holo_pattern,
           holoColor: row.holo_color
         };

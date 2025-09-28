@@ -42,9 +42,6 @@ class MinquiCardGacha {
       
       // 서버 연결 시도
       try {
-        // 먼저 데이터베이스 초기화 시도
-        await this.forceInitializeDatabase();
-        
         await this.initializeServerConnection();
         await this.loadCardDataFromServer();
         await this.loadCollectionFromServer();
@@ -215,12 +212,42 @@ class MinquiCardGacha {
     }
   }
 
+  // 수동 데이터베이스 설정
+  async manualDatabaseSetup() {
+    console.log('🔧 수동 데이터베이스 설정 시작...');
+    
+    // 직접 API 호출
+    const baseUrl = 'https://minqui-gacha-cy29zyr8u-gunnar-lees-projects.vercel.app';
+    
+    try {
+      // 1. 초기화
+      console.log('1️⃣ 데이터베이스 초기화...');
+      const initResponse = await fetch(`${baseUrl}/api/init`);
+      const initData = await initResponse.json();
+      console.log('초기화 결과:', initData);
+      
+      // 2. 시드
+      console.log('2️⃣ 카드 데이터 시드...');
+      const seedResponse = await fetch(`${baseUrl}/api/seed`, { method: 'POST' });
+      const seedData = await seedResponse.json();
+      console.log('시드 결과:', seedData);
+      
+      // 3. 카탈로그 확인
+      console.log('3️⃣ 카탈로그 확인...');
+      const catalogResponse = await fetch(`${baseUrl}/api/catalog`);
+      const catalogData = await catalogResponse.json();
+      console.log('카탈로그 결과:', catalogData);
+      
+      console.log('✅ 수동 데이터베이스 설정 완료');
+    } catch (error) {
+      console.error('❌ 수동 데이터베이스 설정 실패:', error);
+      throw error;
+    }
+  }
+
   // 서버 연결 및 인증 초기화
   async initializeServerConnection() {
     try {
-      // 데이터베이스 초기화 확인 및 실행
-      await this.ensureDatabaseInitialized();
-      
       // 기존 세션 복원 시도
       const sessionValid = await this.apiClient.restoreSession();
       
