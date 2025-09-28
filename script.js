@@ -202,21 +202,16 @@ class MinquiCardGacha {
 
   // 서버에서 카드 데이터 로드
   async loadCardDataFromServer() {
-    try {
-      const catalog = await this.apiClient.getCatalog();
-      this.gameData = { 
-        cards: catalog.cards,
-        ranks: catalog.ranks,
-        types: catalog.types
-      };
-      this.cardData = { ...this.gameData.cards[0] };
-      console.log('서버에서 카드 데이터 로드 완료:', this.gameData.cards.length, '장');
-      console.log('확률 데이터:', this.gameData.ranks);
-      console.log('타입 데이터:', this.gameData.types);
-    } catch (error) {
-      console.error('서버 카드 데이터 로드 실패:', error);
-      throw error;
-    }
+    const catalog = await this.apiClient.getCatalog();
+    this.gameData = { 
+      cards: catalog.cards,
+      ranks: catalog.ranks,
+      types: catalog.types
+    };
+    this.cardData = { ...this.gameData.cards[0] };
+    console.log('서버에서 카드 데이터 로드 완료:', this.gameData.cards.length, '장');
+    console.log('확률 데이터:', this.gameData.ranks);
+    console.log('타입 데이터:', this.gameData.types);
   }
 
   // 로컬 카드 데이터 로드 (폴백)
