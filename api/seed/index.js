@@ -36,38 +36,28 @@ module.exports = async (req, res) => {
       await client.query('DELETE FROM cards');
       console.log('기존 데이터 삭제됨');
 
-      // cards.json에서 모든 카드 데이터 로드
-      const fs = require('fs');
-      const path = require('path');
-      
+      // cards.json을 HTTP로 가져오기
       let cardsData;
       try {
-        // 여러 경로 시도
-        const possiblePaths = [
-          path.join(__dirname, '../../../cards.json'),
-          path.join(__dirname, '../../cards.json'),
-          path.join(__dirname, '../cards.json'),
-          '/var/task/cards.json'
-        ];
-        
-        let cardsJsonContent = null;
-        for (const cardsJsonPath of possiblePaths) {
-          try {
-            console.log('시도하는 경로:', cardsJsonPath);
-            cardsJsonContent = fs.readFileSync(cardsJsonPath, 'utf8');
-            console.log('cards.json 로드 성공:', cardsJsonPath);
-            break;
-          } catch (err) {
-            console.log('경로 실패:', cardsJsonPath, err.message);
-          }
-        }
-        
-        if (!cardsJsonContent) {
-          throw new Error('cards.json을 찾을 수 없습니다');
-        }
-        
+        console.log('fetch API 사용 가능:', typeof fetch);
+
+        const response = await fetch('https://minqui-gacha.vercel.app/cards.json');
+        console.log('Response status:', response.status);
+        console.log('Response headers:', [...response.headers.entries()]);
+
+        const cardsJsonContent = await response.text();
+        console.log('Response text length:', cardsJsonContent.length);
+        console.log('Response text start:', cardsJsonContent.substring(0, 200));
+
         cardsData = JSON.parse(cardsJsonContent);
         console.log('파싱된 카드 수:', cardsData.cards?.length || 0);
+
+        if (cardsData.cards && cardsData.cards.length > 0) {
+          console.log('첫 번째 카드:', cardsData.cards[0]);
+          if (cardsData.cards.length > 1) {
+            console.log('두 번째 카드:', cardsData.cards[1]);
+          }
+        }
       } catch (error) {
         console.error('cards.json 로드 실패:', error);
         // 폴백: 기본 카드 5장
@@ -90,6 +80,7 @@ module.exports = async (req, res) => {
       }
 
       // cards.json 형식을 데이터베이스 형식으로 변환
+      console.log('변환 전 cardsData.cards 길이:', cardsData.cards.length);
       const cards = cardsData.cards.map(card => ({
         id: card.id,
         name: card.name,

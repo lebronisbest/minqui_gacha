@@ -932,28 +932,29 @@ body {
   
   /* 티켓 시스템 모바일 최적화 */
   .ticket-system {
-    top: 10px;
-    left: 10px;
-    right: 10px;
+    bottom: 15px;
+    left: 50%;
+    right: auto;
     width: auto;
+    transform: translateX(-50%);
   }
   
   .ticket-display {
-    padding: 10px 15px;
+    padding: 8px 12px;
     flex-direction: row;
-    gap: 10px;
+    gap: 8px;
   }
-  
+
   .ticket-icon {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
   }
-  
+
   .ticket-count {
-    font-size: 1rem;
+    font-size: 0.85rem;
   }
-  
+
   .ticket-timer {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
   }
   
   /* 컬렉션 그리드 모바일 최적화 - 3열 고정 */
@@ -1140,22 +1141,22 @@ body {
   
   /* 티켓 시스템 초소형 화면 최적화 */
   .ticket-display {
-    padding: 8px 12px;
+    padding: 6px 10px;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
     text-align: center;
   }
-  
+
   .ticket-icon {
-    font-size: 1.2rem;
+    font-size: 1rem;
   }
-  
+
   .ticket-count {
-    font-size: 0.9rem;
+    font-size: 0.75rem;
   }
-  
+
   .ticket-timer {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
   }
   
   /* 컬렉션 그리드 초소형 화면 최적화 - 3열 고정 */
@@ -1332,22 +1333,22 @@ body {
   
   /* 티켓 시스템 초소형 화면 최적화 */
   .ticket-display {
-    padding: 6px 10px;
+    padding: 4px 8px;
     flex-direction: column;
-    gap: 3px;
+    gap: 2px;
     text-align: center;
   }
-  
+
   .ticket-icon {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
-  
+
   .ticket-count {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
   }
-  
+
   .ticket-timer {
-    font-size: 0.6rem;
+    font-size: 0.55rem;
   }
   
   /* 컬렉션 그리드 초소형 화면 최적화 - 3열 고정 */
@@ -1815,8 +1816,9 @@ body {
 /* 티켓 시스템 */
 .ticket-system {
   position: fixed;
-  top: 20px;
-  left: 20px;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 1000;
   backdrop-filter: blur(10px);
 }

@@ -25,6 +25,9 @@ class MinquiCardGacha {
     this.secretCode = 'friendshiping';
     this.enteredCode = '';
     this.isSecretMode = false;
+
+    // 가챠 로딩 상태 (중복 요청 방지)
+    this.isGachaLoading = false;
     
     this.init();
   }
@@ -203,15 +206,15 @@ class MinquiCardGacha {
   // 서버에서 카드 데이터 로드
   async loadCardDataFromServer() {
     const catalog = await this.apiClient.getCatalog();
-    this.gameData = { 
+    this.gameData = {
       cards: catalog.cards,
       ranks: catalog.ranks,
-      types: catalog.types
+      typeIcons: catalog.typeIcons
     };
     this.cardData = { ...this.gameData.cards[0] };
     console.log('서버에서 카드 데이터 로드 완료:', this.gameData.cards.length, '장');
     console.log('확률 데이터:', this.gameData.ranks);
-    console.log('타입 데이터:', this.gameData.types);
+    console.log('타입 데이터:', this.gameData.typeIcons);
   }
 
   // 로컬 카드 데이터 로드 (폴백)
@@ -260,8 +263,41 @@ class MinquiCardGacha {
             name: "SSS등급",
             hpMultiplier: 2.0,
             attackMultiplier: 2.0,
+            probability: 0.5,
             color: "#ff6b6b",
             emoji: "👑"
+          },
+          "SS": {
+            name: "SS등급",
+            hpMultiplier: 1.8,
+            attackMultiplier: 1.8,
+            probability: 2.5,
+            color: "#ffa500",
+            emoji: "🌟"
+          },
+          "S": {
+            name: "S등급",
+            hpMultiplier: 1.5,
+            attackMultiplier: 1.5,
+            probability: 7.0,
+            color: "#9c27b0",
+            emoji: "⭐"
+          },
+          "A": {
+            name: "A등급",
+            hpMultiplier: 1.2,
+            attackMultiplier: 1.2,
+            probability: 20.0,
+            color: "#2196f3",
+            emoji: "✨"
+          },
+          "B": {
+            name: "B등급",
+            hpMultiplier: 1.0,
+            attackMultiplier: 1.0,
+            probability: 70.0,
+            color: "#4caf50",
+            emoji: "💫"
           }
         },
         typeIcons: {
@@ -529,6 +565,11 @@ class MinquiCardGacha {
   }
   
   handleClick() {
+    // 가챠 로딩 중이면 클릭 무시
+    if (this.isGachaLoading) {
+      return;
+    }
+
     if (!this.isFlipped) {
       // 뒷면에서 앞면으로 - 가챠 실행
       this.performGacha();
@@ -540,7 +581,15 @@ class MinquiCardGacha {
   }
   
   async performGacha() {
+    // 이미 로딩 중이면 실행하지 않음
+    if (this.isGachaLoading) {
+      return;
+    }
+
     try {
+      // 로딩 상태 시작
+      this.isGachaLoading = true;
+
       // 로딩 상태 표시 (카드 뒤집기 전에)
       this.showGachaLoading();
       
@@ -549,9 +598,11 @@ class MinquiCardGacha {
       
       // 로딩 상태 숨기기
       this.hideGachaLoading();
+      this.isGachaLoading = false;
       
       if (!result.success) {
-        // 티켓 부족 등의 이유로 실패
+        // 티켓 부족 등의 이유로 실패 - 로딩 상태 해제
+        this.isGachaLoading = false;
         alert('티켓이 부족합니다! 12시에 다시 충전됩니다.');
         return;
       }
@@ -598,8 +649,9 @@ class MinquiCardGacha {
       
     } catch (error) {
       console.error('가챠 실행 실패:', error);
-      // 에러 시 로딩 상태만 숨기기
+      // 에러 시 로딩 상태 숨기기 및 해제
       this.hideGachaLoading();
+      this.isGachaLoading = false;
       alert('가챠 실행 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
   }
@@ -676,12 +728,18 @@ class MinquiCardGacha {
       console.error('랭크 데이터를 찾을 수 없습니다:', selectedRank);
       return;
     }
-    
+
     const rankInfo = this.gameData.ranks[selectedRank];
-    
+
     // 선택된 카드의 기본 데이터로 설정
     this.cardData = { ...selectedCard };
-    
+
+    // 이미지 경로가 없으면 기본값 설정
+    if (!this.cardData.image) {
+      console.warn('카드 이미지 경로가 없습니다:', selectedCard);
+      this.cardData.image = 'illust/001.png'; // 기본 이미지
+    }
+
     // 랭크에 따른 스탯 조정
     this.cardData.rank = selectedRank;
     this.cardData.hp = Math.floor(selectedCard.baseHp * rankInfo.hpMultiplier);
@@ -701,51 +759,6 @@ class MinquiCardGacha {
             document.getElementById('cardNumberOverlay').textContent = cardNumber;
             document.getElementById('cardNameOverlay').textContent = cardName;
             
-            // 디버깅: 이미지 요소들 확인
-            console.log('=== 카드 이미지 디버깅 ===');
-            const backgroundIllust = document.querySelector('.background-illust');
-            const characterIllust = document.querySelector('.character-illust');
-            const cardCharacterEl = document.querySelector('.card-character');
-            const cardBackgroundEl = document.querySelector('.card-background-illustration');
-            
-            console.log('배경 이미지:', backgroundIllust);
-            console.log('캐릭터 이미지:', characterIllust);
-            console.log('캐릭터 컨테이너:', cardCharacterEl);
-            console.log('배경 컨테이너:', cardBackgroundEl);
-            
-            if (backgroundIllust) {
-                console.log('배경 이미지 실제 크기:', backgroundIllust.naturalWidth, 'x', backgroundIllust.naturalHeight);
-                console.log('배경 이미지 표시 크기:', backgroundIllust.offsetWidth, 'x', backgroundIllust.offsetHeight);
-                console.log('배경 이미지 src:', backgroundIllust.src);
-                console.log('배경 이미지 완전 로드됨:', backgroundIllust.complete);
-            }
-            
-            if (characterIllust) {
-                console.log('캐릭터 이미지 실제 크기:', characterIllust.naturalWidth, 'x', characterIllust.naturalHeight);
-                console.log('캐릭터 이미지 표시 크기:', characterIllust.offsetWidth, 'x', characterIllust.offsetHeight);
-                console.log('캐릭터 이미지 src:', characterIllust.src);
-                console.log('캐릭터 이미지 완전 로드됨:', characterIllust.complete);
-            }
-            
-            if (cardCharacterEl) {
-                const computedStyle = window.getComputedStyle(cardCharacterEl);
-                console.log('캐릭터 overflow:', computedStyle.overflow);
-                console.log('캐릭터 position:', computedStyle.position);
-                console.log('캐릭터 top:', computedStyle.top);
-                console.log('캐릭터 left:', computedStyle.left);
-                console.log('캐릭터 right:', computedStyle.right);
-                console.log('캐릭터 bottom:', computedStyle.bottom);
-            }
-            
-            if (cardBackgroundEl) {
-                const computedStyle = window.getComputedStyle(cardBackgroundEl);
-                console.log('배경 overflow:', computedStyle.overflow);
-                console.log('배경 position:', computedStyle.position);
-                console.log('배경 top:', computedStyle.top);
-                console.log('배경 left:', computedStyle.left);
-                console.log('배경 right:', computedStyle.right);
-                console.log('배경 bottom:', computedStyle.bottom);
-            }
             
             // 카드 요소 확인
             const cardFront = document.querySelector('.card-front');
@@ -1040,11 +1053,14 @@ class MinquiCardGacha {
   async loadCollectionFromServer() {
     try {
       const response = await this.apiClient.getCollection();
-      // 서버에서 반환하는 데이터 구조에 맞게 수정
-      this.collectedCards = response.collection ? response.collection.map(card => card.id) : [];
+      // 서버에서 받은 완전한 카드 데이터를 저장
+      this.serverCollectionData = response.collection || [];
+      this.collectedCards = this.serverCollectionData.map(card => card.id);
       console.log('서버에서 컬렉션 로드 완료:', this.collectedCards.length, '장');
+      console.log('컬렉션 카드 데이터:', this.serverCollectionData);
     } catch (error) {
       console.error('컬렉션 로드 실패:', error);
+      this.serverCollectionData = [];
       this.collectedCards = [];
     }
   }
@@ -1111,12 +1127,24 @@ class MinquiCardGacha {
   updateCollectionStats() {
     // 컬렉션 통계 업데이트
     const totalCards = this.gameData.cards.length;
-    const collectedCount = this.collectedCards.length; // 중복 포함한 총 카드 수
-    const uniqueCards = new Set(this.collectedCards).size; // 고유 카드 수
-    const collectionRate = Math.round((uniqueCards / totalCards) * 100);
-    
-    document.getElementById('totalCards').textContent = collectedCount;
-    document.getElementById('collectionRate').textContent = `${collectionRate}% (${uniqueCards}/${totalCards})`;
+
+    if (this.serverCollectionData && this.serverCollectionData.length > 0) {
+      // 서버 데이터 기반 통계
+      const collectedCount = this.serverCollectionData.reduce((sum, card) => sum + card.count, 0);
+      const uniqueCards = this.serverCollectionData.length;
+      const collectionRate = Math.round((uniqueCards / totalCards) * 100);
+
+      document.getElementById('totalCards').textContent = collectedCount;
+      document.getElementById('collectionRate').textContent = `${collectionRate}% (${uniqueCards}/${totalCards})`;
+    } else {
+      // 로컬 데이터 기반 통계 (폴백)
+      const collectedCount = this.collectedCards.length;
+      const uniqueCards = new Set(this.collectedCards).size;
+      const collectionRate = Math.round((uniqueCards / totalCards) * 100);
+
+      document.getElementById('totalCards').textContent = collectedCount;
+      document.getElementById('collectionRate').textContent = `${collectionRate}% (${uniqueCards}/${totalCards})`;
+    }
   }
   
   updateCollectionUI() {
@@ -1129,24 +1157,33 @@ class MinquiCardGacha {
     // 컬렉션 카드들 렌더링
     const grid = document.getElementById('collectionGrid');
     grid.innerHTML = '';
-    
-    let cardsToShow = this.gameData.cards;
-    
+
+    // 항상 모든 카드를 표시하되, 소유 여부를 구분
+    let allCards = this.gameData.cards;
+
     // 필터 적용
     if (this.currentFilter !== 'all') {
-      cardsToShow = cardsToShow.filter(card => card.rank === this.currentFilter);
+      allCards = allCards.filter(card => card.rank === this.currentFilter);
     }
-    
+
     // 카드 넘버순으로 정렬 (id 기준)
-    cardsToShow.sort((a, b) => a.id - b.id);
-    
-    console.log('렌더링할 카드 수:', cardsToShow.length);
-    console.log('수집된 카드:', this.collectedCards);
-    
-    cardsToShow.forEach(card => {
-      const isOwned = this.collectedCards.includes(card.id);
+    allCards.sort((a, b) => a.id.localeCompare(b.id));
+
+    console.log('렌더링할 카드 수:', allCards.length);
+    console.log('서버 컬렉션 데이터:', this.serverCollectionData);
+
+    allCards.forEach(card => {
+      // 서버 컬렉션 데이터에서 해당 카드 찾기
+      const ownedCard = this.serverCollectionData ?
+        this.serverCollectionData.find(c => c.id === card.id) : null;
+
+      const isOwned = !!ownedCard;
+
+      // 소유한 카드는 서버 데이터를 사용, 미소유 카드는 로컬 데이터 사용
+      const cardToRender = ownedCard || card;
+
       console.log(`카드 ${card.name} (${card.id}): 소유=${isOwned}`);
-      const cardElement = this.createCollectionCardElement(card, isOwned);
+      const cardElement = this.createCollectionCardElement(cardToRender, isOwned);
       grid.appendChild(cardElement);
     });
   }
@@ -1157,7 +1194,11 @@ class MinquiCardGacha {
     cardDiv.className = `collection-card ${isOwned ? 'owned' : 'not-owned'}`;
     
     const rankInfo = this.gameData.ranks[card.rank];
-    const typeIcon = this.gameData.types?.[card.type]?.icon || '🎨';
+    const typeIcon = this.gameData.typeIcons?.[card.type] || '🎨';
+
+    console.log(`카드 ${card.name}: rank=${card.rank}, rankInfo=`, rankInfo);
+    console.log(`baseHp=${card.baseHp}, baseAttack=${card.baseAttack}`);
+    console.log(`attacks=`, card.attacks);
     
     // 중복 횟수 계산
     const duplicateCount = this.collectedCards.filter(id => id === card.id).length;
@@ -1201,11 +1242,11 @@ class MinquiCardGacha {
           <div class="collection-stats-container">
             <div class="collection-stat-item">
               <span class="collection-stat-label">HP</span>
-              <span class="collection-stat-value">${Math.floor(card.baseHp * rankInfo.hpMultiplier)}</span>
+              <span class="collection-stat-value">${Math.floor((card.baseHp || 100) * (rankInfo?.hpMultiplier || 1))}</span>
             </div>
             <div class="collection-stat-item">
               <span class="collection-stat-label">공격력</span>
-              <span class="collection-stat-value">${Math.floor(card.baseAttack * rankInfo.attackMultiplier)}</span>
+              <span class="collection-stat-value">${Math.floor((card.baseAttack || 100) * (rankInfo?.attackMultiplier || 1))}</span>
             </div>
             <div class="collection-stat-item">
               <span class="collection-stat-value">${typeIcon}</span>
@@ -1243,8 +1284,8 @@ class MinquiCardGacha {
     
     alert(`${card.name} (${card.rank})${duplicateCount > 1 ? ` x${duplicateCount}` : ''}
 타입: ${card.type}
-HP: ${Math.floor(card.baseHp * rankInfo.hpMultiplier)}
-공격력: ${Math.floor(card.baseAttack * rankInfo.attackMultiplier)}
+HP: ${Math.floor((card.baseHp || 100) * (rankInfo?.hpMultiplier || 1))}
+공격력: ${Math.floor((card.baseAttack || 100) * (rankInfo?.attackMultiplier || 1))}
 스킬: ${skill ? skill.name : '없음'}
 ${skill ? skill.description : ''}`);
   }

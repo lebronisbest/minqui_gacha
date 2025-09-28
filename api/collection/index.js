@@ -37,7 +37,7 @@ module.exports = async (req, res) => {
     try {
       // 사용자 인벤토리 조회 (카드 넘버순으로 정렬)
       const result = await client.query(`
-        SELECT 
+        SELECT
           ui.card_id,
           ui.count,
           ui.first_obtained_at,
@@ -45,7 +45,12 @@ module.exports = async (req, res) => {
           c.name,
           c.type,
           c.rank,
-          c.image
+          c.base_hp,
+          c.base_attack,
+          c.image,
+          c.attacks,
+          c.holo_pattern,
+          c.holo_color
         FROM user_inventory ui
         JOIN cards c ON ui.card_id = c.id
         WHERE ui.user_id = $1
@@ -57,7 +62,12 @@ module.exports = async (req, res) => {
         name: row.name,
         type: row.type,
         rank: row.rank,
+        baseHp: parseInt(row.base_hp),
+        baseAttack: parseInt(row.base_attack),
         image: row.image,
+        attacks: JSON.parse(row.attacks || '[]'),
+        holoPattern: row.holo_pattern,
+        holoColor: row.holo_color,
         count: parseInt(row.count),
         firstObtainedAt: row.first_obtained_at,
         lastObtainedAt: row.last_obtained_at

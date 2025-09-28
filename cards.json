@@ -359,7 +359,7 @@
     },
     {
       "id": "022",
-      "name": "사진 찍는 민킈",
+      "name": "위칸 민킈",
       "type": "Photography",
       "rank": "B",
       "baseHp": 75,
@@ -376,7 +376,7 @@
     },
     {
       "id": "023",
-      "name": "영화 보는 민킈",
+      "name": "민날두",
       "type": "Entertainment",
       "rank": "B",
       "baseHp": 65,
@@ -393,7 +393,7 @@
     },
     {
       "id": "024",
-      "name": "쇼핑하는 민킈",
+      "name": "맵찔이 민킈",
       "type": "Shopping",
       "rank": "A",
       "baseHp": 85,
@@ -410,7 +410,7 @@
     },
     {
       "id": "025",
-      "name": "운전하는 민킈",
+      "name": "블루 민킈",
       "type": "Transport",
       "rank": "B",
       "baseHp": 90,
@@ -427,7 +427,7 @@
     },
     {
       "id": "026",
-      "name": "요가하는 민킈",
+      "name": "오타쿠 민킈",
       "type": "Wellness",
       "rank": "A",
       "baseHp": 110,
@@ -444,7 +444,7 @@
     },
     {
       "id": "027",
-      "name": "프로그래밍하는 민킈",
+      "name": "달려라 김민킈",
       "type": "Tech",
       "rank": "SS",
       "baseHp": 130,
@@ -461,7 +461,7 @@
     },
     {
       "id": "028",
-      "name": "노래하는 민킈",
+      "name": "나나와 꾸꾸",
       "type": "Music",
       "rank": "S",
       "baseHp": 100,
@@ -478,7 +478,7 @@
     },
     {
       "id": "029",
-      "name": "공부하는 민킈",
+      "name": "산타 민킈",
       "type": "Education",
       "rank": "A",
       "baseHp": 95,
@@ -495,7 +495,7 @@
     },
     {
       "id": "030",
-      "name": "최종 보스 민킈",
+      "name": "말자하 민킈",
       "type": "Boss",
       "rank": "SS",
       "baseHp": 180,

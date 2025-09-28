@@ -24,12 +24,17 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // 데이터베이스 연결 확인
+    if (!process.env.POSTGRES_URL) {
+      throw new Error('POSTGRES_URL 환경 변수가 설정되지 않았습니다.');
+    }
+    
     const client = await pool.connect();
     try {
-      // 카드 메타데이터만 조회 (상세 스탯은 서버에서만 관리)
+      // 전체 카드 데이터 조회 (컬렉션 표시용)
       const result = await client.query(`
-        SELECT id, name, type, rank, image, created_at, updated_at
-        FROM cards 
+        SELECT id, name, type, rank, base_hp, base_attack, image, attacks, holo_pattern, holo_color, created_at, updated_at
+        FROM cards
         ORDER BY id ASC
       `);
 
@@ -38,7 +43,12 @@ module.exports = async (req, res) => {
         name: row.name,
         type: row.type,
         rank: row.rank,
-        image: row.image
+        baseHp: parseInt(row.base_hp),
+        baseAttack: parseInt(row.base_attack),
+        image: row.image,
+        attacks: JSON.parse(row.attacks || '[]'),
+        holoPattern: row.holo_pattern,
+        holoColor: row.holo_color
       }));
 
       // 카탈로그 버전 및 해시 생성
@@ -48,39 +58,69 @@ module.exports = async (req, res) => {
 
       // 가챠 확률 정보 (현실적인 확률)
       const ranks = {
-        'SSS': { probability: 0.5, color: '#ff6b6b', name: 'SSS', emoji: '👑' },
-        'SS': { probability: 2.0, color: '#ff8e8e', name: 'SS', emoji: '💎' },
-        'S': { probability: 8.0, color: '#9c27b0', name: 'S', emoji: '⭐' },
-        'A': { probability: 25.0, color: '#2196f3', name: 'A', emoji: '🔵' },
-        'B': { probability: 64.5, color: '#4caf50', name: 'B', emoji: '🟢' }
+        'SSS': {
+          name: 'SSS등급',
+          probability: 0.5,
+          hpMultiplier: 2.0,
+          attackMultiplier: 2.0,
+          color: '#ff6b6b',
+          emoji: '👑'
+        },
+        'SS': {
+          name: 'SS등급',
+          probability: 2.0,
+          hpMultiplier: 1.8,
+          attackMultiplier: 1.8,
+          color: '#ffa500',
+          emoji: '🌟'
+        },
+        'S': {
+          name: 'S등급',
+          probability: 8.0,
+          hpMultiplier: 1.5,
+          attackMultiplier: 1.5,
+          color: '#9c27b0',
+          emoji: '⭐'
+        },
+        'A': {
+          name: 'A등급',
+          probability: 25.0,
+          hpMultiplier: 1.2,
+          attackMultiplier: 1.2,
+          color: '#2196f3',
+          emoji: '✨'
+        },
+        'B': {
+          name: 'B등급',
+          probability: 64.5,
+          hpMultiplier: 1.0,
+          attackMultiplier: 1.0,
+          color: '#4caf50',
+          emoji: '💫'
+        }
       };
 
-      // 타입별 설정 정보
-      const types = {
-        'Story': { 
-          color: '#ff6b6b', 
-          name: 'Story',
-          description: '이야기 카드',
-          icon: '📖'
-        },
-        'Innovation': { 
-          color: '#9c27b0', 
-          name: 'Innovation',
-          description: '혁신 카드',
-          icon: '💡'
-        },
-        'Art': { 
-          color: '#ff9800', 
-          name: 'Art',
-          description: '예술 카드',
-          icon: '🎨'
-        },
-        'Tech': { 
-          color: '#2196f3', 
-          name: 'Tech',
-          description: '기술 카드',
-          icon: '⚙️'
-        }
+      // 타입별 아이콘 정보
+      const typeIcons = {
+        "Creator": "🎨",
+        "Art": "🖼️",
+        "Tech": "💻",
+        "Story": "📚",
+        "Design": "🎨",
+        "Idea": "💡",
+        "Team": "🤝",
+        "Innovation": "🚀",
+        "Shopping": "🛒",
+        "Transport": "🚗",
+        "Gaming": "🎮",
+        "Work": "💼",
+        "Food": "🍜",
+        "Sports": "⚽",
+        "Magic": "✨",
+        "Adventure": "🗡️",
+        "Music": "🎵",
+        "Fashion": "👗",
+        "Holiday": "🎄"
       };
 
       const catalogResponse = {
@@ -88,7 +128,7 @@ module.exports = async (req, res) => {
         hash,
         cards,
         ranks,
-        types,
+        typeIcons,
         lastUpdated: new Date().toISOString()
       };
 
@@ -105,9 +145,26 @@ module.exports = async (req, res) => {
     }
   } catch (error) {
     console.error('Get catalog error:', error);
-    res.status(500).json({
+    
+    // 에러 타입에 따른 적절한 응답
+    let statusCode = 500;
+    let errorMessage = 'Internal server error';
+    
+    if (error.message.includes('POSTGRES_URL')) {
+      statusCode = 503;
+      errorMessage = 'Database not configured';
+    } else if (error.message.includes('connection')) {
+      statusCode = 503;
+      errorMessage = 'Database connection failed';
+    } else if (error.message.includes('relation "cards" does not exist')) {
+      statusCode = 503;
+      errorMessage = 'Database not initialized';
+    }
+    
+    res.status(statusCode).json({
       success: false,
-      error: 'Internal server error',
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
       timestamp: new Date().toISOString(),
       requestId: req.headers['x-request-id'] || uuidv4()
     });

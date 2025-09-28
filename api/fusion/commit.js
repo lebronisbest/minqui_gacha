@@ -70,14 +70,25 @@ module.exports = async (req, res) => {
         }
       }
 
-      // 퓨전 결과 생성 (간단한 로직)
-      const resultCard = {
-        id: 'fusion_' + Date.now(),
-        name: '퓨전 카드',
-        type: 'Fusion',
-        rank: 'A',
-        image: 'illust/fusion.png'
-      };
+      // 기존 카드 중에서 랜덤 결과 선택 (임시)
+      const cardsResult = await client.query(`
+        SELECT id, name, type, rank, image
+        FROM cards
+        WHERE rank IN ('A', 'S', 'SS')
+        ORDER BY RANDOM()
+        LIMIT 1
+      `);
+
+      if (cardsResult.rows.length === 0) {
+        res.status(500).json({
+          success: false,
+          error: 'No fusion result available',
+          timestamp: new Date().toISOString()
+        });
+        return;
+      }
+
+      const resultCard = cardsResult.rows[0];
 
       // 인벤토리에서 재료 제거
       for (const materialId of materialsToUse) {

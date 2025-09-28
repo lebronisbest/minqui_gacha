@@ -2,14 +2,35 @@
 const { Pool } = require('pg');
 
 // Vercel Postgres 연결 풀 생성
-const connectionString = process.env.POSTGRES_URL?.replace('sslmode=require', 'sslmode=disable');
+let connectionString = process.env.POSTGRES_URL;
+
+// SSL 설정 처리
+if (connectionString) {
+  // sslmode=require를 sslmode=prefer로 변경
+  connectionString = connectionString.replace('sslmode=require', 'sslmode=prefer');
+} else {
+  console.warn('POSTGRES_URL 환경 변수가 설정되지 않았습니다.');
+}
 
 const pool = new Pool({
-  connectionString: connectionString || process.env.POSTGRES_URL,
-  ssl: false, // SSL 완전 비활성화
+  connectionString: connectionString,
+  ssl: connectionString ? { rejectUnauthorized: false } : false,
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 10000,
+});
+
+// 연결 에러 핸들링
+pool.on('error', (err) => {
+  console.error('PostgreSQL pool error:', err);
+});
+
+pool.on('connect', () => {
+  console.log('PostgreSQL client connected');
+});
+
+pool.on('remove', () => {
+  console.log('PostgreSQL client removed');
 });
 
 // Redis 연결 (Vercel Redis 또는 Upstash Redis 사용)
@@ -19,15 +40,31 @@ let redisClient = null;
 
 async function getRedisClient() {
   if (!redisClient) {
-    redisClient = createClient({
-      url: process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL
-    });
+    const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
     
-    redisClient.on('error', (err) => {
-      console.error('Redis Client Error:', err);
-    });
+    if (!redisUrl) {
+      console.warn('Redis URL이 설정되지 않았습니다. Redis 기능이 비활성화됩니다.');
+      return null;
+    }
     
-    await redisClient.connect();
+    try {
+      redisClient = createClient({
+        url: redisUrl
+      });
+      
+      redisClient.on('error', (err) => {
+        console.error('Redis Client Error:', err);
+      });
+      
+      redisClient.on('connect', () => {
+        console.log('Redis client connected');
+      });
+      
+      await redisClient.connect();
+    } catch (error) {
+      console.error('Redis connection failed:', error);
+      return null;
+    }
   }
   return redisClient;
 }
@@ -35,8 +72,17 @@ async function getRedisClient() {
 // 데이터베이스 초기화
 async function initializeDatabase() {
   try {
+    if (!connectionString) {
+      throw new Error('POSTGRES_URL 환경 변수가 설정되지 않았습니다.');
+    }
+    
     const client = await pool.connect();
     console.log('PostgreSQL connected successfully');
+    
+    // 간단한 쿼리로 연결 테스트
+    await client.query('SELECT 1');
+    console.log('PostgreSQL query test successful');
+    
     client.release();
   } catch (error) {
     console.error('PostgreSQL connection failed:', error);
