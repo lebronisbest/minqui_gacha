@@ -46,18 +46,27 @@ module.exports = async (req, res) => {
       `);
       console.log('카드 데이터 조회 완료, 행 수:', result.rows.length);
 
-      const cards = result.rows.map(row => ({
-        id: row.id,
-        name: row.name,
-        type: row.type,
-        rank: row.rank,
-        baseHp: parseInt(row.base_hp),
-        baseAttack: parseInt(row.base_attack),
-        image: row.image,
-        attacks: JSON.parse(row.attacks || '[]'),
-        holoPattern: row.holo_pattern,
-        holoColor: row.holo_color
-      }));
+      const cards = result.rows.map(row => {
+        const card = {
+          id: row.id,
+          name: row.name,
+          type: row.type,
+          rank: row.rank,
+          baseHp: parseInt(row.base_hp),
+          baseAttack: parseInt(row.base_attack),
+          image: row.image,
+          attacks: JSON.parse(row.attacks || '[]'),
+          holoPattern: row.holo_pattern,
+          holoColor: row.holo_color
+        };
+        console.log(`카드 처리됨: ID=${card.id}, Name=${card.name}, Image=${card.image}`);
+        return card;
+      });
+      
+      console.log('처리된 카드 목록:');
+      cards.forEach((card, index) => {
+        console.log(`${index + 1}. ID: ${card.id}, Name: ${card.name}, Image: ${card.image}`);
+      });
 
       // 카탈로그 버전 및 해시 생성
       const catalogData = JSON.stringify(cards);

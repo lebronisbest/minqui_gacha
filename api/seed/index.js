@@ -149,23 +149,48 @@ module.exports = async (req, res) => {
       }));
 
       for (const card of cards) {
-        await client.query(`
-          INSERT INTO cards (id, name, type, rank, base_hp, base_attack, image, attacks, holo_pattern, holo_color)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-          ON CONFLICT (id) DO NOTHING
-        `, [
-          card.id, card.name, card.type, card.rank, card.base_hp, 
-          card.base_attack, card.image, card.attacks, card.holo_pattern, card.holo_color
-        ]);
+        console.log(`카드 삽입 시도: ID=${card.id}, Name=${card.name}, Image=${card.image}`);
+        try {
+          await client.query(`
+            INSERT INTO cards (id, name, type, rank, base_hp, base_attack, image, attacks, holo_pattern, holo_color)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            ON CONFLICT (id) DO NOTHING
+          `, [
+            card.id, card.name, card.type, card.rank, card.base_hp, 
+            card.base_attack, card.image, card.attacks, card.holo_pattern, card.holo_color
+          ]);
+          console.log(`✅ 카드 삽입 성공: ID=${card.id}`);
+        } catch (insertError) {
+          console.error(`❌ 카드 삽입 실패: ID=${card.id}`, insertError.message);
+        }
       }
 
       console.log(`총 ${cards.length}장의 카드가 시드되었습니다.`);
+      
+      // 실제 데이터베이스에 삽입된 카드 수 확인
+      const countResult = await client.query('SELECT COUNT(*) as count FROM cards');
+      const actualCount = parseInt(countResult.rows[0].count);
+      console.log(`데이터베이스에 실제 저장된 카드 수: ${actualCount}`);
+      
+      // 24, 25번 카드가 있는지 특별히 확인
+      const card24 = await client.query('SELECT * FROM cards WHERE id = $1', ['024']);
+      const card25 = await client.query('SELECT * FROM cards WHERE id = $1', ['025']);
+      console.log(`024번 카드 존재: ${card24.rows.length > 0 ? 'YES' : 'NO'}`);
+      console.log(`025번 카드 존재: ${card25.rows.length > 0 ? 'YES' : 'NO'}`);
+      
+      if (card24.rows.length > 0) {
+        console.log(`024번 카드 정보:`, card24.rows[0]);
+      }
+      if (card25.rows.length > 0) {
+        console.log(`025번 카드 정보:`, card25.rows[0]);
+      }
       
       res.status(200).json({
         success: true,
         data: { 
           message: 'Card data seeded successfully', 
           count: cards.length,
+          actualCount: actualCount,
           cards: cards.map(c => ({ id: c.id, name: c.name, rank: c.rank }))
         },
         timestamp: new Date().toISOString()
