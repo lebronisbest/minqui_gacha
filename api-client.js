@@ -108,26 +108,16 @@ class ApiClient {
     }
   }
 
-  // 데이터베이스 초기화
+  // 데이터베이스 초기화 (제거된 엔드포인트 - 자동 초기화로 대체)
   async initializeDatabase() {
-    try {
-      const response = await this.request('/init');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to initialize database:', error);
-      throw error;
-    }
+    console.warn('Database initialization endpoint removed - using automatic initialization');
+    return { message: 'Database initialization handled automatically' };
   }
 
-  // 카드 데이터 시드
+  // 카드 데이터 시드 (제거된 엔드포인트 - 자동 시드로 대체)
   async seedCards() {
-    try {
-      const response = await this.request('/seed', 'POST');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to seed cards:', error);
-      throw error;
-    }
+    console.warn('Card seeding endpoint removed - using automatic seeding');
+    return { message: 'Card seeding handled automatically' };
   }
 
   // 카탈로그 조회
