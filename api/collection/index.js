@@ -57,21 +57,38 @@ module.exports = async (req, res) => {
         ORDER BY c.id ASC
       `, [userId]);
 
-      const collection = result.rows.map(row => ({
-        id: row.card_id,
-        name: row.name,
-        type: row.type,
-        rank: row.rank,
-        baseHp: parseInt(row.base_hp),
-        baseAttack: parseInt(row.base_attack),
-        image: row.image,
-        attacks: JSON.parse(row.attacks || '[]'),
-        holoPattern: row.holo_pattern,
-        holoColor: row.holo_color,
-        count: parseInt(row.count),
-        firstObtainedAt: row.first_obtained_at,
-        lastObtainedAt: row.last_obtained_at
-      }));
+      const collection = result.rows.map(row => {
+        // attacks 필드가 이미 객체인지 문자열인지 확인
+        let attacks = [];
+        if (row.attacks) {
+          if (typeof row.attacks === 'string') {
+            try {
+              attacks = JSON.parse(row.attacks);
+            } catch (e) {
+              console.warn(`컬렉션 카드 ${row.card_id}의 attacks 파싱 실패:`, e.message);
+              attacks = [];
+            }
+          } else if (Array.isArray(row.attacks)) {
+            attacks = row.attacks;
+          }
+        }
+
+        return {
+          id: row.card_id,
+          name: row.name,
+          type: row.type,
+          rank: row.rank,
+          baseHp: parseInt(row.base_hp),
+          baseAttack: parseInt(row.base_attack),
+          image: row.image,
+          attacks: attacks,
+          holoPattern: row.holo_pattern,
+          holoColor: row.holo_color,
+          count: parseInt(row.count),
+          firstObtainedAt: row.first_obtained_at,
+          lastObtainedAt: row.last_obtained_at
+        };
+      });
 
       const response = {
         success: true,
