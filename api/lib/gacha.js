@@ -30,14 +30,21 @@ class GachaService {
 
   // 가챠 실행
   async performGacha(context) {
+    console.log('🎰 가챠 실행 시작');
     const client = await pool.connect();
+    console.log('✅ 데이터베이스 연결 성공');
     
     try {
       await client.query('BEGIN');
+      console.log('✅ 트랜잭션 시작');
 
       // 1. 사용자 티켓 확인 및 차감
+      console.log('🎫 티켓 확인 및 차감 중...');
       const ticketResult = await this.consumeTicket(client, context.userId);
+      console.log('티켓 결과:', ticketResult);
+      
       if (!ticketResult.success) {
+        console.log('❌ 티켓 부족');
         await client.query('ROLLBACK');
         return {
           success: false,
@@ -47,9 +54,12 @@ class GachaService {
           drawId: ''
         };
       }
+      console.log('✅ 티켓 차감 완료');
 
       // 2. 서버에서 확률 계산 및 카드 선택
+      console.log('🎲 카드 선택 중...');
       const selectedCard = await this.selectCardByProbability(client);
+      console.log('선택된 카드:', selectedCard);
       const drawId = uuidv4();
 
       // 3. 카드 결과 생성
@@ -61,17 +71,23 @@ class GachaService {
         drawId,
         timestamp: new Date().toISOString()
       };
+      console.log('카드 결과:', cardResult);
 
       // 4. 인벤토리에 카드 추가
+      console.log('📦 인벤토리에 카드 추가 중...');
       await this.addCardToInventory(client, context.userId, selectedCard.id);
+      console.log('✅ 인벤토리 추가 완료');
 
       // 5. 가챠 로그 기록
+      console.log('📝 가챠 로그 기록 중...');
       await this.logGachaDraw(client, context, drawId, [cardResult], ticketResult.remaining);
+      console.log('✅ 가챠 로그 기록 완료');
 
       // 6. 다음 티켓 충전 시간 계산
       const nextRefillAt = await this.calculateNextRefillTime();
 
       await client.query('COMMIT');
+      console.log('✅ 트랜잭션 커밋 완료');
 
       return {
         success: true,

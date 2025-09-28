@@ -23,13 +23,21 @@ module.exports = async (req, res) => {
   }
 
   try {
+    console.log('=== GACHA DRAW API 시작 ===');
+    console.log('Request method:', req.method);
+    console.log('Request headers:', req.headers);
+    
     const userId = req.headers['x-user-id'];
     const sessionId = req.headers['x-session-id'];
     const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
     const requestId = req.headers['x-request-id'] || uuidv4();
 
+    console.log('User ID:', userId);
+    console.log('Session ID:', sessionId);
+
     if (!userId || !sessionId) {
+      console.log('❌ 인증 실패 - User ID 또는 Session ID 없음');
       res.status(401).json({
         success: false,
         error: 'Authentication required',
@@ -47,8 +55,12 @@ module.exports = async (req, res) => {
       requestId
     };
 
+    console.log('Context:', context);
+
     const gachaService = new GachaService();
+    console.log('가챠 서비스 생성 완료, 가챠 실행 중...');
     const result = await gachaService.performGacha(context);
+    console.log('가챠 결과:', result);
     
     const response = {
       success: result.success,
