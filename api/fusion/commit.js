@@ -33,8 +33,9 @@ module.exports = async (req, res) => {
       return;
     }
 
-    const { materials, fusionId } = req.body;
-    if (!materials || !Array.isArray(materials) || materials.length < 3) {
+    const { materials, materialCardIds, fusionId } = req.body;
+    const materialsToUse = materials || materialCardIds;
+    if (!materialsToUse || !Array.isArray(materialsToUse) || materialsToUse.length < 3) {
       res.status(400).json({
         success: false,
         error: 'Invalid materials',
@@ -50,7 +51,7 @@ module.exports = async (req, res) => {
         SELECT card_id, count
         FROM user_inventory
         WHERE user_id = $1 AND card_id = ANY($2)
-      `, [userId, materials]);
+      `, [userId, materialsToUse]);
 
       const inventory = {};
       inventoryResult.rows.forEach(row => {
@@ -58,7 +59,7 @@ module.exports = async (req, res) => {
       });
 
       // 재료 충분한지 확인
-      for (const materialId of materials) {
+      for (const materialId of materialsToUse) {
         if (!inventory[materialId] || inventory[materialId] < 1) {
           res.status(400).json({
             success: false,
@@ -79,7 +80,7 @@ module.exports = async (req, res) => {
       };
 
       // 인벤토리에서 재료 제거
-      for (const materialId of materials) {
+      for (const materialId of materialsToUse) {
         await client.query(`
           UPDATE user_inventory
           SET count = count - 1
@@ -99,13 +100,13 @@ module.exports = async (req, res) => {
       await client.query(`
         INSERT INTO fusion_logs (user_id, fusion_id, materials_used, result_card, success)
         VALUES ($1, $2, $3, $4, true)
-      `, [userId, fusionId, JSON.stringify(materials), JSON.stringify(resultCard)]);
+      `, [userId, fusionId, JSON.stringify(materialsToUse), JSON.stringify(resultCard)]);
 
       const response = {
         success: true,
         data: {
           resultCard,
-          materialsUsed: materials
+          materialsUsed: materialsToUse
         },
         timestamp: new Date().toISOString(),
         requestId: req.headers['x-request-id'] || uuidv4()

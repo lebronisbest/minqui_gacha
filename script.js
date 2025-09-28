@@ -802,33 +802,10 @@ class MinquiCardGacha {
                 console.log('배경 bottom:', computedStyle.bottom);
             }
             
-            // 부모 요소들 확인
+            // 카드 요소 확인
             const cardFront = document.querySelector('.card-front');
             const card = document.querySelector('.card');
             const cardWrapper = document.querySelector('.card-wrapper');
-            
-            console.log('card-front 요소:', cardFront);
-            console.log('card 요소:', card);
-            console.log('card-wrapper 요소:', cardWrapper);
-            
-            if (cardFront) {
-                const computedStyle = window.getComputedStyle(cardFront);
-                console.log('card-front overflow:', computedStyle.overflow);
-            }
-            
-            if (card) {
-                const computedStyle = window.getComputedStyle(card);
-                console.log('card overflow:', computedStyle.overflow);
-            } else {
-                console.log('card 요소를 찾을 수 없음!');
-            }
-            
-            if (cardWrapper) {
-                const computedStyle = window.getComputedStyle(cardWrapper);
-                console.log('card-wrapper overflow:', computedStyle.overflow);
-                console.log('card-wrapper width:', computedStyle.width);
-                console.log('card-wrapper height:', computedStyle.height);
-            }
             
             // 홀로그램 패턴 제거됨
             
@@ -1118,7 +1095,8 @@ class MinquiCardGacha {
   async loadCollectionFromServer() {
     try {
       const response = await this.apiClient.getCollection();
-      this.collectedCards = response.collection || [];
+      // 서버에서 반환하는 데이터 구조에 맞게 수정
+      this.collectedCards = response.collection ? response.collection.map(card => card.id) : [];
       console.log('서버에서 컬렉션 로드 완료:', this.collectedCards.length, '장');
     } catch (error) {
       console.error('컬렉션 로드 실패:', error);
