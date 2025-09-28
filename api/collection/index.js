@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
 
     const client = await pool.connect();
     try {
-      // 사용자 인벤토리 조회
+      // 사용자 인벤토리 조회 (카드 넘버순으로 정렬)
       const result = await client.query(`
         SELECT 
           ui.card_id,
@@ -49,7 +49,7 @@ module.exports = async (req, res) => {
         FROM user_inventory ui
         JOIN cards c ON ui.card_id = c.id
         WHERE ui.user_id = $1
-        ORDER BY c.rank DESC, c.name ASC
+        ORDER BY c.id ASC
       `, [userId]);
 
       const collection = result.rows.map(row => ({

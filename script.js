@@ -1214,6 +1214,9 @@ class MinquiCardGacha {
       cardsToShow = cardsToShow.filter(card => card.rank === this.currentFilter);
     }
     
+    // 카드 넘버순으로 정렬 (id 기준)
+    cardsToShow.sort((a, b) => a.id - b.id);
+    
     console.log('렌더링할 카드 수:', cardsToShow.length);
     console.log('수집된 카드:', this.collectedCards);
     

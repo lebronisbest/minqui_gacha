@@ -30,7 +30,7 @@ module.exports = async (req, res) => {
       const result = await client.query(`
         SELECT id, name, type, rank, image, created_at, updated_at
         FROM cards 
-        ORDER BY rank DESC, name ASC
+        ORDER BY id ASC
       `);
 
       const cards = result.rows.map(row => ({
