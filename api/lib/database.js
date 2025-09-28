@@ -72,20 +72,31 @@ async function getRedisClient() {
 // 데이터베이스 초기화
 async function initializeDatabase() {
   try {
+    console.log('데이터베이스 초기화 시작...');
+    console.log('POSTGRES_URL 존재:', !!connectionString);
+    
     if (!connectionString) {
       throw new Error('POSTGRES_URL 환경 변수가 설정되지 않았습니다.');
     }
     
+    console.log('데이터베이스 연결 시도 중...');
     const client = await pool.connect();
     console.log('PostgreSQL connected successfully');
     
     // 간단한 쿼리로 연결 테스트
+    console.log('연결 테스트 쿼리 실행 중...');
     await client.query('SELECT 1');
     console.log('PostgreSQL query test successful');
     
     client.release();
+    console.log('데이터베이스 초기화 완료');
   } catch (error) {
     console.error('PostgreSQL connection failed:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      stack: error.stack
+    });
     throw error;
   }
 }

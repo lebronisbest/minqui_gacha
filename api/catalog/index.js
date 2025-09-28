@@ -24,19 +24,27 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // 환경 변수 로깅
+    console.log('POSTGRES_URL 존재:', !!process.env.POSTGRES_URL);
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    
     // 데이터베이스 연결 확인
     if (!process.env.POSTGRES_URL) {
       throw new Error('POSTGRES_URL 환경 변수가 설정되지 않았습니다.');
     }
     
+    console.log('데이터베이스 연결 시도 중...');
     const client = await pool.connect();
+    console.log('데이터베이스 연결 성공');
     try {
       // 전체 카드 데이터 조회 (컬렉션 표시용)
+      console.log('카드 데이터 조회 시작...');
       const result = await client.query(`
         SELECT id, name, type, rank, base_hp, base_attack, image, attacks, holo_pattern, holo_color, created_at, updated_at
         FROM cards
         ORDER BY id ASC
       `);
+      console.log('카드 데이터 조회 완료, 행 수:', result.rows.length);
 
       const cards = result.rows.map(row => ({
         id: row.id,
@@ -145,6 +153,9 @@ module.exports = async (req, res) => {
     }
   } catch (error) {
     console.error('Get catalog error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error name:', error.name);
+    console.error('Error code:', error.code);
     
     // 에러 타입에 따른 적절한 응답
     let statusCode = 500;
@@ -159,12 +170,19 @@ module.exports = async (req, res) => {
     } else if (error.message.includes('relation "cards" does not exist')) {
       statusCode = 503;
       errorMessage = 'Database not initialized';
+    } else if (error.code === 'ECONNREFUSED') {
+      statusCode = 503;
+      errorMessage = 'Database connection refused';
+    } else if (error.code === 'ENOTFOUND') {
+      statusCode = 503;
+      errorMessage = 'Database host not found';
     }
     
     res.status(statusCode).json({
       success: false,
       error: errorMessage,
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      details: error.message,
+      errorCode: error.code,
       timestamp: new Date().toISOString(),
       requestId: req.headers['x-request-id'] || uuidv4()
     });
