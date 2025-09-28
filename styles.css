@@ -360,7 +360,41 @@ body {
 
 
 /* 홀로그래픽 프레임 효과 - 일러스트 영역에만 표시 */
-/* 홀로그램 배경 제거됨 */
+.card-background-illustration::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: var(--illust-border-radius);
+  pointer-events: none;
+  z-index: 1;
+  background: 
+    linear-gradient(45deg, 
+      transparent 30%, 
+      rgba(255, 255, 255, 0.1) 50%, 
+      transparent 70%
+    ),
+    linear-gradient(-45deg, 
+      transparent 30%, 
+      rgba(255, 255, 255, 0.05) 50%, 
+      transparent 70%
+    );
+  animation: holoShimmer 3s ease-in-out infinite;
+  opacity: calc(var(--holo-intensity) * 0.8);
+}
+
+@keyframes holoShimmer {
+  0%, 100% { 
+    opacity: calc(var(--holo-intensity) * 0.3);
+    transform: translateX(-100%);
+  }
+  50% { 
+    opacity: calc(var(--holo-intensity) * 0.8);
+    transform: translateX(100%);
+  }
+}
 
 /* 일러스트 영역 공통 변수 */
 :root {
@@ -372,7 +406,59 @@ body {
 }
 
 /* 홀로그램 패턴별 스타일 */
-/* 홀로그램 패턴 제거됨 */
+.card-background-illustration[data-pattern="sparkles"]::before {
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.3) 1px, transparent 1px),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+    radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.25) 1px, transparent 1px),
+    linear-gradient(45deg, 
+      transparent 30%, 
+      rgba(255, 255, 255, 0.1) 50%, 
+      transparent 70%
+    );
+  background-size: 20px 20px, 15px 15px, 25px 25px, 100% 100%;
+  animation: sparkleShimmer 2s ease-in-out infinite;
+}
+
+.card-background-illustration[data-pattern="circuits"]::before {
+  background: 
+    linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(0, 255, 255, 0.1) 25%, 
+      transparent 50%, 
+      rgba(0, 255, 255, 0.1) 75%, 
+      transparent 100%
+    ),
+    linear-gradient(0deg, 
+      transparent 0%, 
+      rgba(0, 255, 255, 0.05) 25%, 
+      transparent 50%, 
+      rgba(0, 255, 255, 0.05) 75%, 
+      transparent 100%
+    );
+  background-size: 10px 10px, 10px 10px;
+  animation: circuitFlow 3s linear infinite;
+}
+
+@keyframes sparkleShimmer {
+  0%, 100% { 
+    opacity: calc(var(--holo-intensity) * 0.3);
+    transform: scale(1);
+  }
+  50% { 
+    opacity: calc(var(--holo-intensity) * 0.8);
+    transform: scale(1.05);
+  }
+}
+
+@keyframes circuitFlow {
+  0% { 
+    background-position: 0 0, 0 0;
+  }
+  100% { 
+    background-position: 20px 20px, 20px 20px;
+  }
+}
 
 
 

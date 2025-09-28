@@ -790,10 +790,16 @@ class MinquiCardGacha {
             // 배경 이미지와 캐릭터 이미지 업데이트
             const cardBackground = document.getElementById('cardBackground');
             const cardCharacter = document.getElementById('cardCharacter');
+            const cardBackgroundIllustration = document.querySelector('.card-background-illustration');
             
             if (cardBackground) {
                 cardBackground.src = this.cardData.image;
                 cardBackground.alt = `${this.cardData.name} 배경 일러스트`;
+            }
+            
+            // 홀로그램 패턴 적용
+            if (cardBackgroundIllustration && this.cardData.holoPattern) {
+                cardBackgroundIllustration.setAttribute('data-pattern', this.cardData.holoPattern);
             }
             
             if (cardCharacter) {
