@@ -156,13 +156,25 @@ class ApiClient {
   // 조합 실행
   async commitFusion(materialCardIds) {
     try {
+      console.log('=== FUSION COMMIT REQUEST ===');
+      console.log('Material Card IDs:', materialCardIds);
+      console.log('User ID:', this.userId);
+      console.log('Session ID:', this.sessionId);
+      console.log('===============================');
+      
       const response = await this.request('/fusion/commit', {
         method: 'POST',
         body: { materialCardIds }
       });
+      
+      console.log('Fusion commit response:', response);
       return response.data;
     } catch (error) {
-      console.error('Fusion commit failed:', error);
+      console.error('=== FUSION COMMIT ERROR ===');
+      console.error('Error:', error);
+      console.error('Error message:', error.message);
+      console.error('Error response:', error.response);
+      console.error('============================');
       throw error;
     }
   }

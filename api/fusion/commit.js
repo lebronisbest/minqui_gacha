@@ -167,18 +167,23 @@ module.exports = async (req, res) => {
       client.release();
     }
   } catch (error) {
-    console.error('Fusion commit error:', error);
+    console.error('=== FUSION COMMIT ERROR ===');
+    console.error('Error message:', error.message);
     console.error('Error stack:', error.stack);
     console.error('Error name:', error.name);
     console.error('Error code:', error.code);
-    console.error('Request body:', req.body);
+    console.error('Request body:', JSON.stringify(req.body, null, 2));
+    console.error('Request headers:', JSON.stringify(req.headers, null, 2));
     console.error('User ID:', req.headers['x-user-id']);
+    console.error('Session ID:', req.headers['x-session-id']);
+    console.error('================================');
     
     res.status(500).json({
       success: false,
       error: 'Internal server error',
       details: error.message,
       errorCode: error.code,
+      stack: error.stack,
       timestamp: new Date().toISOString(),
       requestId: req.headers['x-request-id'] || uuidv4()
     });
