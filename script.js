@@ -640,6 +640,9 @@ class MinquiCardGacha {
       // 카드 컬렉션에 추가 (로컬 캐시)
       this.addToCollection(selectedCard.id);
       
+      // 서버 컬렉션 데이터 다시 로드 (조합에서 사용할 수 있도록)
+      await this.loadCollectionFromServer();
+      
       // 티켓 정보 업데이트
       this.tickets = result.ticketsRemaining;
       this.updateTicketDisplay();
@@ -1451,7 +1454,14 @@ ${skill ? skill.description : ''}`);
     // 서버 컬렉션 데이터에서 실제 보유 개수 확인
     const ownedCard = this.serverCollectionData ? 
       this.serverCollectionData.find(c => c.id === card.id) : null;
-    const totalCardCount = ownedCard ? ownedCard.count : 0;
+    const serverCount = ownedCard ? ownedCard.count : 0;
+    
+    // 로컬 컬렉션에서 개수 확인
+    const localCount = this.collectedCards ? 
+      this.collectedCards.filter(id => id === card.id).length : 0;
+    
+    // 더 큰 값을 사용 (서버 데이터 우선, 없으면 로컬 데이터)
+    const totalCardCount = Math.max(serverCount, localCount);
     
     if (totalCardCount <= 0) {
       alert('해당 카드를 보유하고 있지 않습니다!');
@@ -1502,7 +1512,14 @@ ${skill ? skill.description : ''}`);
       // 서버 컬렉션 데이터에서 실제 보유 개수 확인
       const ownedCard = this.serverCollectionData ? 
         this.serverCollectionData.find(card => card.id === cardId) : null;
-      const totalCardCount = ownedCard ? ownedCard.count : 0;
+      const serverCount = ownedCard ? ownedCard.count : 0;
+      
+      // 로컬 컬렉션에서 개수 확인
+      const localCount = this.collectedCards ? 
+        this.collectedCards.filter(id => id === cardId).length : 0;
+      
+      // 더 큰 값을 사용 (서버 데이터 우선, 없으면 로컬 데이터)
+      const totalCardCount = Math.max(serverCount, localCount);
       
       const selectedCardCount = this.selectedFusionCards.filter(selectedCard => 
         selectedCard && selectedCard.id === cardId
@@ -1559,13 +1576,17 @@ ${skill ? skill.description : ''}`);
   
   
   getAvailableCardsForFusion() {
-    // 서버 컬렉션 데이터에서 소유한 카드들 반환
-    if (!this.serverCollectionData || this.serverCollectionData.length === 0) {
-      return [];
-    }
+    // 서버 컬렉션 데이터와 로컬 컬렉션 데이터를 모두 확인
+    const serverCards = this.serverCollectionData || [];
+    const localCards = this.collectedCards || [];
     
-    return this.serverCollectionData.map(ownedCard => {
-      return this.gameData.cards.find(card => card.id === ownedCard.id);
+    // 서버 데이터가 있으면 서버 데이터 사용, 없으면 로컬 데이터 사용
+    const availableCardIds = serverCards.length > 0 ? 
+      serverCards.map(card => card.id) : 
+      [...new Set(localCards)];
+    
+    return availableCardIds.map(cardId => {
+      return this.gameData.cards.find(card => card.id === cardId);
     }).filter(card => card);
   }
   
