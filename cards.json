@@ -8,8 +8,6 @@
       "baseHp": 130,
       "baseAttack": 90,
       "image": "illust/010.png",
-      "holoPattern": "crown",
-      "holoColor": "#ff6b6b",
       "attacks": [
         {
           "name": "모든 잉모노의 신",
@@ -25,8 +23,6 @@
       "baseHp": 130,
       "baseAttack": 140,
       "image": "illust/002.png",
-      "holoPattern": "waves",
-      "holoColor": "#9c27b0",
       "attacks": [
         {
           "name": "명사수",
@@ -42,8 +38,6 @@
       "baseHp": 120,
       "baseAttack": 100,
       "image": "illust/003.png",
-      "holoPattern": "waves",
-      "holoColor": "#9c27b0",
       "attacks": [
         {
           "name": "힝",
@@ -59,8 +53,6 @@
       "baseHp": 100,
       "baseAttack": 110,
       "image": "illust/004.png",
-      "holoPattern": "circuits",
-      "holoColor": "#2196f3",
       "attacks": [
         {
           "name": "버그 수정",
@@ -76,8 +68,6 @@
       "baseHp": 80,
       "baseAttack": 70,
       "image": "illust/005.png",
-      "holoPattern": "circuits",
-      "holoColor": "#2196f3",
       "attacks": [
         {
           "name": "설득",
@@ -93,8 +83,6 @@
       "baseHp": 180,
       "baseAttack": 150,
       "image": "illust/006.png",
-      "holoPattern": "circuits",
-      "holoColor": "#2196f3",
       "attacks": [
         {
           "name": "전설의 힘",
@@ -110,8 +98,6 @@
       "baseHp": 160,
       "baseAttack": 130,
       "image": "illust/007.png",
-      "holoPattern": "sparkles",
-      "holoColor": "#4caf50",
       "attacks": [
         {
           "name": "혁신",
@@ -127,8 +113,6 @@
       "baseHp": 140,
       "baseAttack": 160,
       "image": "illust/008.png",
-      "holoPattern": "sparkles",
-      "holoColor": "#4caf50",
       "attacks": [
         {
           "name": "마법 폭발",
@@ -144,8 +128,6 @@
       "baseHp": 150,
       "baseAttack": 120,
       "image": "illust/009.png",
-      "holoPattern": "sparkles",
-      "holoColor": "#4caf50",
       "attacks": [
         {
           "name": "강타",
@@ -161,8 +143,6 @@
       "baseHp": 150,
       "baseAttack": 120,
       "image": "illust/001.png",
-      "holoPattern": "stars",
-      "holoColor": "#ffa500",
       "attacks": [
         {
           "name": "점령",
@@ -178,8 +158,6 @@
       "baseHp": 110,
       "baseAttack": 130,
       "image": "illust/011.png",
-      "holoPattern": "circuits",
-      "holoColor": "#00ff88",
       "attacks": [
         {
           "name": "버그 생성",
@@ -195,8 +173,6 @@
       "baseHp": 100,
       "baseAttack": 90,
       "image": "illust/012.png",
-      "holoPattern": "waves",
-      "holoColor": "#ff9500",
       "attacks": [
         {
           "name": "맛있는 요리",
@@ -212,8 +188,6 @@
       "baseHp": 80,
       "baseAttack": 70,
       "image": "illust/013.png",
-      "holoPattern": "sparkles",
-      "holoColor": "#ff69b4",
       "attacks": [
         {
           "name": "리듬 타기",
@@ -229,8 +203,6 @@
       "baseHp": 90,
       "baseAttack": 110,
       "image": "illust/014.png",
-      "holoPattern": "pages",
-      "holoColor": "#8b4513",
       "attacks": [
         {
           "name": "지식 흡수",
@@ -246,8 +218,6 @@
       "baseHp": 140,
       "baseAttack": 100,
       "image": "illust/015.png",
-      "holoPattern": "energy",
-      "holoColor": "#ff4500",
       "attacks": [
         {
           "name": "파워 스트라이크",
@@ -263,8 +233,6 @@
       "baseHp": 70,
       "baseAttack": 85,
       "image": "illust/016.png",
-      "holoPattern": "pixels",
-      "holoColor": "#00bfff",
       "attacks": [
         {
           "name": "콤보 어택",
@@ -280,8 +248,6 @@
       "baseHp": 95,
       "baseAttack": 95,
       "image": "illust/017.png",
-      "holoPattern": "notes",
-      "holoColor": "#9370db",
       "attacks": [
         {
           "name": "음파 공격",
@@ -297,8 +263,6 @@
       "baseHp": 85,
       "baseAttack": 125,
       "image": "illust/018.png",
-      "holoPattern": "brush",
-      "holoColor": "#ff1493",
       "attacks": [
         {
           "name": "창조의 붓",
@@ -314,8 +278,6 @@
       "baseHp": 120,
       "baseAttack": 140,
       "image": "illust/019.png",
-      "holoPattern": "equations",
-      "holoColor": "#4169e1",
       "attacks": [
         {
           "name": "수식 폭발",
@@ -331,8 +293,6 @@
       "baseHp": 60,
       "baseAttack": 30,
       "image": "illust/020.png",
-      "holoPattern": "zzz",
-      "holoColor": "#dda0dd",
       "attacks": [
         {
           "name": "꿈속 공격",
@@ -348,8 +308,6 @@
       "baseHp": 105,
       "baseAttack": 80,
       "image": "illust/021.png",
-      "holoPattern": "compass",
-      "holoColor": "#32cd32",
       "attacks": [
         {
           "name": "탐험",
@@ -365,8 +323,6 @@
       "baseHp": 75,
       "baseAttack": 65,
       "image": "illust/022.png",
-      "holoPattern": "camera",
-      "holoColor": "#ff8c00",
       "attacks": [
         {
           "name": "플래시",
@@ -382,8 +338,6 @@
       "baseHp": 65,
       "baseAttack": 55,
       "image": "illust/023.png",
-      "holoPattern": "film",
-      "holoColor": "#000000",
       "attacks": [
         {
           "name": "영화 마법",
@@ -399,8 +353,6 @@
       "baseHp": 85,
       "baseAttack": 75,
       "image": "illust/024.png",
-      "holoPattern": "sparkles",
-      "holoColor": "#ffd700",
       "attacks": [
         {
           "name": "돈의 힘",
@@ -416,8 +368,6 @@
       "baseHp": 90,
       "baseAttack": 60,
       "image": "illust/025.png",
-      "holoPattern": "circuits",
-      "holoColor": "#ff6347",
       "attacks": [
         {
           "name": "고속 충돌",
@@ -433,8 +383,6 @@
       "baseHp": 110,
       "baseAttack": 70,
       "image": "illust/026.png",
-      "holoPattern": "zen",
-      "holoColor": "#98fb98",
       "attacks": [
         {
           "name": "명상",
@@ -450,8 +398,6 @@
       "baseHp": 130,
       "baseAttack": 150,
       "image": "illust/027.png",
-      "holoPattern": "code",
-      "holoColor": "#00ff00",
       "attacks": [
         {
           "name": "코드 실행",
@@ -467,8 +413,6 @@
       "baseHp": 100,
       "baseAttack": 120,
       "image": "illust/028.png",
-      "holoPattern": "melody",
-      "holoColor": "#ff69b4",
       "attacks": [
         {
           "name": "음성 공격",
@@ -484,8 +428,6 @@
       "baseHp": 95,
       "baseAttack": 105,
       "image": "illust/029.png",
-      "holoPattern": "books",
-      "holoColor": "#8b4513",
       "attacks": [
         {
           "name": "지식 폭발",
@@ -501,8 +443,6 @@
       "baseHp": 180,
       "baseAttack": 160,
       "image": "illust/030.png",
-      "holoPattern": "crown",
-      "holoColor": "#ff0000",
       "attacks": [
         {
           "name": "절대 권력",

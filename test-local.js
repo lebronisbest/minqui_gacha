@@ -1,5 +1,5 @@
 // 로컬에서 API 테스트
-const fetch = require('node-fetch');
+const fetch = require('node-fetch').default;
 
 async function testLocalAPI() {
   console.log('로컬 API 테스트 시작...');

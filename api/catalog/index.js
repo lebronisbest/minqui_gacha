@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
       // 전체 카드 데이터 조회 (컬렉션 표시용)
       console.log('카드 데이터 조회 시작...');
       const result = await client.query(`
-        SELECT id, name, type, rank, base_hp, base_attack, image, attacks, holo_pattern, holo_color, created_at, updated_at
+        SELECT id, name, type, rank, base_hp, base_attack, image, attacks, created_at, updated_at
         FROM cards
         ORDER BY id ASC
       `);
@@ -70,9 +70,7 @@ module.exports = async (req, res) => {
           baseHp: parseInt(row.base_hp),
           baseAttack: parseInt(row.base_attack),
           image: row.image,
-          attacks: attacks,
-          holoPattern: row.holo_pattern,
-          holoColor: row.holo_color
+          attacks: attacks
         };
         console.log(`카드 처리됨: ID=${card.id}, Name=${card.name}, Image=${card.image}`);
         return card;

@@ -206,16 +206,21 @@ class MinquiCardGacha {
 
   // 서버에서 카드 데이터 로드
   async loadCardDataFromServer() {
-    const catalog = await this.apiClient.getCatalog();
-    this.gameData = {
-      cards: catalog.cards,
-      ranks: catalog.ranks,
-      typeIcons: catalog.typeIcons
-    };
-    this.cardData = { ...this.gameData.cards[0] };
-    console.log('서버에서 카드 데이터 로드 완료:', this.gameData.cards.length, '장');
-    console.log('확률 데이터:', this.gameData.ranks);
-    console.log('타입 데이터:', this.gameData.typeIcons);
+    try {
+      const catalog = await this.apiClient.getCatalog();
+      this.gameData = {
+        cards: catalog.cards,
+        ranks: catalog.ranks,
+        typeIcons: catalog.typeIcons
+      };
+      this.cardData = { ...this.gameData.cards[0] };
+      console.log('서버에서 카드 데이터 로드 완료:', this.gameData.cards.length, '장');
+      console.log('확률 데이터:', this.gameData.ranks);
+      console.log('타입 데이터:', this.gameData.typeIcons);
+    } catch (error) {
+      console.error('서버에서 카드 데이터 로드 실패:', error);
+      throw error; // 에러를 다시 던져서 상위에서 처리하도록 함
+    }
   }
 
   // 로컬 카드 데이터 로드 (폴백)
@@ -1095,14 +1100,6 @@ class MinquiCardGacha {
     this.updateCollectionUI();
   }
   
-  removeCardsFromCollection(cardIds) {
-    // 서버 데이터만 사용 - 로컬 배열 제거
-    // 실제 카드 제거는 서버에서 처리됨
-    console.log('카드 제거됨 (서버에서 처리):', cardIds);
-    
-    // 컬렉션 UI 업데이트
-    this.updateCollectionUI();
-  }
   
   initCollectionUI() {
     // 컬렉션 UI 초기화
@@ -1110,7 +1107,7 @@ class MinquiCardGacha {
     this.renderCollectionCards();
   }
   
-  switchTab(tabName) {
+  async switchTab(tabName) {
     // 탭 전환
     document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -1124,6 +1121,12 @@ class MinquiCardGacha {
     // 컬렉션 탭으로 전환 시 UI 업데이트
     if (tabName === 'collection') {
       this.updateCollectionUI();
+    }
+    
+    // 조합 탭으로 전환 시 컬렉션 데이터 다시 로드 및 조합창 초기화
+    if (tabName === 'fusion') {
+      await this.loadCollectionFromServer();
+      this.initFusionUI();
     }
     
   }
@@ -1153,14 +1156,9 @@ class MinquiCardGacha {
       document.getElementById('totalCards').textContent = collectedCount;
       document.getElementById('collectionRate').textContent = `${collectionRate}% (${uniqueCards}/${totalCards})`;
     } else {
-      // 로컬 데이터 기반 통계 (폴백)
-      const collectedCount = this.serverCollectionData ? 
-        this.serverCollectionData.reduce((sum, card) => sum + card.count, 0) : 0;
-      const uniqueCards = this.serverCollectionData ? this.serverCollectionData.length : 0;
-      const collectionRate = Math.round((uniqueCards / totalCards) * 100);
-
-      document.getElementById('totalCards').textContent = collectedCount;
-      document.getElementById('collectionRate').textContent = `${collectionRate}% (${uniqueCards}/${totalCards})`;
+      // 서버 데이터가 없을 때
+      document.getElementById('totalCards').textContent = '0';
+      document.getElementById('collectionRate').textContent = `0% (0/${totalCards})`;
     }
   }
   
@@ -1175,32 +1173,40 @@ class MinquiCardGacha {
     const grid = document.getElementById('collectionGrid');
     grid.innerHTML = '';
 
-    // 항상 모든 카드를 표시하되, 소유 여부를 구분
-    let allCards = this.gameData.cards;
-
+    // 모든 카드 데이터 가져오기 (모인 카드 + 안 모인 카드)
+    const allCards = this.gameData.cards || [];
+    
     // 필터 적용
+    let cardsToRender = allCards;
     if (this.currentFilter !== 'all') {
-      allCards = allCards.filter(card => card.rank === this.currentFilter);
+      cardsToRender = allCards.filter(card => card.rank === this.currentFilter);
     }
 
     // 카드 넘버순으로 정렬 (id 기준)
-    allCards.sort((a, b) => a.id.localeCompare(b.id));
+    cardsToRender.sort((a, b) => a.id.localeCompare(b.id));
 
-    console.log('렌더링할 카드 수:', allCards.length);
-    console.log('서버 컬렉션 데이터:', this.serverCollectionData);
+    console.log('렌더링할 카드 수:', cardsToRender.length);
+    console.log('전체 카드 데이터:', allCards.length);
 
-    allCards.forEach(card => {
-      // 서버 컬렉션 데이터에서 해당 카드 찾기
-      const ownedCard = this.serverCollectionData ?
+    cardsToRender.forEach(card => {
+      // 해당 카드를 소유하고 있는지 확인
+      const ownedCard = this.serverCollectionData ? 
         this.serverCollectionData.find(c => c.id === card.id) : null;
-
       const isOwned = !!ownedCard;
-
-      // 소유한 카드는 서버 데이터를 사용, 미소유 카드는 로컬 데이터 사용
-      const cardToRender = ownedCard || card;
-
-      console.log(`카드 ${card.name} (${card.id}): 소유=${isOwned}`);
-      const cardElement = this.createCollectionCardElement(cardToRender, isOwned);
+      const cardCount = ownedCard ? ownedCard.count : 0;
+      
+      // 24번, 25번 카드 특별 디버깅
+      if (card.id === '024' || card.id === '025') {
+        console.log(`🔍 특별 디버깅 - 카드 ${card.name} (${card.id}):`, {
+          isOwned,
+          cardCount,
+          cardData: card,
+          serverCollectionData: this.serverCollectionData
+        });
+      }
+      
+      console.log(`카드 ${card.name} (${card.id}): 소유=${isOwned}, 수량=${cardCount}`);
+      const cardElement = this.createCollectionCardElement(card, isOwned);
       grid.appendChild(cardElement);
     });
   }
@@ -1209,6 +1215,16 @@ class MinquiCardGacha {
     // 컬렉션 카드 요소 생성 - 가챠 카드와 동일한 구조
     const cardDiv = document.createElement('div');
     cardDiv.className = `collection-card ${isOwned ? 'owned' : 'not-owned'}`;
+    
+    // 24번, 25번 카드 특별 디버깅
+    if (card.id === '024' || card.id === '025') {
+      console.log(`🔍 createCollectionCardElement - 카드 ${card.name} (${card.id}):`, {
+        cardDiv,
+        className: cardDiv.className,
+        isOwned,
+        card
+      });
+    }
     
     const rankInfo = this.gameData.ranks[card.rank];
     const typeIcon = this.gameData.typeIcons?.[card.type] || '🎨';
@@ -1226,6 +1242,7 @@ class MinquiCardGacha {
     const skill = card.attacks && card.attacks[0];
     const skillName = skill ? skill.name : '창작 마법';
     const skillDescription = skill ? skill.description : '무한한 상상력으로 새로운 세계를 창조한다.';
+    
     
     cardDiv.innerHTML = `
       <!-- 카드 앞면 - 가챠 카드와 동일한 구조 -->
@@ -1278,6 +1295,7 @@ class MinquiCardGacha {
             <div class="collection-skill-description">${skillDescription}</div>
           </div>
         </div>
+        
         
         <!-- 캐릭터 -->
         <div class="collection-card-character">
@@ -1345,6 +1363,18 @@ ${skill ? skill.description : ''}`);
     this.updateFusionInfo();
   }
   
+  // 조합 UI 초기화 (탭 전환 시 호출)
+  initFusionUI() {
+    // 조합 슬롯 초기화
+    this.updateFusionSlots();
+    
+    // 카드 그리드 렌더링
+    this.renderFusionCards();
+    
+    // 조합 정보 업데이트
+    this.updateFusionInfo();
+  }
+  
   // 10개 고정 슬롯 시스템
   updateFusionSlots() {
     const container = document.getElementById('fusionSlots');
@@ -1398,10 +1428,7 @@ ${skill ? skill.description : ''}`);
       this.serverCollectionData.find(c => c.id === card.id) : null;
     const cardCount = ownedCard ? ownedCard.count : 0;
     
-    // 카드가 0장이면 disabled 클래스 추가
-    if (cardCount <= 0) {
-      cardDiv.classList.add('disabled');
-    }
+    // 조합탭에서는 0장인 카드는 렌더링되지 않으므로 disabled 체크 불필요
     
     cardDiv.innerHTML = `
       <img src="${card.image}" alt="${card.name}" class="fusion-card-image">
@@ -1751,26 +1778,19 @@ ${skill ? skill.description : ''}`);
       const materialCardIds = filledSlots.map(card => card.id);
       const result = await this.apiClient.commitFusion(materialCardIds);
       
-      if (!result.success) {
-        alert('조합에 실패했습니다. 다시 시도해주세요.');
-        return;
-      }
+      console.log('Fusion result:', result);
       
       // 룰렛으로 결과 표시
       this.showRoulette(filledSlots, result.resultCard);
       
-      // 성공 시 재료 카드 제거 및 결과 카드 추가
+      // 성공 시 서버 컬렉션 데이터 업데이트 (서버에서 이미 재료 제거 및 결과 추가 완료)
       if (result.resultCard) {
-        this.removeCardsFromCollection(materialCardIds);
-        this.addToCollection(result.resultCard.id);
-        
         // 서버 컬렉션 데이터 업데이트
         await this.loadCollectionFromServer();
+        
+        // 조합창도 업데이트 (사용된 카드들이 사라지도록)
+        this.initFusionUI();
       }
-      
-      // 티켓 정보 업데이트
-      this.tickets = result.ticketsRemaining;
-      this.updateTicketDisplay();
       
     } catch (error) {
       console.error('조합 실행 실패:', error);

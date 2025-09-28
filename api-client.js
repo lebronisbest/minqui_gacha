@@ -168,6 +168,11 @@ class ApiClient {
       });
       
       console.log('Fusion commit response:', response);
+      
+      if (!response.success) {
+        throw new Error(response.error || 'Fusion failed');
+      }
+      
       return response.data;
     } catch (error) {
       console.error('=== FUSION COMMIT ERROR ===');

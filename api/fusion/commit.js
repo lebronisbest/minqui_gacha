@@ -27,6 +27,8 @@ module.exports = async (req, res) => {
     console.log('Request method:', req.method);
     console.log('Request headers:', req.headers);
     console.log('Request body:', req.body);
+    console.log('POSTGRES_URL 존재:', !!process.env.POSTGRES_URL);
+    console.log('NODE_ENV:', process.env.NODE_ENV);
     
     const userId = req.headers['x-user-id'];
     console.log('User ID:', userId);
@@ -46,6 +48,10 @@ module.exports = async (req, res) => {
     console.log('Material Card IDs:', materialCardIds);
     console.log('Fusion ID:', fusionId);
     
+    // fusionId가 없으면 생성
+    const finalFusionId = fusionId || `fusion_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    console.log('Final Fusion ID:', finalFusionId);
+    
     const materialsToUse = materials || materialCardIds;
     console.log('Materials to use:', materialsToUse);
     
@@ -60,12 +66,35 @@ module.exports = async (req, res) => {
     }
 
     console.log('🔗 데이터베이스 연결 시도...');
+    console.log('Pool 상태:', {
+      totalCount: pool.totalCount,
+      idleCount: pool.idleCount,
+      waitingCount: pool.waitingCount
+    });
+    
+    if (!process.env.POSTGRES_URL) {
+      console.log('❌ POSTGRES_URL 환경변수가 설정되지 않음');
+      res.status(500).json({
+        success: false,
+        error: 'Database configuration missing',
+        details: 'POSTGRES_URL environment variable is not set',
+        timestamp: new Date().toISOString()
+      });
+      return;
+    }
+    
     const client = await pool.connect();
     console.log('✅ 데이터베이스 연결 성공');
+    
+    // 연결 테스트
+    const testResult = await client.query('SELECT NOW() as current_time');
+    console.log('데이터베이스 시간:', testResult.rows[0].current_time);
     
     try {
       // 사용자 인벤토리 확인
       console.log('📦 사용자 인벤토리 확인 중...');
+      console.log('쿼리 파라미터:', { userId, materialsToUse });
+      
       const inventoryResult = await client.query(`
         SELECT card_id, count
         FROM user_inventory
@@ -73,6 +102,7 @@ module.exports = async (req, res) => {
       `, [userId, materialsToUse]);
       
       console.log('인벤토리 쿼리 결과:', inventoryResult.rows);
+      console.log('쿼리 실행 시간:', inventoryResult.duration);
 
       const inventory = {};
       inventoryResult.rows.forEach(row => {
@@ -149,7 +179,7 @@ module.exports = async (req, res) => {
       await client.query(`
         INSERT INTO fusion_logs (user_id, fusion_id, materials_used, result_card, success)
         VALUES ($1, $2, $3, $4, true)
-      `, [userId, fusionId, JSON.stringify(materialsToUse), JSON.stringify(resultCard)]);
+      `, [userId, finalFusionId, JSON.stringify(materialsToUse), JSON.stringify(resultCard)]);
       console.log('✅ 퓨전 로그 기록 완료');
 
       const response = {
@@ -172,10 +202,17 @@ module.exports = async (req, res) => {
     console.error('Error stack:', error.stack);
     console.error('Error name:', error.name);
     console.error('Error code:', error.code);
+    console.error('Error cause:', error.cause);
     console.error('Request body:', JSON.stringify(req.body, null, 2));
     console.error('Request headers:', JSON.stringify(req.headers, null, 2));
     console.error('User ID:', req.headers['x-user-id']);
     console.error('Session ID:', req.headers['x-session-id']);
+    console.error('Environment check:', {
+      POSTGRES_URL: !!process.env.POSTGRES_URL,
+      NODE_ENV: process.env.NODE_ENV,
+      poolTotalCount: pool.totalCount,
+      poolIdleCount: pool.idleCount
+    });
     console.error('================================');
     
     res.status(500).json({

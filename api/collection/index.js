@@ -48,9 +48,7 @@ module.exports = async (req, res) => {
           c.base_hp,
           c.base_attack,
           c.image,
-          c.attacks,
-          c.holo_pattern,
-          c.holo_color
+          c.attacks
         FROM user_inventory ui
         JOIN cards c ON ui.card_id = c.id
         WHERE ui.user_id = $1
@@ -82,8 +80,6 @@ module.exports = async (req, res) => {
           baseAttack: parseInt(row.base_attack),
           image: row.image,
           attacks: attacks,
-          holoPattern: row.holo_pattern,
-          holoColor: row.holo_color,
           count: parseInt(row.count),
           firstObtainedAt: row.first_obtained_at,
           lastObtainedAt: row.last_obtained_at

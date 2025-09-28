@@ -17,12 +17,6 @@
   --neutral-700: #334155;
   --neutral-900: #0F172A;
   
-  /* 홀로 스펙트럼 (장식용만) */
-  --holo-pink: #FF7AB6;
-  --holo-gold: #FFD26F;
-  --holo-aqua: #7AF5FF;
-  --holo-purple: #9D7AFF;
-  --holo-lime: #7CFF6E;
   
   /* 3D 효과 파라미터 */
   --max-tilt: 12deg;
@@ -30,8 +24,6 @@
   --gloss-width: 18%;
   --gloss-alpha-min: 0.05;
   --gloss-alpha-max: 0.30;
-  --holo-intensity-min: 0.35;
-  --holo-intensity-max: 0.65;
   
   /* 현재 상태 변수 */
   --tilt-rx: 0deg;
@@ -39,7 +31,6 @@
   --gloss-x: 0.5;
   --gloss-y: 0.5;
   --gloss-alpha: 0.05;
-  --holo-intensity: 0.35;
   --shadow-elevation: 1;
 }
 
@@ -309,7 +300,6 @@ body {
 /* 카드 호버 상태 */
 .card:hover {
   --shadow-elevation: 2;
-  --holo-intensity: var(--holo-intensity-max);
   --gloss-alpha: var(--gloss-alpha-max);
 }
 
@@ -359,42 +349,7 @@ body {
 
 
 
-/* 홀로그래픽 프레임 효과 - 일러스트 영역에만 표시 */
-.card-background-illustration::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: var(--illust-border-radius);
-  pointer-events: none;
-  z-index: 1;
-  background: 
-    linear-gradient(45deg, 
-      transparent 30%, 
-      rgba(255, 255, 255, 0.1) 50%, 
-      transparent 70%
-    ),
-    linear-gradient(-45deg, 
-      transparent 30%, 
-      rgba(255, 255, 255, 0.05) 50%, 
-      transparent 70%
-    );
-  animation: holoShimmer 3s ease-in-out infinite;
-  opacity: calc(var(--holo-intensity) * 0.8);
-}
 
-@keyframes holoShimmer {
-  0%, 100% { 
-    opacity: calc(var(--holo-intensity) * 0.3);
-    transform: translateX(-100%);
-  }
-  50% { 
-    opacity: calc(var(--holo-intensity) * 0.8);
-    transform: translateX(100%);
-  }
-}
 
 /* 일러스트 영역 공통 변수 */
 :root {
@@ -440,25 +395,6 @@ body {
   animation: circuitFlow 3s linear infinite;
 }
 
-@keyframes sparkleShimmer {
-  0%, 100% { 
-    opacity: calc(var(--holo-intensity) * 0.3);
-    transform: scale(1);
-  }
-  50% { 
-    opacity: calc(var(--holo-intensity) * 0.8);
-    transform: scale(1.05);
-  }
-}
-
-@keyframes circuitFlow {
-  0% { 
-    background-position: 0 0, 0 0;
-  }
-  100% { 
-    background-position: 20px 20px, 20px 20px;
-  }
-}
 
 
 
@@ -2287,7 +2223,9 @@ body {
   mix-blend-mode: multiply;
 }
 
-  /* 컬렉션 카드 하단 투명 박스 */
+
+
+/* 컬렉션 카드 하단 투명 박스 */
   .collection-card-bottom-overlay {
     position: absolute;
     bottom: 0.5em;
