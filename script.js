@@ -187,6 +187,9 @@ class MinquiCardGacha {
   // 서버 연결 및 인증 초기화
   async initializeServerConnection() {
     try {
+      // 데이터베이스 초기화 확인 및 실행
+      await this.ensureDatabaseInitialized();
+      
       // 기존 세션 복원 시도
       const sessionValid = await this.apiClient.restoreSession();
       
@@ -200,6 +203,36 @@ class MinquiCardGacha {
     } catch (error) {
       console.error('서버 연결 실패:', error);
       throw error;
+    }
+  }
+
+  // 데이터베이스 초기화 확인 및 실행
+  async ensureDatabaseInitialized() {
+    try {
+      console.log('데이터베이스 초기화 확인 중...');
+      
+      // 먼저 카탈로그를 시도해서 데이터베이스 상태 확인
+      try {
+        await this.apiClient.getCatalog();
+        console.log('데이터베이스가 이미 초기화되어 있습니다.');
+        return;
+      } catch (catalogError) {
+        console.log('카탈로그 로드 실패, 데이터베이스 초기화 필요:', catalogError.message);
+      }
+      
+      // 데이터베이스 초기화
+      console.log('데이터베이스 초기화 시작...');
+      await this.apiClient.initializeDatabase();
+      console.log('데이터베이스 초기화 완료');
+      
+      // 카드 데이터 시드
+      console.log('카드 데이터 시드 시작...');
+      await this.apiClient.seedCards();
+      console.log('카드 데이터 시드 완료');
+      
+    } catch (error) {
+      console.error('데이터베이스 초기화 실패:', error);
+      // 초기화 실패해도 앱은 계속 실행되도록 함
     }
   }
 

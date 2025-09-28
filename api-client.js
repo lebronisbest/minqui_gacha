@@ -108,6 +108,28 @@ class ApiClient {
     }
   }
 
+  // 데이터베이스 초기화
+  async initializeDatabase() {
+    try {
+      const response = await this.request('/init');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to initialize database:', error);
+      throw error;
+    }
+  }
+
+  // 카드 데이터 시드
+  async seedCards() {
+    try {
+      const response = await this.request('/seed', 'POST');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to seed cards:', error);
+      throw error;
+    }
+  }
+
   // 카탈로그 조회
   async getCatalog() {
     try {
