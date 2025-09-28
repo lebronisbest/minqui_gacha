@@ -1,6 +1,9 @@
 // Vercel Postgres 연결 설정
 const { Pool } = require('pg');
 
+// SSL 인증서 검증 비활성화 (Vercel Postgres용)
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 // Vercel Postgres 연결 풀 생성
 let connectionString = process.env.POSTGRES_URL;
 
