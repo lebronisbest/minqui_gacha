@@ -203,7 +203,7 @@ body {
   background: rgba(255, 255, 255, 0.9);
   padding: 4px 12px;
   border-radius: 12px;
-  backdrop-filter: blur(4px);
+  backdrop-filter: none;
 }
 
 @keyframes spin {
@@ -262,6 +262,8 @@ body {
     0 3px 10px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   background: #ffffff;
+  overflow: hidden;
+  clip-path: inset(0 0 0 0);
   overflow: visible;
   border: 1px solid rgba(0, 0, 0, 0.03);
 }
@@ -322,7 +324,7 @@ body {
   height: 100%;
   backface-visibility: hidden;
   border-radius: 20px;
-  overflow: visible;
+  overflow: hidden;
   z-index: 2;
   background: 
     linear-gradient(135deg, 
@@ -421,9 +423,9 @@ body {
   object-fit: cover;
   object-position: center center;
   display: block;
-  filter: blur(1px); /* 3px → 1px (블러 강도 감소) */
-  transform: scale(1.0); /* 스케일 제거 - 캐릭터와 동일하게 */
-  opacity: 1; /* 투명도 제거 */
+  filter: blur(3px); /* 배경 이미지 블러 효과 */
+  transform: scale(1.0);
+  opacity: 1;
 }
 
 
@@ -437,7 +439,7 @@ body {
   left: 15px;
   z-index: 2;
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(10px);
+  backdrop-filter: none;
   padding: 12px 16px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -504,7 +506,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.25); /* 더 밝은 테두리 */
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4); /* 더 강한 그림자 */
   z-index: 10; /* 캐릭터(z-index: 5)보다 앞에 배치 */
-  backdrop-filter: blur(0.75em);
+  backdrop-filter: none;
   display: flex;
   flex-direction: column;
   padding: 0.5em;
@@ -531,7 +533,7 @@ body {
   border: 1px solid rgba(210, 180, 140, 0.4);
   border-radius: 0.4em;
   padding: 0.15em 0.5em;
-  backdrop-filter: blur(0.3em);
+  backdrop-filter: none;
   flex: 1;
   justify-content: center;
   height: 1.3em !important;
@@ -652,7 +654,7 @@ body {
   border: 1px solid rgba(210, 180, 140, 0.4);
   border-radius: 0.4em;
   padding: 0.4em 0.6em;
-  backdrop-filter: blur(0.3em);
+  backdrop-filter: none;
   text-align: left;
   width: calc(100% - 1em);
   margin: 0 auto;
@@ -727,6 +729,9 @@ body {
   pointer-events: none;
   display: block;
   margin: -20px;
+  overflow: hidden;
+  border-radius: 20px;
+  clip-path: inset(0 0 0 0);
 }
 
 /* 캐릭터 일러스트 글로스 효과 */
@@ -952,31 +957,33 @@ body {
     text-align: center;
   }
   
-  /* 티켓 시스템 모바일 최적화 */
+  /* 티켓 시스템 모바일 최적화 - 상단으로 이동 */
   .ticket-system {
-    bottom: 15px;
-    left: 50%;
-    right: auto;
+    top: auto;
+    bottom: 5px;
+    left: 5px;
+    right: 5px;
     width: auto;
-    transform: translateX(-50%);
+    transform: none;
+    z-index: 1000;
   }
   
   .ticket-display {
-    padding: 8px 12px;
+    padding: 2px 4px;
     flex-direction: row;
-    gap: 8px;
+    gap: 2px;
   }
 
   .ticket-icon {
-    font-size: 1.2rem;
+    font-size: 0.6rem;
   }
 
   .ticket-count {
-    font-size: 0.85rem;
+    font-size: 0.4rem;
   }
 
   .ticket-timer {
-    font-size: 0.7rem;
+    font-size: 0.35rem;
   }
   
   /* 컬렉션 그리드 모바일 최적화 - 3열 고정 */
@@ -1161,24 +1168,32 @@ body {
     font-size: 12px;
   }
   
-  /* 티켓 시스템 초소형 화면 최적화 */
+  /* 티켓 시스템 초소형 화면 최적화 - 상단으로 이동 */
+  .ticket-system {
+    top: auto;
+    bottom: 3px;
+    left: 3px;
+    right: 3px;
+    z-index: 1000;
+  }
+  
   .ticket-display {
-    padding: 6px 10px;
+    padding: 1.5px 3px;
     flex-direction: column;
-    gap: 4px;
+    gap: 0.5px;
     text-align: center;
   }
 
   .ticket-icon {
-    font-size: 1rem;
+    font-size: 0.5rem;
   }
 
   .ticket-count {
-    font-size: 0.75rem;
+    font-size: 0.375rem;
   }
 
   .ticket-timer {
-    font-size: 0.6rem;
+    font-size: 0.3rem;
   }
   
   /* 컬렉션 그리드 초소형 화면 최적화 - 3열 고정 */
@@ -1353,24 +1368,32 @@ body {
     font-size: 11px;
   }
   
-  /* 티켓 시스템 초소형 화면 최적화 */
+  /* 티켓 시스템 초소형 화면 최적화 - 상단으로 이동 */
+  .ticket-system {
+    top: auto;
+    bottom: 2px;
+    left: 1px;
+    right: 1px;
+    z-index: 1000;
+  }
+  
   .ticket-display {
-    padding: 4px 8px;
+    padding: 1px 2px;
     flex-direction: column;
-    gap: 2px;
+    gap: 0px;
     text-align: center;
   }
 
   .ticket-icon {
-    font-size: 0.9rem;
+    font-size: 0.45rem;
   }
 
   .ticket-count {
-    font-size: 0.7rem;
+    font-size: 0.35rem;
   }
 
   .ticket-timer {
-    font-size: 0.55rem;
+    font-size: 0.275rem;
   }
   
   /* 컬렉션 그리드 초소형 화면 최적화 - 3열 고정 */
@@ -1553,7 +1576,7 @@ body {
   top: 20px;
   right: 20px;
   background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(10px);
+  backdrop-filter: none;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: 12px 16px;
@@ -1832,29 +1855,29 @@ body {
   border-radius: 12px;
   padding: 4px;
   z-index: 1000;
-  backdrop-filter: blur(10px);
+  backdrop-filter: none;
 }
 
 /* 티켓 시스템 */
 .ticket-system {
   position: fixed;
-  bottom: 20px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
-  backdrop-filter: blur(10px);
+  backdrop-filter: none;
 }
 
 .ticket-display {
   background: linear-gradient(135deg, #1a1a2e, #16213e);
   border: 2px solid #ffd700;
   border-radius: 15px;
-  padding: 15px 20px;
+  padding: 10px 15px;
   display: flex;
   align-items: center;
   gap: 15px;
   box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-  backdrop-filter: blur(10px);
+  backdrop-filter: none;
 }
 
 .ticket-icon {
@@ -1956,6 +1979,8 @@ body {
   align-items: center;
   width: 100%;
   height: 100%;
+  z-index: 1;
+  position: relative;
 }
 
 /* 컬렉션 컨테이너 스타일 */
@@ -1992,7 +2017,7 @@ body {
   background: rgba(255, 255, 255, 0.1);
   padding: 15px 25px;
   border-radius: 12px;
-  backdrop-filter: blur(10px);
+  backdrop-filter: none;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -2029,7 +2054,7 @@ body {
   font-size: 14px;
   font-weight: 500;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  backdrop-filter: none;
 }
 
 .filter-btn:hover {
@@ -2060,6 +2085,9 @@ body {
   transition: all 0.3s ease;
   perspective: 1000px;
   transform-style: preserve-3d;
+  overflow: hidden;
+  border-radius: 20px;
+  clip-path: inset(0 0 0 0);
 }
 
 .collection-card:hover {
@@ -2070,6 +2098,36 @@ body {
 .collection-card.owned {
   /* 소유한 카드는 특별한 글로우 효과 */
   box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.collection-card.owned:hover {
+  transform: translateY(-10px) rotateX(5deg) scale(1.05);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 40px rgba(255, 215, 0, 0.6);
+}
+
+.collection-card.owned::after {
+  content: '클릭하여 상세보기';
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.collection-card.owned:hover::after {
+  opacity: 1;
 }
 
 .collection-card.not-owned {
@@ -2106,7 +2164,7 @@ body {
   height: 100%;
   backface-visibility: hidden;
   border-radius: 20px;
-  overflow: visible;
+  overflow: hidden;
   z-index: 2; /* 가챠와 동일 */
   background: 
     linear-gradient(135deg, 
@@ -2142,7 +2200,7 @@ body {
   object-fit: cover;
   object-position: center center;
   display: block;
-  filter: blur(1px);
+  filter: blur(3px);
   transform: scale(1.0);
   opacity: 1;
 }
@@ -2154,7 +2212,7 @@ body {
   left: 15px;
   z-index: 2; /* 가챠와 동일 */
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(10px);
+  backdrop-filter: none;
   padding: 12px 16px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -2238,7 +2296,7 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.25);
     box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
     z-index: 10; /* 가챠와 동일 - 캐릭터(z-index: 5)보다 앞에 배치 */
-    backdrop-filter: blur(0.75em);
+    backdrop-filter: none;
     display: flex;
     flex-direction: column;
     padding: 0.5em;
@@ -2296,7 +2354,7 @@ body {
     border: 1px solid rgba(210, 180, 140, 0.4);
     border-radius: 0.4em;
     padding: 0.15em 0.5em;
-    backdrop-filter: blur(0.3em);
+    backdrop-filter: none;
     flex: 1;
     justify-content: center;
     height: 1.3em !important;
@@ -2403,7 +2461,7 @@ body {
     border: 1px solid rgba(210, 180, 140, 0.4);
     border-radius: 0.4em;
     padding: 0.4em 0.6em;
-    backdrop-filter: blur(0.3em);
+    backdrop-filter: none;
     text-align: left;
     width: calc(100% - 1em);
     margin: 0 auto;
@@ -2499,6 +2557,9 @@ body {
   pointer-events: none;
   display: block;
   margin: -20px;
+  overflow: hidden;
+  border-radius: 20px;
+  clip-path: inset(0 0 0 0);
 }
 
 .collection-character-illust {
@@ -2523,7 +2584,7 @@ body {
   border-radius: 12px;
   font-size: 10px;
   font-weight: 700;
-  z-index: 15; /* 가장 앞에 배치 */
+  z-index: 1000; /* 가장 앞에 배치 */
 }
 
 /* 중복 횟수 원형 팝업 - 카드 밖에 표시 */
@@ -2903,6 +2964,96 @@ body {
   font-size: 1.2rem;
 }
 
+/* 조합 로딩 상태 */
+.fusion-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 조합 실행 버튼 별칭 */
+.execute-fusion-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 auto;
+  padding: 15px 40px;
+  background: linear-gradient(135deg, #ff6b6b, #ffa500);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+  min-height: 50px; /* 최소 높이 보장 */
+}
+
+.execute-fusion-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+}
+
+.execute-fusion-btn:disabled {
+  background: rgba(255, 255, 255, 0.2);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* 📱 모바일에서 조합 버튼 최적화 */
+@media (max-width: 768px) {
+  .execute-fusion-btn {
+    padding: 12px 30px;
+    font-size: 1rem;
+    min-height: 45px;
+  }
+
+  .fusion-loading {
+    gap: 8px;
+  }
+
+  .spinner {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .execute-fusion-btn {
+    padding: 10px 25px;
+    font-size: 0.9rem;
+    min-height: 40px;
+  }
+
+  .fusion-loading {
+    gap: 6px;
+  }
+
+  .spinner {
+    width: 12px;
+    height: 12px;
+  }
+}
+
 /* 룰렛 모달 */
 .roulette-modal {
   position: fixed;
@@ -3199,25 +3350,57 @@ body {
   }
   
   .collection-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: 1fr;
     gap: 20px;
+    padding: 10px;
+    justify-items: center;
   }
   
   .collection-card {
-    width: 200px;
-    height: 280px;
+    width: 90vw;
+    max-width: 320px;
+    height: auto;
+    aspect-ratio: 280/390;
   }
   
   .collection-card-name {
-    font-size: 14px;
+    font-size: 16px;
   }
   
   .collection-card-number {
-    font-size: 8px;
+    font-size: 12px;
   }
   
   .collection-rank-image {
-    width: 40px;
+    width: 60px;
+  }
+  
+  .collection-card-bottom-overlay {
+    padding: 8px 12px;
+  }
+  
+  .collection-stat-item {
+    padding: 4px 8px;
+  }
+  
+  .collection-stat-label {
+    font-size: 10px;
+  }
+  
+  .collection-stat-value {
+    font-size: 12px;
+  }
+  
+  .collection-skill-box {
+    padding: 6px 8px;
+  }
+  
+  .collection-skill-name {
+    font-size: 10px;
+  }
+  
+  .collection-skill-description {
+    font-size: 9px;
   }
   
   .tab-navigation {
@@ -3227,5 +3410,724 @@ body {
   .tab-button {
     padding: 10px 16px;
     font-size: 14px;
+  }
+}
+
+/* 모바일용 컬렉션 UI */
+.mobile-collection-container {
+  padding: 100px 10px 10px 10px;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  min-height: 100vh;
+}
+
+.mobile-collection-header {
+  margin-bottom: 20px;
+}
+
+.mobile-stats-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.mobile-stat-item {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  backdrop-filter: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.mobile-stat-label {
+  display: block;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.mobile-stat-value {
+  display: block;
+  color: #ffd700;
+  font-size: 18px;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.mobile-filter-section {
+  margin-bottom: 20px;
+}
+
+.mobile-filter-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mobile-filter-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 10px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.mobile-filter-btn.active {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%);
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+}
+
+.mobile-collection-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* 모바일용 컬렉션 카드 - 가챠 탭과 동일한 스타일 */
+.mobile-collection-card {
+  width: 300px;
+  height: 420px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  margin: 0 auto;
+  display: block;
+  overflow: hidden;
+  border-radius: 20px;
+  clip-path: inset(0 0 0 0);
+}
+
+.mobile-collection-card:hover {
+  transform: translateY(-10px) rotateX(5deg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-collection-card.owned {
+  /* 소유한 카드는 특별한 글로우 효과 */
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.mobile-collection-card.owned:hover {
+  transform: translateY(-10px) rotateX(5deg) scale(1.05);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 40px rgba(255, 215, 0, 0.6);
+}
+
+.mobile-collection-card.owned::after {
+  content: '클릭하여 상세보기';
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.mobile-collection-card.owned:hover::after {
+  opacity: 1;
+}
+
+/* 모바일용 카드 앞면 - 가챠 카드와 동일한 스타일 */
+.mobile-collection-card-front {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 20px;
+  overflow: hidden;
+  z-index: 2;
+  background: 
+    linear-gradient(135deg, 
+      #0f0f23 0%, 
+      #1a1a2e 20%, 
+      #16213e 40%, 
+      #0f3460 60%, 
+      #533483 80%, 
+      #e94560 100%
+    );
+  transform: rotateY(0deg);
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+}
+
+/* 모바일용 카드 요소들 - 가챠 카드와 동일한 스타일 */
+.mobile-collection-card-background-illustration {
+  position: absolute;
+  top: var(--illust-top);
+  left: var(--illust-left);
+  right: var(--illust-right);
+  bottom: var(--illust-bottom);
+  z-index: 2;
+  border-radius: var(--illust-border-radius);
+  overflow: hidden;
+}
+
+.mobile-background-illust {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  display: block;
+  filter: blur(3px);
+  transform: scale(1.0);
+  opacity: 1;
+}
+
+.mobile-collection-card-info-box {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 2;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: none;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.mobile-collection-card-number-box {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.mobile-collection-card-number {
+  color: #ffd700;
+  font-size: 14px;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.mobile-collection-card-name {
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  text-align: left;
+}
+
+.mobile-collection-card-info-box-overlay {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 15;
+  background: transparent;
+  backdrop-filter: none;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: none;
+  box-shadow: none;
+}
+
+.mobile-collection-card-rank {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.mobile-collection-rank-image {
+  width: 80px;
+  height: auto;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+}
+
+.mobile-collection-card-bottom-overlay {
+  position: absolute;
+  bottom: 0.5em;
+  left: 0.5em;
+  right: 0.5em;
+  height: auto;
+  min-height: fit-content;
+  background: rgba(0, 0, 0, 0.85);
+  border-radius: 0.75em;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6);
+  padding: 0.5em;
+  z-index: 15;
+}
+
+.mobile-collection-stats-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.2em;
+  margin-bottom: 0.25em;
+  width: 100%;
+}
+
+.mobile-collection-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  background: rgba(245, 245, 220, 0.2);
+  border: 1px solid rgba(210, 180, 140, 0.4);
+  border-radius: 0.4em;
+  padding: 0.15em 0.5em;
+  backdrop-filter: none;
+  flex: 1;
+  justify-content: center;
+  height: 1.3em !important;
+  min-height: 1.3em !important;
+  max-height: 1.3em !important;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.mobile-collection-stat-label {
+  font-size: 0.8em;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  line-height: 1.3em !important;
+  max-height: 1.3em !important;
+}
+
+.mobile-collection-stat-value {
+  font-size: 0.8em;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  line-height: 1.3em !important;
+  max-height: 1.3em !important;
+}
+
+.mobile-collection-skill-box {
+  background: rgba(245, 245, 220, 0.3);
+  border: 1px solid rgba(210, 180, 140, 0.5);
+  border-radius: 0.4em;
+  padding: 0.4em 0.6em;
+  backdrop-filter: none;
+  text-align: left;
+  width: calc(100% - 1em);
+  margin: 0 auto;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 20;
+  position: relative;
+}
+
+.mobile-collection-skill-name {
+  color: #ffd700;
+  font-size: 0.8em;
+  font-weight: 700;
+  margin-bottom: 0.1em;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.mobile-collection-skill-description {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.7em;
+  line-height: 1.4;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.mobile-collection-card-character {
+  position: absolute;
+  top: var(--illust-top);
+  left: var(--illust-left);
+  right: var(--illust-right);
+  bottom: var(--illust-bottom);
+  z-index: 5;
+  pointer-events: none;
+  display: block;
+  margin: -20px;
+  overflow: hidden;
+  border-radius: 20px;
+  clip-path: inset(0 0 0 0);
+}
+
+.mobile-collection-character-illust {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom right;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+}
+
+.mobile-owned-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  z-index: 1000;
+}
+
+/* 수집되지 않은 카드 스타일 - 데스크톱과 동일 */
+.mobile-collection-card.not-owned {
+  opacity: 0.8;
+  filter: grayscale(100%) brightness(0.3);
+  transform: scale(0.95);
+}
+
+/* 미수집 카드의 캐릭터 이미지 처리 - 데스크톱과 동일 */
+.mobile-collection-card.not-owned .mobile-collection-card-character img {
+  filter: grayscale(100%) brightness(0.1);
+  opacity: 1;
+}
+
+/* 미수집 카드에 물음표 표시 - 데스크톱과 동일 */
+.mobile-collection-card.not-owned .mobile-collection-card-character::after {
+  content: '?';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 5rem;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* 화면 크기별 UI 전환 */
+@media (max-width: 768px) {
+  .web-collection {
+    display: none !important;
+  }
+  
+  .mobile-collection {
+    display: block !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .web-collection {
+    display: block !important;
+  }
+
+  .mobile-collection {
+    display: none !important;
+  }
+}
+
+/* ================================================
+   카드 디테일 모달 스타일
+   ================================================ */
+
+.card-detail-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.card-detail-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  cursor: pointer;
+}
+
+.card-detail-content {
+  position: relative;
+  background: linear-gradient(135deg, #2a3f5f 0%, #1a2332 100%);
+  border-radius: 20px;
+  padding: 0;
+  max-width: 800px;
+  max-height: 90vh;
+  width: 90%;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transform: scale(0.8) translateY(50px);
+  transition: all 0.3s ease;
+}
+
+.card-detail-modal.show .card-detail-content {
+  transform: scale(1) translateY(0);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: white;
+  font-size: 24px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 30px;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: rotate(90deg);
+}
+
+.modal-body {
+  display: flex;
+  gap: 30px;
+  padding: 30px;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.detail-card-display {
+  flex: 0 0 300px;
+  position: relative;
+}
+
+.detail-card-preview {
+  width: 300px;
+  height: 420px;
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #16213e 0%, #0f1419 100%);
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.card-stats-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stat-section {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-section h3 {
+  margin: 0 0 15px 0;
+  color: #ffd700;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.stat-row .label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+}
+
+.stat-row .value {
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.skill-info {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.skill-info h3 {
+  color: #ff6b6b;
+}
+
+.skill-description {
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  padding: 20px 30px;
+  background: rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.export-png-button,
+.close-modal-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.export-png-button {
+  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+}
+
+.export-png-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
+}
+
+.close-modal-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.close-modal-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .card-detail-content {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .modal-body {
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .detail-card-display {
+    flex: none;
+    align-self: center;
+  }
+
+  .detail-card-preview {
+    width: 250px;
+    height: 350px;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .export-png-button,
+  .close-modal-button {
+    width: 100%;
+  }
+}
+
+/* ================================================
+   알림 애니메이션
+   ================================================ */
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
   }
 }

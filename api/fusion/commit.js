@@ -127,32 +127,16 @@ module.exports = async (req, res) => {
       }
       console.log('✅ 재료 충분함');
 
-      // 기존 카드 중에서 랜덤 결과 선택 (임시)
-      console.log('🎲 결과 카드 선택 중...');
-      const cardsResult = await client.query(`
-        SELECT id, name, type, rank, image
-        FROM cards
-        WHERE rank IN ('A', 'S', 'SS')
-        ORDER BY RANDOM()
-        LIMIT 1
-      `);
-      
-      console.log('결과 카드 쿼리 결과:', cardsResult.rows);
+      // 🎲 조합 성공 확률 계산 (카드 수에 따라 확률 증가)
+      const baseSuccessRate = 0.6; // 60% 기본 성공률
+      const bonusRate = Math.min(0.3, materialsToUse.length * 0.05); // 카드 5장당 5% 보너스, 최대 30%
+      const finalSuccessRate = baseSuccessRate + bonusRate;
+      const isSuccess = Math.random() < finalSuccessRate;
 
-      if (cardsResult.rows.length === 0) {
-        console.log('❌ 결과 카드 없음');
-        res.status(500).json({
-          success: false,
-          error: 'No fusion result available',
-          timestamp: new Date().toISOString()
-        });
-        return;
-      }
+      console.log(`🎯 조합 성공률: ${(finalSuccessRate * 100).toFixed(1)}% (기본 ${(baseSuccessRate * 100)}% + 보너스 ${(bonusRate * 100).toFixed(1)}%)`);
+      console.log(`🎲 조합 결과: ${isSuccess ? '성공' : '실패'}`);
 
-      const resultCard = cardsResult.rows[0];
-      console.log('✅ 선택된 결과 카드:', resultCard);
-
-      // 인벤토리에서 재료 제거
+      // 인벤토리에서 재료 제거 (성공/실패 관계없이 항상 제거)
       console.log('🗑️ 재료 제거 중...');
       for (const materialId of materialsToUse) {
         console.log(`재료 ${materialId} 제거 중...`);
@@ -164,29 +148,62 @@ module.exports = async (req, res) => {
         console.log(`✅ 재료 ${materialId} 제거 완료`);
       }
 
-      // 결과 카드 추가
-      console.log('➕ 결과 카드 추가 중...');
-      await client.query(`
-        INSERT INTO user_inventory (user_id, card_id, count)
-        VALUES ($1, $2, 1)
-        ON CONFLICT (user_id, card_id)
-        DO UPDATE SET count = user_inventory.count + 1
-      `, [userId, resultCard.id]);
-      console.log('✅ 결과 카드 추가 완료');
+      let resultCard = null;
+
+      if (isSuccess) {
+        // 성공 시: 결과 카드 선택 및 추가
+        console.log('🎲 결과 카드 선택 중...');
+        const cardsResult = await client.query(`
+          SELECT id, name, type, rank, image
+          FROM cards
+          WHERE rank IN ('A', 'S', 'SS')
+          ORDER BY RANDOM()
+          LIMIT 1
+        `);
+
+        console.log('결과 카드 쿼리 결과:', cardsResult.rows);
+
+        if (cardsResult.rows.length === 0) {
+          console.log('❌ 결과 카드 없음');
+          res.status(500).json({
+            success: false,
+            error: 'No fusion result available',
+            timestamp: new Date().toISOString()
+          });
+          return;
+        }
+
+        resultCard = cardsResult.rows[0];
+        console.log('✅ 선택된 결과 카드:', resultCard);
+
+        // 결과 카드 추가
+        console.log('➕ 결과 카드 추가 중...');
+        await client.query(`
+          INSERT INTO user_inventory (user_id, card_id, count)
+          VALUES ($1, $2, 1)
+          ON CONFLICT (user_id, card_id)
+          DO UPDATE SET count = user_inventory.count + 1
+        `, [userId, resultCard.id]);
+        console.log('✅ 결과 카드 추가 완료');
+      } else {
+        console.log('💔 조합 실패 - 재료만 소모됨');
+      }
 
       // 퓨전 로그 기록
       console.log('📝 퓨전 로그 기록 중...');
       await client.query(`
         INSERT INTO fusion_logs (user_id, fusion_id, materials_used, result_card, success)
-        VALUES ($1, $2, $3, $4, true)
-      `, [userId, finalFusionId, JSON.stringify(materialsToUse), JSON.stringify(resultCard)]);
+        VALUES ($1, $2, $3, $4, $5)
+      `, [userId, finalFusionId, JSON.stringify(materialsToUse), resultCard ? JSON.stringify(resultCard) : null, isSuccess]);
       console.log('✅ 퓨전 로그 기록 완료');
 
       const response = {
         success: true,
         data: {
-          resultCard,
-          materialsUsed: materialsToUse
+          fusionSuccess: isSuccess,
+          resultCard: resultCard,
+          materialsUsed: materialsToUse,
+          successRate: (finalSuccessRate * 100).toFixed(1)
         },
         timestamp: new Date().toISOString(),
         requestId: req.headers['x-request-id'] || uuidv4()

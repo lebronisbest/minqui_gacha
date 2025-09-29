@@ -3,7 +3,8 @@
     "allow": [
       "Bash(curl:*)",
       "Bash(vercel:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

@@ -157,7 +157,8 @@
     
     <!-- 컬렉션 탭 컨텐츠 -->
     <div class="tab-content" id="collection-tab">
-        <div class="collection-container">
+        <!-- 웹용 컬렉션 UI -->
+        <div class="collection-container web-collection">
             <div class="collection-header">
                 <div class="collection-stats">
                     <div class="stat-item">
@@ -182,6 +183,39 @@
             
             <div class="collection-grid" id="collectionGrid">
                 <!-- 카드들이 여기에 동적으로 추가됩니다 -->
+            </div>
+        </div>
+        
+        <!-- 모바일용 컬렉션 UI -->
+        <div class="mobile-collection-container mobile-collection" style="display: none;">
+            <div class="mobile-collection-header">
+                <div class="mobile-stats-row">
+                    <div class="mobile-stat-item">
+                        <span class="mobile-stat-label">총 카드</span>
+                        <span class="mobile-stat-value" id="mobileTotalCards">0</span>
+                    </div>
+                    <div class="mobile-stat-item">
+                        <span class="mobile-stat-label">획득률</span>
+                        <span class="mobile-stat-value" id="mobileCollectionRate">0%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mobile-filter-section">
+                <div class="mobile-filter-row">
+                    <button class="mobile-filter-btn active" data-filter="all">전체</button>
+                    <button class="mobile-filter-btn" data-filter="SSS">SSS</button>
+                    <button class="mobile-filter-btn" data-filter="SS">SS</button>
+                </div>
+                <div class="mobile-filter-row">
+                    <button class="mobile-filter-btn" data-filter="S">S</button>
+                    <button class="mobile-filter-btn" data-filter="A">A</button>
+                    <button class="mobile-filter-btn" data-filter="B">B</button>
+                </div>
+            </div>
+            
+            <div class="mobile-collection-list" id="mobileCollectionList">
+                <!-- 모바일용 카드 리스트가 여기에 동적으로 추가됩니다 -->
             </div>
         </div>
     </div>
@@ -267,9 +301,33 @@
                     <button class="confirm-button" id="confirmButton">확인</button>
                 </div>
             </div>
-            
+
         </div>
     </div>
+
+    <!-- 카드 디테일 모달 -->
+    <div class="card-detail-modal" id="cardDetailModal" style="display: none;">
+        <div class="modal-overlay" id="cardDetailOverlay"></div>
+        <div class="modal-content card-detail-content">
+            <div class="modal-header">
+                <h2 id="modalCardTitle">카드 정보</h2>
+                <button class="close-button" id="cardDetailCloseBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-card-display" id="detailCardDisplay">
+                    <!-- 카드 상세 정보가 여기에 표시됩니다 -->
+                </div>
+                <div class="card-stats-info" id="cardStatsInfo">
+                    <!-- 카드 스탯 정보가 여기에 표시됩니다 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="export-png-button" id="exportPngButton">PNG로 내보내기</button>
+                <button class="close-modal-button" id="closeModalButton">닫기</button>
+            </div>
+        </div>
+    </div>
+    
     
     <script src="api-client.js"></script>
     <script src="script.js"></script>

@@ -1,5 +1,27 @@
+// ====================================
 // 카드 데이터 시드 스크립트
+// ====================================
+//
+// ⚠️  중요: 이 스크립트는 카드 카탈로그만 업데이트합니다
+//
+// 🔒 보호되는 데이터 (절대 삭제하지 않음):
+// - users (사용자 정보)
+// - user_inventory (사용자 카드 컬렉션)
+// - gacha_logs (가챠 기록)
+// - fusion_logs (조합 기록)
+// - audit_logs (감사 로그)
+//
+// 🔄 업데이트되는 데이터:
+// - cards (카드 카탈로그 - 안전하게 재생성)
+//
+// ====================================
+
 const { pool, runMigrations } = require('../lib/database');
+const {
+  safeCardReseed,
+  generateDataStatusReport,
+  validateTableOperation
+} = require('../lib/data-protection');
 
 module.exports = async (req, res) => {
   // CORS 헤더 설정
@@ -22,26 +44,38 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // 🛡️ 데이터베이스 상태 확인 및 보고
+    console.log('🔍 데이터베이스 상태 확인 중...');
+    const statusReport = await generateDataStatusReport();
+    console.log('📊 데이터베이스 현황:', {
+      사용자수: statusReport.totalUsers,
+      수집데이터: statusReport.totalCollections,
+      가챠기록: statusReport.totalGachaLogs,
+      조합기록: statusReport.totalFusionLogs,
+      보호레벨: statusReport.protectionLevel
+    });
+
     // 마이그레이션 실행
     await runMigrations();
 
+    // 🔒 안전장치: cards 테이블 삭제 검증
+    console.log('🛡️ 안전장치 검증 중...');
+    await validateTableOperation('cards', 'DELETE');
+
     const client = await pool.connect();
-    
+
     try {
-      // 관련 테이블 데이터 삭제 후 카드 삭제
-      await client.query('DELETE FROM user_inventory');
-      await client.query('DELETE FROM gacha_logs');
-      await client.query('DELETE FROM fusion_logs');
-      await client.query('DELETE FROM audit_logs');
-      await client.query('DELETE FROM cards');
-      console.log('기존 데이터 삭제됨');
+      // 🔄 안전한 카드 데이터 재시드 실행
+      console.log('🔄 안전한 카드 데이터 재시드 시작...');
+      await safeCardReseed();
+      console.log('✅ 카드 데이터 삭제 완료 (사용자 데이터는 보존됨)');
 
       // cards.json을 HTTP로 가져오기
       let cardsData;
       try {
         console.log('fetch API 사용 가능:', typeof fetch);
 
-        const response = await fetch('https://minqui-gacha-cy29zyr8u-gunnar-lees-projects.vercel.app/cards.json');
+        const response = await fetch('https://minqui-gacha-game.vercel.app/cards.json');
         console.log('Response status:', response.status);
         
         if (!response.ok) {
@@ -166,11 +200,19 @@ module.exports = async (req, res) => {
       }
 
       console.log(`총 ${cards.length}장의 카드가 시드되었습니다.`);
-      
+
       // 실제 데이터베이스에 삽입된 카드 수 확인
       const countResult = await client.query('SELECT COUNT(*) as count FROM cards');
       const actualCount = parseInt(countResult.rows[0].count);
       console.log(`데이터베이스에 실제 저장된 카드 수: ${actualCount}`);
+
+      // 🔒 최종 보호 확인: 사용자 데이터 안전성 검증
+      const finalReport = await generateDataStatusReport();
+      console.log('🛡️ 최종 안전성 검증:', {
+        사용자데이터변경여부: finalReport.totalUsers === statusReport.totalUsers ? '변경없음✅' : '변경됨❌',
+        수집데이터변경여부: finalReport.totalCollections === statusReport.totalCollections ? '변경없음✅' : '변경됨❌',
+        카드카탈로그: `${actualCount}장 업데이트됨`
+      });
       
       // 24, 25번 카드가 있는지 특별히 확인
       const card24 = await client.query('SELECT * FROM cards WHERE id = $1', ['024']);

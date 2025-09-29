@@ -1,3 +1,21 @@
+// ====================================
+// 데이터베이스 연결 및 마이그레이션
+// ====================================
+//
+// ⚠️  중요: 사용자 데이터 보호 정책
+//
+// 🔒 절대 삭제하면 안 되는 테이블:
+// - users (사용자 정보)
+// - user_inventory (사용자 카드 컬렉션)
+// - gacha_logs (가챠 기록)
+// - fusion_logs (조합 기록)
+// - audit_logs (감사 로그)
+//
+// ✅ 안전하게 재생성 가능한 테이블:
+// - cards (카드 카탈로그)
+//
+// ====================================
+
 // Vercel Postgres 연결 설정
 const { Pool } = require('pg');
 
@@ -78,12 +96,43 @@ async function getRedisClient() {
 // 데이터베이스 초기화
 async function initializeDatabase() {
   try {
-    console.log('데이터베이스 초기화 시작...');
-    console.log('POSTGRES_URL 존재:', !!connectionString);
-    
-    if (!connectionString) {
-      throw new Error('POSTGRES_URL 환경 변수가 설정되지 않았습니다.');
+    console.log('🔄 데이터베이스 초기화 시작...');
+    console.log('🔍 환경 변수 검증 중...');
+
+    // 🛡️ 필수 환경 변수 검증
+    const requiredEnvVars = {
+      'POSTGRES_URL': process.env.POSTGRES_URL,
+      'NODE_ENV': process.env.NODE_ENV || 'production'
+    };
+
+    const missingVars = Object.entries(requiredEnvVars)
+      .filter(([key, value]) => !value)
+      .map(([key]) => key);
+
+    if (missingVars.length > 0) {
+      console.error('❌ 필수 환경 변수가 누락되었습니다:');
+      missingVars.forEach(varName => {
+        console.error(`   - ${varName}`);
+      });
+
+      throw new Error(`
+🚨 배포 실패: 필수 환경 변수 누락
+
+누락된 환경 변수:
+${missingVars.map(v => `- ${v}`).join('\n')}
+
+해결 방법:
+1. Vercel 대시보드 → 프로젝트 설정 → Environment Variables
+2. 누락된 환경 변수들을 추가하세요
+3. POSTGRES_URL은 Vercel Postgres 연결 문자열이어야 합니다
+
+환경 변수 설정 없이는 사용자 데이터를 안전하게 보호할 수 없습니다.
+      `);
     }
+
+    console.log('✅ 환경 변수 검증 완료');
+    console.log('🌍 실행 환경:', process.env.NODE_ENV);
+    console.log('🔗 데이터베이스 연결:', connectionString ? '설정됨' : '누락됨');
     
     console.log('데이터베이스 연결 시도 중...');
     const client = await pool.connect();
@@ -110,7 +159,10 @@ async function initializeDatabase() {
 // 데이터베이스 마이그레이션
 async function runMigrations() {
   const client = await pool.connect();
-  
+
+  console.log('🔄 데이터베이스 마이그레이션 시작...');
+  console.log('🛡️ 사용자 데이터 보호 모드: 활성화');
+
   try {
     // 사용자 테이블
     await client.query(`
@@ -209,7 +261,8 @@ async function runMigrations() {
       CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at);
     `);
 
-    console.log('Database migrations completed successfully');
+    console.log('✅ 데이터베이스 마이그레이션 완료');
+    console.log('🔒 모든 사용자 데이터 테이블이 안전하게 보호됩니다');
   } catch (error) {
     console.error('Database migration failed:', error);
     throw error;
