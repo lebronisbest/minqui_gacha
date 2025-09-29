@@ -1284,7 +1284,7 @@ class MinquiCardGacha {
     });
   }
   
-  createCollectionCardElement(card, isOwned) {
+  createCollectionCardElement(card, isOwned, overrideDuplicateCount = null) {
     // 컬렉션 카드 요소 생성 - 가챠 카드와 동일한 구조
     const cardDiv = document.createElement('div');
     cardDiv.className = `collection-card ${isOwned ? 'owned' : 'not-owned'}`;
@@ -1295,9 +1295,9 @@ class MinquiCardGacha {
 
     
     // 중복 횟수 계산
-    const ownedCard = this.serverCollectionData ? 
+    const ownedCard = this.serverCollectionData ?
       this.serverCollectionData.find(c => c.id === card.id) : null;
-    const duplicateCount = ownedCard ? ownedCard.count : 0;
+    const duplicateCount = overrideDuplicateCount !== null ? overrideDuplicateCount : (ownedCard ? ownedCard.count : 0);
     
     // 스킬 정보
     const skill = card.attacks && card.attacks[0];
@@ -1527,64 +1527,9 @@ class MinquiCardGacha {
     modalTitle.textContent = `${card.name} ${duplicateCount > 1 ? `(x${duplicateCount})` : ''}`;
 
     // 카드 프리뷰 생성
-    detailCardDisplay.innerHTML = `
-      <div class="detail-card-preview">
-        <!-- 배경 일러스트 -->
-        <div class="detail-card-background-illustration">
-          <img src="${card.image}" alt="${card.name} 배경 일러스트" class="detail-background-illust"
-               style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
-        </div>
-
-        <!-- 글로스 효과 -->
-        <div class="card__gloss" aria-hidden="true"
-             style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.3;"></div>
-
-        <!-- 카드 정보 박스 -->
-        <div class="detail-card-info-box"
-             style="position: absolute; top: 20px; left: 20px; right: 20px; background: rgba(255,255,255,0.9); border-radius: 12px; padding: 15px; text-align: center;">
-          <div class="detail-card-number" style="font-size: 14px; font-weight: 600; color: #333; margin-bottom: 8px;">#${card.id}</div>
-          <div class="detail-card-name" style="font-size: 18px; font-weight: 700; color: #333;">${card.name}</div>
-        </div>
-
-        <!-- 랭크 표시 -->
-        <div class="detail-card-rank"
-             style="position: absolute; top: 20px; right: 20px; width: 60px; height: 60px;">
-          <img src="illust/${card.rank}.png" alt="${card.rank} 랭크" class="detail-rank-image"
-               style="width: 100%; height: 100%; object-fit: contain;">
-        </div>
-
-        <!-- 하단 투명 박스 -->
-        <div class="detail-card-bottom-overlay"
-             style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.8); padding: 20px; color: white;">
-          <div class="detail-stats-container" style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-            <div class="detail-stat-item">
-              <span class="detail-stat-label" style="display: block; font-size: 12px; opacity: 0.8;">HP</span>
-              <span class="detail-stat-value" style="font-size: 16px; font-weight: 600;">${Math.floor((card.baseHp || 100) * (rankInfo?.hpMultiplier || 1))}</span>
-            </div>
-            <div class="detail-stat-item">
-              <span class="detail-stat-label" style="display: block; font-size: 12px; opacity: 0.8;">공격력</span>
-              <span class="detail-stat-value" style="font-size: 16px; font-weight: 600;">${Math.floor((card.baseAttack || 100) * (rankInfo?.attackMultiplier || 1))}</span>
-            </div>
-            <div class="detail-stat-item">
-              <span class="detail-stat-value" style="font-size: 20px;">${typeIcon}</span>
-            </div>
-          </div>
-
-          <!-- 스킬 박스 -->
-          <div class="detail-skill-box">
-            <div class="detail-skill-name" style="font-size: 14px; font-weight: 600; margin-bottom: 5px;">${skillName}</div>
-            <div class="detail-skill-description" style="font-size: 12px; opacity: 0.9; line-height: 1.4;">${skillDescription}</div>
-          </div>
-        </div>
-
-        <!-- 캐릭터 -->
-        <div class="detail-card-character"
-             style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 200px; z-index: 5;">
-          <img src="${card.image.replace('.png', '_2.png')}" alt="${card.name} 캐릭터" class="detail-character-illust"
-               style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 20px rgba(255,255,255,0.3));">
-        </div>
-      </div>
-    `;
+    // 컬렉션 카드와 동일한 구조 사용
+    const tempCardElement = this.createCollectionCardElement(card, true, duplicateCount);
+    detailCardDisplay.innerHTML = tempCardElement.innerHTML;
 
     // 스탯 정보 생성
     cardStatsInfo.innerHTML = `
