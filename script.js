@@ -2322,24 +2322,50 @@ ${skill ? skill.description : ''}
       const materialCardIds = filledSlots.map(card => card.id);
 
       const result = await this.apiClient.commitFusion(materialCardIds);
-      console.log('🔧 API 응답 전체:', result);
+      console.log('🔧 API 응답 전체:', JSON.stringify(result, null, 2));
 
-      // 조합 결과 처리 (서버에서 직접 데이터만 받아옴)
-      if (result && result.data && typeof result.data.fusionSuccess === 'boolean') {
+      // 조합 결과 처리 - 다양한 응답 구조 지원
+      let fusionSuccess = false;
+      let resultCard = null;
+      
+      if (result) {
+        // 구조 1: result.data.fusionSuccess
+        if (result.data && typeof result.data.fusionSuccess === 'boolean') {
+          fusionSuccess = result.data.fusionSuccess;
+          resultCard = result.data.resultCard;
+          console.log('✅ 구조 1 사용: result.data');
+        }
+        // 구조 2: result.fusionSuccess (직접)
+        else if (typeof result.fusionSuccess === 'boolean') {
+          fusionSuccess = result.fusionSuccess;
+          resultCard = result.resultCard;
+          console.log('✅ 구조 2 사용: result 직접');
+        }
+        // 구조 3: result 자체가 데이터
+        else if (typeof result === 'object' && 'fusionSuccess' in result) {
+          fusionSuccess = result.fusionSuccess;
+          resultCard = result.resultCard;
+          console.log('✅ 구조 3 사용: result 자체');
+        }
+      }
+      
+      console.log('🔧 최종 파싱 결과:', { fusionSuccess, resultCard });
+
+      if (fusionSuccess !== undefined) {
         console.log('✅ 조합 API 성공, 룰렛 표시');
-        console.log('🔧 result.data.fusionSuccess:', result.data.fusionSuccess);
-        console.log('🔧 result.data.resultCard:', result.data.resultCard);
+        console.log('🔧 fusionSuccess:', fusionSuccess);
+        console.log('🔧 resultCard:', resultCard);
 
         // 룰렛으로 결과 표시
         try {
-          this.showRoulette(filledSlots, result.data.resultCard);
+          this.showRoulette(filledSlots, resultCard);
         } catch (rouletteError) {
           console.error('룰렛 표시 에러:', rouletteError);
         }
 
         // 조합 결과에 따른 효과음 재생
         try {
-          if (result.data.fusionSuccess && result.data.resultCard) {
+          if (fusionSuccess && resultCard) {
             this.playSound('fusion_success');
           } else {
             this.playSound('fusion_fail');
@@ -2348,8 +2374,7 @@ ${skill ? skill.description : ''}
           console.error('효과음 재생 에러:', soundError);
         }
       } else {
-        if (result) {
-        }
+        console.error('❌ 조합 결과를 파싱할 수 없음:', result);
       }
 
       // 조합 결과에 관계없이 서버 컬렉션 데이터 업데이트
