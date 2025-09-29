@@ -2322,6 +2322,7 @@ ${skill ? skill.description : ''}
       const materialCardIds = filledSlots.map(card => card.id);
 
       const result = await this.apiClient.commitFusion(materialCardIds);
+      console.log('🔧 API 응답 전체:', result);
 
       // 조합 결과 처리 (서버에서 직접 데이터만 받아옴)
       if (result && result.data && typeof result.data.fusionSuccess === 'boolean') {

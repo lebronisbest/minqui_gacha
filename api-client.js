@@ -173,6 +173,7 @@ class ApiClient {
         throw new Error(response.error || 'Fusion failed');
       }
       
+      console.log('🔧 반환할 데이터:', response.data);
       return response.data;
     } catch (error) {
       console.error('=== FUSION COMMIT ERROR ===');
