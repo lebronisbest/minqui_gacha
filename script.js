@@ -2303,25 +2303,27 @@ ${skill ? skill.description : ''}
       const result = await this.apiClient.commitFusion(materialCardIds);
 
       // 조합 결과 처리 (서버에서 직접 데이터만 받아옴)
-      if (result && typeof result.fusionSuccess === 'boolean') {
+      if (result && result.data && typeof result.data.fusionSuccess === 'boolean') {
         console.log('✅ 조합 API 성공, 룰렛 표시');
-        console.log('🔧 result.fusionSuccess:', result.fusionSuccess);
-        console.log('🔧 result.resultCard:', result.resultCard);
+        console.log('🔧 result.data.fusionSuccess:', result.data.fusionSuccess);
+        console.log('🔧 result.data.resultCard:', result.data.resultCard);
 
         // 룰렛으로 결과 표시
         try {
-          this.showRoulette(filledSlots, result.resultCard);
+          this.showRoulette(filledSlots, result.data.resultCard);
         } catch (rouletteError) {
+          console.error('룰렛 표시 에러:', rouletteError);
         }
 
         // 조합 결과에 따른 효과음 재생
         try {
-          if (result.fusionSuccess && result.resultCard) {
+          if (result.data.fusionSuccess && result.data.resultCard) {
             this.playSound('fusion_success');
           } else {
             this.playSound('fusion_fail');
           }
         } catch (soundError) {
+          console.error('효과음 재생 에러:', soundError);
         }
       } else {
         if (result) {
@@ -2438,9 +2440,6 @@ ${skill ? skill.description : ''}
 
     const rouletteCards = [];
 
-    // 🎯 애니메이션이 멈출 위치 (120-130번째 사이, 뒤쪽에서 자연스럽게 멈춤)
-    const stopIndex = 120 + Math.floor(Math.random() * 10); // 120~129 중 랜덤
-
     // 🎭 짜릿한 연출을 위한 "아슬아슬" 카드 배치
     const getTeaseCard = () => {
       // 높은 등급의 카드들로 유혹
@@ -2450,29 +2449,15 @@ ${skill ? skill.description : ''}
         allCards[Math.floor(Math.random() * allCards.length)];
     };
 
-    // 150장의 기본 카드 세트 생성
+    // 150장의 기본 카드 세트 생성 (결과 카드 위치는 나중에 결정)
     const baseCards = [];
     for (let i = 0; i < 150; i++) {
-      if (i === stopIndex) {
-        if (resultCard) {
-          // 조합 성공: 결과 카드를 배치
-          baseCards.push(resultCard);
-        } else {
-          // 조합 실패: 재료 카드 중 하나를 배치 (자연스러운 연출)
-          const randomMaterial = selectedCards[Math.floor(Math.random() * selectedCards.length)];
-          baseCards.push(randomMaterial);
-        }
-      } else if (Math.abs(i - stopIndex) <= 2 && Math.abs(i - stopIndex) > 0) {
-        // 🎭 결과 카드 주변(±1~2칸)에 좋은 카드들 배치 → "아슬아슬" 연출
-        baseCards.push(getTeaseCard());
-      } else {
-        // 나머지는 랜덤 카드
-        const randomCard = allCards[Math.floor(Math.random() * allCards.length)];
-        baseCards.push(randomCard);
-      }
+      // 나머지는 랜덤 카드
+      const randomCard = allCards[Math.floor(Math.random() * allCards.length)];
+      baseCards.push(randomCard);
     }
 
-    // 🔄 150장을 두 번 반복해서 300장으로 무한 루프 효과
+    // 🔄 150장을 두 번 반복해서 300장으로 무한 룰렛 효과
     rouletteCards.push(...baseCards, ...baseCards);
 
     return rouletteCards;
@@ -2497,24 +2482,44 @@ ${skill ? skill.description : ''}
     const cardWidth = 108; // 카드 너비 + 마진 (100px + 8px)
     const containerWidth = 500;
 
-    // 멈출 카드의 인덱스 찾기
-    let stopIndex = -1;
-    const targetCardId = resultCard ? resultCard.id : selectedCards[Math.floor(Math.random() * selectedCards.length)].id;
-
-    for (let i = 0; i < cards.length; i++) {
-      if (cards[i].dataset.cardId === targetCardId) {
-        stopIndex = i;
-        break;
-      }
+    // 🎯 결과 카드를 정확한 위치에 배치하고 그 위치에서 멈추기
+    const targetIndex = 200 + Math.floor(Math.random() * 50); // 200~249 중 랜덤 (안전한 위치)
+    
+    // 결과 카드를 정확한 위치에 배치
+    if (resultCard) {
+      // 조합 성공: 결과 카드를 배치
+      cards[targetIndex].innerHTML = `
+        <img src="${resultCard.image}" alt="${resultCard.name}">
+        <div class="card-name">${resultCard.name}</div>
+        <div class="card-rank">${resultCard.rank}</div>
+      `;
+      cards[targetIndex].dataset.cardId = resultCard.id;
+    } else {
+      // 조합 실패: 재료 카드 중 하나를 배치
+      const randomMaterial = selectedCards[Math.floor(Math.random() * selectedCards.length)];
+      cards[targetIndex].innerHTML = `
+        <img src="${randomMaterial.image}" alt="${randomMaterial.name}">
+        <div class="card-name">${randomMaterial.name}</div>
+        <div class="card-rank">${randomMaterial.rank}</div>
+      `;
+      cards[targetIndex].dataset.cardId = randomMaterial.id;
     }
 
-    // 🎯 멈출 카드가 중앙에 정확히 오도록 계산
-    const finalPosition = -(stopIndex * cardWidth) + (containerWidth / 2) - (cardWidth / 2);
-    
-    // 🎭 2바퀴만 돌면서 천천히
-    const extraSpins = 1.5 + Math.random() * 0.5; // 1.5-2바퀴
-    const extraDistance = extraSpins * 150 * cardWidth; // 기본 150장 기준으로 계산
-    const totalDistance = finalPosition - extraDistance;
+    console.log('🎯 룰렛 수정된 로직:', {
+      targetIndex,
+      resultCardId: resultCard?.id,
+      totalCards: cards.length
+    });
+
+    // 📍 출발점과 도착점 정확히 계산
+    const startPosition = 0; // 시작 위치
+    const endPosition = -(targetIndex * cardWidth) + (containerWidth / 2) - (cardWidth / 2);
+
+    console.log('📍 위치 계산:', {
+      startPosition,
+      endPosition,
+      distance: Math.abs(endPosition - startPosition)
+    });
 
     // 애니메이션 시작
     rouletteWheel.style.transition = 'none';
@@ -2523,22 +2528,16 @@ ${skill ? skill.description : ''}
     // 룰렛 효과음 재생
     this.playRouletteSound();
 
-    // 🎪 느리고 부드러운 2단계 애니메이션
+    // 🎪 베지어 커브로 출발점→도착점 직접 이동
     requestAnimationFrame(() => {
-      // 1단계: 천천히 회전 시작 (3초)
-      rouletteWheel.style.transition = 'transform 3s ease-out';
-      rouletteWheel.style.transform = `translateX(${totalDistance + cardWidth * 2}px)`;
+      // 4초 동안 베지어 커브로 부드럽게 이동
+      rouletteWheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)';
+      rouletteWheel.style.transform = `translateX(${endPosition}px)`;
 
+      // 애니메이션 완료 후 결과 표시
       setTimeout(() => {
-        // 2단계: 정확한 위치에 부드럽게 멈춤 (2초)
-        rouletteWheel.style.transition = 'transform 2s cubic-bezier(0.23, 1, 0.32, 1)';
-        rouletteWheel.style.transform = `translateX(${totalDistance}px)`;
-
-        // 최종 결과 표시
-        setTimeout(() => {
-          this.showRouletteResult(resultCard, selectedCards);
-        }, 2000);
-      }, 3000);
+        this.showRouletteResult(resultCard, selectedCards);
+      }, 4000);
     });
   }
   
@@ -2594,7 +2593,7 @@ ${skill ? skill.description : ''}
           <div class="card-name">${resultCard.name}</div>
           <div class="card-rank">${resultCard.rank}</div>
         </div>
-        <p style="color: #4CAF50; font-size: 1.2rem; font-weight: 700;">조합 성공!</p>
+        <p style="color: #4CAF50; font-size: 1.2rem; font-weight: 700;">🎉 조합 성공! 🎉</p>
       `;
       
       // 컬렉션에 추가 (로그만 기록)
@@ -2606,7 +2605,7 @@ ${skill ? skill.description : ''}
       // 실패 결과
       rouletteResult.innerHTML = `
         <div style="color: #f44336; font-size: 1.2rem; font-weight: 700;">
-          조합 실패...
+          💔 조합 실패... 재료만 소모되었습니다
         </div>
       `;
     }
