@@ -214,10 +214,21 @@ class GachaService {
 
   // 다음 티켓 충전 시간 계산
   async calculateNextRefillTime() {
-    const refillHours = parseInt(process.env.TICKET_REFILL_HOURS || '12');
-    const nextRefill = new Date();
-    nextRefill.setHours(nextRefill.getHours() + refillHours);
-    return nextRefill.toISOString();
+    // 한국 시간으로 매일 오후 12시(정오)에 충전되도록 설정
+    const now = new Date();
+    const kstNow = new Date(now.getTime() + (9 * 60 * 60 * 1000)); // UTC+9 (한국시간)
+
+    const nextRefill = new Date(kstNow);
+    nextRefill.setHours(12, 0, 0, 0); // 정오 12시로 설정
+
+    // 만약 현재 시간이 이미 오늘 12시를 넘었다면, 내일 12시로 설정
+    if (kstNow.getHours() >= 12) {
+      nextRefill.setDate(nextRefill.getDate() + 1);
+    }
+
+    // UTC 시간으로 다시 변환하여 반환
+    const nextRefillUTC = new Date(nextRefill.getTime() - (9 * 60 * 60 * 1000));
+    return nextRefillUTC.toISOString();
   }
 
   // 사용자 티켓 정보 조회

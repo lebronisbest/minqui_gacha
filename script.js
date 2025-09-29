@@ -2364,8 +2364,16 @@ ${skill ? skill.description : ''}
 
       const result = await this.apiClient.commitFusion(materialCardIds);
 
+      console.log('🔧 API 응답 전체:', JSON.stringify(result, null, 2));
+      console.log('🔧 result 존재?', !!result);
+      console.log('🔧 result.success?', result?.success);
+      console.log('🔧 result.data?', result?.data);
+
       // 조합 성공 시만 결과 표시
       if (result && result.success && result.data) {
+        console.log('✅ 조합 조건 통과, 룰렛 표시');
+        console.log('🔧 result.data.fusionSuccess:', result.data.fusionSuccess);
+        console.log('🔧 result.data.resultCard:', result.data.resultCard);
 
         // 룰렛으로 결과 표시
         try {
