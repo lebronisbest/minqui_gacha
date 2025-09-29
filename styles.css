@@ -1051,16 +1051,12 @@ body {
   }
   
   /* 룰렛 모달 모바일 최적화 */
-  .roulette-container {
-    width: 90vw;
-    max-width: 400px;
-    height: 150px;
-  }
-  
-  .roulette-card {
-    width: 80px;
-    height: 110px;
-    margin-right: 6px;
+  :root {
+    --roulette-container-width: min(90vw, 400px);
+    --roulette-container-height: 150px;
+    --roulette-card-width: 80px;
+    --roulette-card-height: 110px;
+    --roulette-card-margin: 6px;
   }
   
   .roulette-card img {
@@ -1252,16 +1248,12 @@ body {
   }
   
   /* 룰렛 모달 초소형 화면 최적화 */
-  .roulette-container {
-    width: 95vw;
-    max-width: 350px;
-    height: 120px;
-  }
-  
-  .roulette-card {
-    width: 70px;
-    height: 95px;
-    margin-right: 5px;
+  :root {
+    --roulette-container-width: min(95vw, 350px);
+    --roulette-container-height: 120px;
+    --roulette-card-width: 70px;
+    --roulette-card-height: 95px;
+    --roulette-card-margin: 5px;
   }
   
   .roulette-card img {
@@ -1452,16 +1444,12 @@ body {
   }
   
   /* 룰렛 모달 초소형 화면 최적화 */
-  .roulette-container {
-    width: 98vw;
-    max-width: 300px;
-    height: 100px;
-  }
-  
-  .roulette-card {
-    width: 60px;
-    height: 80px;
-    margin-right: 4px;
+  :root {
+    --roulette-container-width: min(98vw, 300px);
+    --roulette-container-height: 100px;
+    --roulette-card-width: 60px;
+    --roulette-card-height: 80px;
+    --roulette-card-margin: 4px;
   }
   
   .roulette-card img {
@@ -3054,7 +3042,19 @@ body {
   }
 }
 
-/* 룰렛 모달 */
+/* 룰렛 모달 - CSS 변수 기반 */
+:root {
+  /* 룰렛 치수 변수 (기본값) */
+  --roulette-container-width: 500px;
+  --roulette-container-height: 180px;
+  --roulette-card-width: 100px;
+  --roulette-card-height: 140px;
+  --roulette-card-margin: 8px;
+  --roulette-pointer-offset: 20px;
+  --roulette-transition-duration: 3s;
+  --roulette-transition-easing: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
 .roulette-modal {
   position: fixed;
   top: 0;
@@ -3095,8 +3095,8 @@ body {
 
 .roulette-container {
   position: relative;
-  width: 500px;
-  height: 180px;
+  width: var(--roulette-container-width);
+  height: var(--roulette-container-height);
   margin: 20px auto;
   overflow: hidden;
   border: 3px solid #ffd700;
@@ -3108,14 +3108,15 @@ body {
   display: flex;
   height: 100%;
   align-items: center;
-  transition: transform 3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* transition은 JS에서 제어 */
   will-change: transform;
+  contain: paint;
 }
 
 .roulette-pointer {
   position: absolute;
   top: 50%;
-  right: 20px;
+  right: var(--roulette-pointer-offset);
   transform: translateY(-50%);
   width: 0;
   height: 0;
@@ -3128,9 +3129,9 @@ body {
 
 .roulette-card {
   flex-shrink: 0;
-  width: 100px;
-  height: 140px;
-  margin-right: 8px;
+  width: var(--roulette-card-width);
+  height: var(--roulette-card-height);
+  margin-right: var(--roulette-card-margin);
   border-radius: 10px;
   background: white;
   display: flex;

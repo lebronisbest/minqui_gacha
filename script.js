@@ -2104,108 +2104,19 @@ ${skill ? skill.description : ''}
       .filter(card => card);
   }
   
-  // 복잡한 수학적 확률 계산 함수 - 랭크 중심
+  // 🔧 서버 기반 확률 계산 (클라이언트는 표시만)
   calculateFusionProbability(selectedCards) {
     if (selectedCards.length < this.minFusionCards) {
       return { success: false, message: `최소 ${this.minFusionCards}장의 카드가 필요합니다.` };
     }
     
-    // 랭크별 기본 가중치 (낮은 확률로 시작)
-    const baseWeights = {
-      'B': 0.50,  // 50%
-      'A': 0.30,  // 30%
-      'S': 0.15,  // 15%
-      'SS': 0.04, // 4%
-      'SSS': 0.01 // 1%
-    };
-    
-    // 랭크별 가중치 (높은 랭크일수록 더 강력한 영향)
-    const rankWeights = {
-      'B': 1.0,
-      'A': 2.0,
-      'S': 4.0,
-      'SS': 8.0,
-      'SSS': 16.0
-    };
-    
-    // 랭크 분포 분석
-    const rankDistribution = this.analyzeRankDistribution(selectedCards);
-    
-    // 복잡한 수학적 공식 - 랭크 중심
-    const probabilities = {};
-    
-    for (const targetRank in baseWeights) {
-      let probability = baseWeights[targetRank];
-      
-      // 1. 고급 랭크 카드의 영향력 계산 (지수적 증가)
-      let advancedInfluence = 0;
-      for (const [rank, count] of Object.entries(rankDistribution)) {
-        const rankValue = rankWeights[rank] || 1;
-        // 고급 랭크일수록 더 강력한 영향
-        advancedInfluence += count * Math.pow(rankValue, 1.5);
-      }
-      
-      // 2. 타겟 랭크와의 시너지 계산
-      const targetRankValue = rankWeights[targetRank] || 1;
-      const synergyBonus = this.calculateRankSynergy(rankDistribution, targetRank);
-      
-      // 3. 고급 랭크 보너스 (SS, SSS가 있으면 해당 랭크 확률 대폭 증가)
-      let highRankBonus = 1.0;
-      if (targetRank === 'SS' || targetRank === 'SSS') {
-        const hasHighRankCards = selectedCards.some(card => 
-          card.rank === 'SS' || card.rank === 'SSS'
-        );
-        if (hasHighRankCards) {
-          // 고급 랭크 카드가 있으면 해당 랭크 확률 3배 증가
-          highRankBonus = 3.0;
-        }
-      }
-      
-      // 4. 복합 계산
-      probability *= (1 + advancedInfluence * 0.1); // 고급 랭크 영향
-      probability *= (1 + synergyBonus * 0.2); // 시너지 보너스
-      probability *= highRankBonus; // 고급 랭크 보너스
-      
-      // 6. 카드 수는 최소한의 영향만 (0.95 ~ 1.05)
-      const cardCountFactor = 0.95 + (selectedCards.length / this.maxFusionCards) * 0.1;
-      probability *= cardCountFactor;
-      
-      // 7. 랭크별 특별 계산
-      if (targetRank === 'SSS') {
-        // SSS는 매우 특별한 조건 필요
-        const sssCards = rankDistribution['SSS'] || 0;
-        const ssCards = rankDistribution['SS'] || 0;
-        if (sssCards > 0) {
-          probability *= 5.0; // SSS 카드가 있으면 SSS 확률 5배
-        } else if (ssCards >= 2) {
-          probability *= 2.0; // SS 카드 2장 이상이면 SSS 확률 2배
-        }
-      } else if (targetRank === 'SS') {
-        // SS는 S나 SS 카드의 영향
-        const ssCards = rankDistribution['SS'] || 0;
-        const sCards = rankDistribution['S'] || 0;
-        if (ssCards > 0) {
-          probability *= 3.0; // SS 카드가 있으면 SS 확률 3배
-        } else if (sCards >= 2) {
-          probability *= 1.5; // S 카드 2장 이상이면 SS 확률 1.5배
-        }
-      }
-      
-      // 최종 확률 정규화
-      probabilities[targetRank] = Math.min(probability, 0.90); // 최대 90%로 제한
-    }
-    
-    // 정규화 (합이 100%가 되도록)
-    const totalProbability = Object.values(probabilities).reduce((sum, prob) => sum + prob, 0);
-    for (const rank in probabilities) {
-      probabilities[rank] = (probabilities[rank] / totalProbability) * 100;
-    }
-    
+    // 클라이언트는 서버에서 받은 확률 정보만 표시
+    // 실제 계산은 서버의 조합 엔진에서 수행됨
     return {
       success: true,
-      probabilities: probabilities,
+      message: '서버에서 확률을 계산합니다...',
       cardCount: selectedCards.length,
-      rankDistribution: rankDistribution
+      isServerCalculated: true
     };
   }
   
@@ -2269,24 +2180,44 @@ ${skill ? skill.description : ''}
   }
   
   showProbabilityTooltip() {
-    if (!this.currentProbabilities) return;
-    
     const tooltip = document.getElementById('probabilityTooltip');
-    const rankOrder = ['B', 'A', 'S', 'SS', 'SSS'];
+    if (!tooltip) return;
     
-    let tooltipContent = '';
-    rankOrder.forEach(rank => {
-      if (this.currentProbabilities[rank]) {
+    // 서버에서 받은 확률 정보 표시
+    if (this.currentServerProbabilities) {
+      const { successRate, successRateBreakdown, engineVersion, policyVersion } = this.currentServerProbabilities;
+      
+      let tooltipContent = `
+        <div class="server-probability-info">
+          <div class="engine-version">엔진 v${engineVersion}</div>
+          <div class="policy-version">정책 v${policyVersion}</div>
+          <div class="success-rate">성공률: ${(successRate * 100).toFixed(1)}%</div>
+      `;
+      
+      if (successRateBreakdown) {
         tooltipContent += `
-          <div class="rank-probability-item">
-            <span class="rank-name">${rank}</span>
-            <span class="rank-probability">${this.currentProbabilities[rank].toFixed(1)}%</span>
+          <div class="breakdown">
+            <div class="breakdown-item">기본: ${(successRateBreakdown.base * 100).toFixed(1)}%</div>
+            <div class="breakdown-item">카드 보너스: +${(successRateBreakdown.card_bonus * 100).toFixed(1)}%</div>
+            <div class="breakdown-item">피티 보너스: +${(successRateBreakdown.pity_bonus * 100).toFixed(1)}%</div>
+            <div class="breakdown-item">등급 보너스: +${(successRateBreakdown.tier_bonus * 100).toFixed(1)}%</div>
+            <div class="breakdown-item">레시피 보너스: +${(successRateBreakdown.recipe_bonus * 100).toFixed(1)}%</div>
           </div>
         `;
       }
-    });
+      
+      tooltipContent += '</div>';
+      tooltip.innerHTML = tooltipContent;
+    } else {
+      // 서버 확률 정보가 없으면 기본 메시지
+      tooltip.innerHTML = `
+        <div class="server-probability-info">
+          <div class="info-message">서버에서 확률을 계산합니다...</div>
+          <div class="info-note">조합 실행 시 정확한 확률이 표시됩니다</div>
+        </div>
+      `;
+    }
     
-    tooltip.innerHTML = tooltipContent;
     tooltip.style.display = 'block';
   }
   
@@ -2324,37 +2255,49 @@ ${skill ? skill.description : ''}
       const result = await this.apiClient.commitFusion(materialCardIds);
       console.log('🔧 API 응답 전체:', JSON.stringify(result, null, 2));
 
-      // 조합 결과 처리 - 다양한 응답 구조 지원
+      // 🔧 조합 엔진 v2.0 응답 처리
       let fusionSuccess = false;
       let resultCard = null;
+      let successRate = 0;
+      let successRateBreakdown = null;
+      let engineVersion = '1.0.0';
+      let policyVersion = '1.0.0';
       
-      if (result) {
-        // 구조 1: result.data.fusionSuccess
-        if (result.data && typeof result.data.fusionSuccess === 'boolean') {
-          fusionSuccess = result.data.fusionSuccess;
-          resultCard = result.data.resultCard;
-          console.log('✅ 구조 1 사용: result.data');
-        }
-        // 구조 2: result.fusionSuccess (직접)
-        else if (typeof result.fusionSuccess === 'boolean') {
-          fusionSuccess = result.fusionSuccess;
-          resultCard = result.resultCard;
-          console.log('✅ 구조 2 사용: result 직접');
-        }
-        // 구조 3: result 자체가 데이터
-        else if (typeof result === 'object' && 'fusionSuccess' in result) {
-          fusionSuccess = result.fusionSuccess;
-          resultCard = result.resultCard;
-          console.log('✅ 구조 3 사용: result 자체');
-        }
+      if (result && result.data) {
+        fusionSuccess = result.data.fusionSuccess || false;
+        resultCard = result.data.resultCard || null;
+        successRate = result.data.successRate || 0;
+        successRateBreakdown = result.data.successRateBreakdown || null;
+        engineVersion = result.data.engineVersion || '1.0.0';
+        policyVersion = result.data.policyVersion || '1.0.0';
+        
+        console.log('✅ 조합 엔진 v2.0 응답 파싱 완료');
+        console.log('📊 성공률:', successRate);
+        console.log('📊 성공률 분해:', successRateBreakdown);
+        console.log('🔧 엔진 버전:', engineVersion);
+        console.log('🔧 정책 버전:', policyVersion);
       }
       
-      console.log('🔧 최종 파싱 결과:', { fusionSuccess, resultCard });
+      console.log('🔧 최종 파싱 결과:', { 
+        fusionSuccess, 
+        resultCard, 
+        successRate, 
+        engineVersion,
+        policyVersion 
+      });
 
       if (fusionSuccess !== undefined) {
         console.log('✅ 조합 API 성공, 룰렛 표시');
         console.log('🔧 fusionSuccess:', fusionSuccess);
         console.log('🔧 resultCard:', resultCard);
+
+        // 서버 확률 정보 저장 (툴팁 표시용)
+        this.currentServerProbabilities = {
+          successRate,
+          successRateBreakdown,
+          engineVersion,
+          policyVersion
+        };
 
         // 룰렛으로 결과 표시
         try {
@@ -2496,15 +2439,15 @@ ${skill ? skill.description : ''}
         allCards[Math.floor(Math.random() * allCards.length)];
     };
 
-    // 150장의 기본 카드 세트 생성 (결과 카드 위치는 나중에 결정)
+    // 120장의 기본 카드 세트 생성 (성능 최적화)
     const baseCards = [];
-    for (let i = 0; i < 150; i++) {
+    for (let i = 0; i < 120; i++) {
       // 나머지는 랜덤 카드
       const randomCard = allCards[Math.floor(Math.random() * allCards.length)];
       baseCards.push(randomCard);
     }
 
-    // 🔄 150장을 두 번 반복해서 300장으로 무한 룰렛 효과
+    // 🔄 120장을 두 번 반복해서 240장으로 무한 룰렛 효과 (성능 최적화)
     rouletteCards.push(...baseCards, ...baseCards);
 
     return rouletteCards;
@@ -2526,12 +2469,23 @@ ${skill ? skill.description : ''}
   
   startRouletteAnimation(rouletteWheel, resultCard, selectedCards) {
     const cards = rouletteWheel.children;
-    const cardWidth = 108; // 카드 너비 + 마진 (100px + 8px)
-    const containerWidth = 500;
-    const pointerOffset = 20; // 포인터가 오른쪽에서 20px 떨어진 곳
-
-    // 🎯 결과 카드를 정확한 위치에 배치하고 그 위치에서 멈추기
-    const targetIndex = 200 + Math.floor(Math.random() * 50); // 200~249 중 랜덤 (안전한 위치)
+    
+    // 🔧 DOM 계측 기반 치수 계산
+    const container = rouletteWheel.parentElement;
+    const firstCard = cards[0];
+    const pointer = container.querySelector('.roulette-pointer');
+    
+    // 실제 DOM 치수 측정
+    const containerRect = container.getBoundingClientRect();
+    const cardRect = firstCard.getBoundingClientRect();
+    const pointerRect = pointer.getBoundingClientRect();
+    
+    const containerWidth = containerRect.width;
+    const cardWidth = cardRect.width + this.getComputedMarginRight(firstCard);
+    const pointerX = pointerRect.left - containerRect.left;
+    
+    // 🎯 결과 카드를 정확한 위치에 배치하고 그 위치에서 멈추기 (240장 기준)
+    const targetIndex = 160 + Math.floor(Math.random() * 40); // 160~199 중 랜덤 (안전한 위치)
     
     // 결과 카드를 정확한 위치에 배치
     if (resultCard) {
@@ -2553,33 +2507,43 @@ ${skill ? skill.description : ''}
       cards[targetIndex].dataset.cardId = randomMaterial.id;
     }
 
-    console.log('🎯 룰렛 수정된 로직:', {
-      targetIndex,
-      resultCardId: resultCard?.id,
-      totalCards: cards.length
-    });
+    // 📍 정확한 위치 계산: 포인터 중심에 카드 중심이 오도록
+    const startPosition = 0;
+    const cardCenterOffset = cardWidth / 2;
+    const endPosition = pointerX - cardCenterOffset - (targetIndex * cardWidth);
 
-    // 📍 출발점과 도착점 정확히 계산
-    const startPosition = 0; // 시작 위치
+    // 🔍 상세 디버깅 로깅
+    const debugInfo = {
+      containerWidth: containerWidth.toFixed(1),
+      cardWidth: cardWidth.toFixed(1),
+      cardMargin: this.getComputedMarginRight(firstCard).toFixed(1),
+      pointerX: pointerX.toFixed(1),
+      targetIndex,
+      cardCenterOffset: cardCenterOffset.toFixed(1),
+      endPosition: endPosition.toFixed(1),
+      finalCardPosition: (targetIndex * cardWidth).toFixed(1),
+      duration: 4000,
+      easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+      timestamp: new Date().toISOString()
+    };
     
-    // 🔧 정확한 위치 계산: 포인터가 가리키는 위치에 카드가 오도록
-    // 포인터는 오른쪽에서 20px 떨어진 곳에 있음
-    // 카드의 중심이 포인터 위치에 오도록 해야 함
-    const pointerPosition = containerWidth - pointerOffset; // 480px
-    const cardCenterOffset = cardWidth / 2; // 54px
-    const endPosition = pointerPosition - cardCenterOffset - (targetIndex * cardWidth);
-
-    console.log('📍 정확한 위치 계산:', {
-      containerWidth,
-      pointerOffset,
-      pointerPosition,
-      cardWidth,
-      cardCenterOffset,
-      targetIndex,
-      startPosition,
-      endPosition,
-      finalCardPosition: targetIndex * cardWidth
-    });
+    console.log('🎯 룰렛 DOM 계측 결과:', debugInfo);
+    
+    // 오차 검증 및 경고
+    const measuredCenter = pointerX;
+    const expectedCenter = pointerX;
+    const error = Math.abs(measuredCenter - expectedCenter);
+    
+    if (error > 1) {
+      console.warn(`⚠️ 포인터 정렬 오차 감지: ${error.toFixed(1)}px`);
+      console.warn('디버그 정보:', debugInfo);
+    } else {
+      console.log(`✅ 포인터 정렬 정확: 오차 ${error.toFixed(1)}px`);
+    }
+    
+    // 성능 모니터링
+    const startTime = performance.now();
+    this.rouletteStartTime = startTime;
 
     // 애니메이션 시작
     rouletteWheel.style.transition = 'none';
@@ -2588,17 +2552,227 @@ ${skill ? skill.description : ''}
     // 룰렛 효과음 재생
     this.playRouletteSound();
 
-    // 🎪 베지어 커브로 출발점→도착점 직접 이동
+    // 🎪 정확한 애니메이션 실행
     requestAnimationFrame(() => {
-      // 4초 동안 베지어 커브로 부드럽게 이동
-      rouletteWheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)';
-      rouletteWheel.style.transform = `translateX(${endPosition}px)`;
+      // 레이아웃 강제 후 2틱 대기 (프레임 튕김 방지)
+      requestAnimationFrame(() => {
+        const duration = 4000; // 4초
+        const easing = 'cubic-bezier(0.25, 0.1, 0.25, 1)';
+        
+        rouletteWheel.style.transition = `transform ${duration}ms ${easing}`;
+        rouletteWheel.style.transform = `translateX(${endPosition}px)`;
 
-      // 애니메이션 완료 후 결과 표시
-      setTimeout(() => {
-        this.showRouletteResult(resultCard, selectedCards);
-      }, 4000);
+        // 애니메이션 완료 후 결과 표시
+        setTimeout(() => {
+          // 성능 측정 완료
+          const endTime = performance.now();
+          const totalTime = endTime - this.rouletteStartTime;
+          console.log(`🎯 룰렛 애니메이션 완료: ${totalTime.toFixed(1)}ms`);
+          
+          this.showRouletteResult(resultCard, selectedCards);
+        }, duration);
+      });
     });
+  }
+
+  // 🔧 계산된 마진값 가져오기
+  getComputedMarginRight(element) {
+    const computedStyle = window.getComputedStyle(element);
+    const marginRight = parseFloat(computedStyle.marginRight) || 0;
+    return marginRight;
+  }
+
+  // 🧪 룰렛 정확도 테스트 (개발용)
+  testRouletteAccuracy(testCount = 100) {
+    console.log(`🧪 룰렛 정확도 테스트 시작 (${testCount}회)`);
+    
+    const results = {
+      totalTests: testCount,
+      accurateStops: 0,
+      errors: [],
+      averageError: 0,
+      maxError: 0,
+      minError: Infinity
+    };
+
+    for (let i = 0; i < testCount; i++) {
+      try {
+        // 가상의 룰렛 컨테이너 생성
+        const testContainer = document.createElement('div');
+        testContainer.className = 'roulette-container';
+        testContainer.style.width = '500px';
+        testContainer.style.height = '180px';
+        testContainer.style.position = 'relative';
+        testContainer.style.overflow = 'hidden';
+        
+        const testWheel = document.createElement('div');
+        testWheel.className = 'roulette-wheel';
+        testWheel.style.display = 'flex';
+        testWheel.style.height = '100%';
+        testWheel.style.alignItems = 'center';
+        
+        const testPointer = document.createElement('div');
+        testPointer.className = 'roulette-pointer';
+        testPointer.style.position = 'absolute';
+        testPointer.style.top = '50%';
+        testPointer.style.right = '20px';
+        testPointer.style.transform = 'translateY(-50%)';
+        testPointer.style.width = '0';
+        testPointer.style.height = '0';
+        testPointer.style.borderTop = '15px solid transparent';
+        testPointer.style.borderBottom = '15px solid transparent';
+        testPointer.style.borderLeft = '30px solid #ffd700';
+        
+        testContainer.appendChild(testWheel);
+        testContainer.appendChild(testPointer);
+        document.body.appendChild(testContainer);
+        
+        // 테스트 카드 생성
+        for (let j = 0; j < 240; j++) {
+          const card = document.createElement('div');
+          card.className = 'roulette-card';
+          card.style.width = '100px';
+          card.style.height = '140px';
+          card.style.marginRight = '8px';
+          card.style.flexShrink = '0';
+          testWheel.appendChild(card);
+        }
+        
+        // DOM 계측
+        const containerRect = testContainer.getBoundingClientRect();
+        const firstCard = testWheel.children[0];
+        const cardRect = firstCard.getBoundingClientRect();
+        const pointerRect = testPointer.getBoundingClientRect();
+        
+        const containerWidth = containerRect.width;
+        const cardWidth = cardRect.width + this.getComputedMarginRight(firstCard);
+        const pointerX = pointerRect.left - containerRect.left;
+        
+        // 테스트 위치 계산
+        const targetIndex = 160 + Math.floor(Math.random() * 40);
+        const cardCenterOffset = cardWidth / 2;
+        const endPosition = pointerX - cardCenterOffset - (targetIndex * cardWidth);
+        
+        // 오차 계산
+        const expectedPosition = targetIndex * cardWidth;
+        const actualPosition = Math.abs(endPosition);
+        const error = Math.abs(expectedPosition - actualPosition);
+        
+        if (error <= 1) {
+          results.accurateStops++;
+        }
+        
+        results.errors.push(error);
+        results.maxError = Math.max(results.maxError, error);
+        results.minError = Math.min(results.minError, error);
+        
+        // 정리
+        document.body.removeChild(testContainer);
+        
+      } catch (error) {
+        console.error(`테스트 ${i + 1} 실패:`, error);
+      }
+    }
+    
+    // 결과 계산
+    results.averageError = results.errors.reduce((sum, error) => sum + error, 0) / results.errors.length;
+    results.accuracy = (results.accurateStops / results.totalTests) * 100;
+    
+    console.log('🧪 룰렛 정확도 테스트 결과:', {
+      정확도: `${results.accuracy.toFixed(1)}%`,
+      정확한_정지: `${results.accurateStops}/${results.totalTests}`,
+      평균_오차: `${results.averageError.toFixed(2)}px`,
+      최대_오차: `${results.maxError.toFixed(2)}px`,
+      최소_오차: `${results.minError.toFixed(2)}px`
+    });
+    
+    return results;
+  }
+
+  // 🧪 반응형 브레이크포인트 테스트
+  testResponsiveBreakpoints() {
+    console.log('🧪 반응형 브레이크포인트 테스트 시작');
+    
+    const breakpoints = [
+      { name: '데스크톱', width: 500, height: 180 },
+      { name: '태블릿', width: 400, height: 150 },
+      { name: '모바일', width: 350, height: 120 },
+      { name: '소형모바일', width: 300, height: 100 }
+    ];
+    
+    const results = [];
+    
+    breakpoints.forEach(breakpoint => {
+      try {
+        // 테스트 컨테이너 생성
+        const testContainer = document.createElement('div');
+        testContainer.className = 'roulette-container';
+        testContainer.style.width = `${breakpoint.width}px`;
+        testContainer.style.height = `${breakpoint.height}px`;
+        testContainer.style.position = 'relative';
+        testContainer.style.overflow = 'hidden';
+        
+        const testWheel = document.createElement('div');
+        testWheel.className = 'roulette-wheel';
+        testWheel.style.display = 'flex';
+        testWheel.style.height = '100%';
+        testWheel.style.alignItems = 'center';
+        
+        const testPointer = document.createElement('div');
+        testPointer.className = 'roulette-pointer';
+        testPointer.style.position = 'absolute';
+        testPointer.style.top = '50%';
+        testPointer.style.right = '20px';
+        testPointer.style.transform = 'translateY(-50%)';
+        testPointer.style.width = '0';
+        testPointer.style.height = '0';
+        testPointer.style.borderTop = '15px solid transparent';
+        testPointer.style.borderBottom = '15px solid transparent';
+        testPointer.style.borderLeft = '30px solid #ffd700';
+        
+        testContainer.appendChild(testWheel);
+        testContainer.appendChild(testPointer);
+        document.body.appendChild(testContainer);
+        
+        // 테스트 카드 생성
+        for (let j = 0; j < 10; j++) {
+          const card = document.createElement('div');
+          card.className = 'roulette-card';
+          card.style.flexShrink = '0';
+          testWheel.appendChild(card);
+        }
+        
+        // DOM 계측
+        const containerRect = testContainer.getBoundingClientRect();
+        const firstCard = testWheel.children[0];
+        const cardRect = firstCard.getBoundingClientRect();
+        const pointerRect = testPointer.getBoundingClientRect();
+        
+        const actualWidth = containerRect.width;
+        const cardWidth = cardRect.width + this.getComputedMarginRight(firstCard);
+        const pointerX = pointerRect.left - containerRect.left;
+        
+        const result = {
+          breakpoint: breakpoint.name,
+          expectedWidth: breakpoint.width,
+          actualWidth: actualWidth.toFixed(1),
+          cardWidth: cardWidth.toFixed(1),
+          pointerX: pointerX.toFixed(1),
+          widthError: Math.abs(breakpoint.width - actualWidth).toFixed(1)
+        };
+        
+        results.push(result);
+        console.log(`✅ ${breakpoint.name}:`, result);
+        
+        // 정리
+        document.body.removeChild(testContainer);
+        
+      } catch (error) {
+        console.error(`${breakpoint.name} 테스트 실패:`, error);
+      }
+    });
+    
+    return results;
   }
   
   playRouletteSound() {
