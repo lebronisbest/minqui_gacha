@@ -2438,8 +2438,8 @@ ${skill ? skill.description : ''}
 
     const rouletteCards = [];
 
-    // 🎯 애니메이션이 멈출 위치 (35-40번째 사이)
-    const stopIndex = 35 + Math.floor(Math.random() * 5); // 35~39 중 랜덤
+    // 🎯 애니메이션이 멈출 위치 (120-130번째 사이, 뒤쪽에서 자연스럽게 멈춤)
+    const stopIndex = 120 + Math.floor(Math.random() * 10); // 120~129 중 랜덤
 
     // 🎭 짜릿한 연출을 위한 "아슬아슬" 카드 배치
     const getTeaseCard = () => {
@@ -2450,8 +2450,8 @@ ${skill ? skill.description : ''}
         allCards[Math.floor(Math.random() * allCards.length)];
     };
 
-    // 50장의 카드 생성
-    for (let i = 0; i < 50; i++) {
+    // 150장의 카드 생성 (충분한 회전을 위해)
+    for (let i = 0; i < 150; i++) {
       if (i === stopIndex) {
         if (resultCard) {
           // 조합 성공: 결과 카드를 배치
