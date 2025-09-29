@@ -4,7 +4,11 @@
       "Bash(curl:*)",
       "Bash(vercel:*)",
       "Bash(python:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npx vercel:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []
