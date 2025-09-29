@@ -1788,9 +1788,16 @@ ${skill ? skill.description : ''}
   // 조합 시스템 메서드들
   initFusionSystem() {
     // 조합 버튼 클릭 이벤트
-    document.getElementById('fusionButton').addEventListener('click', () => {
-      this.performFusion();
-    });
+    const fusionButton = document.getElementById('fusionButton');
+    if (fusionButton) {
+      fusionButton.addEventListener('click', () => {
+        console.log('🔘 조합 버튼 클릭됨');
+        this.performFusion();
+      });
+      console.log('✅ 조합 버튼 이벤트 리스너 등록 완료');
+    } else {
+      console.error('❌ fusionButton 요소를 찾을 수 없음');
+    }
     
     // 확인 버튼 클릭 이벤트
     document.getElementById('confirmButton').addEventListener('click', () => {
@@ -2232,7 +2239,15 @@ ${skill ? skill.description : ''}
   updateFusionInfo() {
     const filledSlots = this.selectedFusionCards.filter(card => card !== null);
     const fusionButton = document.getElementById('fusionButton');
-    if (!fusionButton) return;
+    if (!fusionButton) {
+      console.error('❌ fusionButton 요소를 찾을 수 없음');
+      return;
+    }
+
+    console.log('🔍 조합 정보 업데이트:', {
+      filledSlots: filledSlots.length,
+      minRequired: this.minFusionCards
+    });
 
     const result = this.calculateFusionProbability(filledSlots);
     
@@ -2244,10 +2259,12 @@ ${skill ? skill.description : ''}
       this.currentRankDistribution = rankDistribution;
       
       fusionButton.disabled = false;
+      console.log('✅ 조합 버튼 활성화됨');
     } else {
       this.currentProbabilities = null;
       this.currentRankDistribution = null;
       fusionButton.disabled = true;
+      console.log('❌ 조합 버튼 비활성화됨:', result.message);
     }
   }
   
@@ -2279,15 +2296,19 @@ ${skill ? skill.description : ''}
   }
   
   async performFusion() {
+    console.log('🎯 performFusion 시작');
 
     // 🛡️ 중복 실행 방지
     if (this.isFusionInProgress) {
+      console.log('❌ 이미 조합 진행 중');
       return;
     }
 
     const filledSlots = this.selectedFusionCards.filter(card => card !== null);
+    console.log('선택된 카드들:', filledSlots);
 
     if (filledSlots.length < this.minFusionCards) {
+      console.log('❌ 카드 수 부족:', filledSlots.length, '/', this.minFusionCards);
       alert(`최소 ${this.minFusionCards}장의 카드를 선택해주세요!`);
       return;
     }
