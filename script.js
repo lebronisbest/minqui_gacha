@@ -2528,6 +2528,7 @@ ${skill ? skill.description : ''}
     const cards = rouletteWheel.children;
     const cardWidth = 108; // 카드 너비 + 마진 (100px + 8px)
     const containerWidth = 500;
+    const pointerOffset = 20; // 포인터가 오른쪽에서 20px 떨어진 곳
 
     // 🎯 결과 카드를 정확한 위치에 배치하고 그 위치에서 멈추기
     const targetIndex = 200 + Math.floor(Math.random() * 50); // 200~249 중 랜덤 (안전한 위치)
@@ -2560,12 +2561,24 @@ ${skill ? skill.description : ''}
 
     // 📍 출발점과 도착점 정확히 계산
     const startPosition = 0; // 시작 위치
-    const endPosition = -(targetIndex * cardWidth) + (containerWidth / 2) - (cardWidth / 2);
+    
+    // 🔧 정확한 위치 계산: 포인터가 가리키는 위치에 카드가 오도록
+    // 포인터는 오른쪽에서 20px 떨어진 곳에 있음
+    // 카드의 중심이 포인터 위치에 오도록 해야 함
+    const pointerPosition = containerWidth - pointerOffset; // 480px
+    const cardCenterOffset = cardWidth / 2; // 54px
+    const endPosition = pointerPosition - cardCenterOffset - (targetIndex * cardWidth);
 
-    console.log('📍 위치 계산:', {
+    console.log('📍 정확한 위치 계산:', {
+      containerWidth,
+      pointerOffset,
+      pointerPosition,
+      cardWidth,
+      cardCenterOffset,
+      targetIndex,
       startPosition,
       endPosition,
-      distance: Math.abs(endPosition - startPosition)
+      finalCardPosition: targetIndex * cardWidth
     });
 
     // 애니메이션 시작
