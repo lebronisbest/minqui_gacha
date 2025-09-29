@@ -2450,26 +2450,30 @@ ${skill ? skill.description : ''}
         allCards[Math.floor(Math.random() * allCards.length)];
     };
 
-    // 150장의 카드 생성 (충분한 회전을 위해)
+    // 150장의 기본 카드 세트 생성
+    const baseCards = [];
     for (let i = 0; i < 150; i++) {
       if (i === stopIndex) {
         if (resultCard) {
           // 조합 성공: 결과 카드를 배치
-          rouletteCards.push(resultCard);
+          baseCards.push(resultCard);
         } else {
           // 조합 실패: 재료 카드 중 하나를 배치 (자연스러운 연출)
           const randomMaterial = selectedCards[Math.floor(Math.random() * selectedCards.length)];
-          rouletteCards.push(randomMaterial);
+          baseCards.push(randomMaterial);
         }
       } else if (Math.abs(i - stopIndex) <= 2 && Math.abs(i - stopIndex) > 0) {
         // 🎭 결과 카드 주변(±1~2칸)에 좋은 카드들 배치 → "아슬아슬" 연출
-        rouletteCards.push(getTeaseCard());
+        baseCards.push(getTeaseCard());
       } else {
         // 나머지는 랜덤 카드
         const randomCard = allCards[Math.floor(Math.random() * allCards.length)];
-        rouletteCards.push(randomCard);
+        baseCards.push(randomCard);
       }
     }
+
+    // 🔄 150장을 두 번 반복해서 300장으로 무한 루프 효과
+    rouletteCards.push(...baseCards, ...baseCards);
 
     return rouletteCards;
   }
@@ -2507,9 +2511,9 @@ ${skill ? skill.description : ''}
     // 🎯 멈출 카드가 중앙에 정확히 오도록 계산
     const finalPosition = -(stopIndex * cardWidth) + (containerWidth / 2) - (cardWidth / 2);
     
-    // 🎭 짜릿한 애니메이션을 위한 다단계 회전
-    const extraSpins = 6 + Math.random() * 3; // 6-9바퀴
-    const extraDistance = extraSpins * cards.length * cardWidth;
+    // 🎭 2바퀴만 돌면서 천천히
+    const extraSpins = 1.5 + Math.random() * 0.5; // 1.5-2바퀴
+    const extraDistance = extraSpins * 150 * cardWidth; // 기본 150장 기준으로 계산
     const totalDistance = finalPosition - extraDistance;
 
     // 애니메이션 시작
@@ -2519,28 +2523,22 @@ ${skill ? skill.description : ''}
     // 룰렛 효과음 재생
     this.playRouletteSound();
 
-    // 🎪 3단계 애니메이션으로 극적 효과 연출
+    // 🎪 느리고 부드러운 2단계 애니메이션
     requestAnimationFrame(() => {
-      // 1단계: 빠른 회전 (2초)
-      rouletteWheel.style.transition = 'transform 2s ease-out';
-      rouletteWheel.style.transform = `translateX(${totalDistance + cardWidth * 3}px)`;
+      // 1단계: 천천히 회전 시작 (3초)
+      rouletteWheel.style.transition = 'transform 3s ease-out';
+      rouletteWheel.style.transform = `translateX(${totalDistance + cardWidth * 2}px)`;
 
       setTimeout(() => {
-        // 2단계: 망설이며 느린 회전 (1.5초)
-        rouletteWheel.style.transition = 'transform 1.5s cubic-bezier(0.45, 0.05, 0.55, 0.95)';
-        rouletteWheel.style.transform = `translateX(${totalDistance + cardWidth * 1}px)`;
+        // 2단계: 정확한 위치에 부드럽게 멈춤 (2초)
+        rouletteWheel.style.transition = 'transform 2s cubic-bezier(0.23, 1, 0.32, 1)';
+        rouletteWheel.style.transform = `translateX(${totalDistance}px)`;
 
+        // 최종 결과 표시
         setTimeout(() => {
-          // 3단계: 마지막 미세 조정 (1초) - 결과 위치에 정확히 멈춤
-          rouletteWheel.style.transition = 'transform 1s cubic-bezier(0.23, 1, 0.32, 1)';
-          rouletteWheel.style.transform = `translateX(${totalDistance}px)`;
-
-          // 최종 결과 표시
-          setTimeout(() => {
-            this.showRouletteResult(resultCard, selectedCards);
-          }, 1000);
-        }, 1500);
-      }, 2000);
+          this.showRouletteResult(resultCard, selectedCards);
+        }, 2000);
+      }, 3000);
     });
   }
   
