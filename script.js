@@ -2433,6 +2433,7 @@ ${skill ? skill.description : ''}
   }
 
   showRoulette(selectedCards, resultCard) {
+    console.log('🎰 showRoulette 시작');
 
     const rouletteModal = document.getElementById('rouletteModal');
     const rouletteWheel = document.getElementById('rouletteWheel');
@@ -2440,21 +2441,27 @@ ${skill ? skill.description : ''}
 
     // DOM 요소 존재 확인
     if (!rouletteModal) {
+      console.error('❌ rouletteModal 없음');
       return;
     }
     if (!rouletteWheel) {
+      console.error('❌ rouletteWheel 없음');
       return;
     }
     if (!rouletteResult) {
+      console.error('❌ rouletteResult 없음');
       return;
     }
 
+    console.log('✅ 룰렛 DOM 요소들 확인 완료');
 
     // 룰렛에 표시할 카드들 생성 (결과 카드 포함)
     let rouletteCards;
     try {
       rouletteCards = this.createRouletteCards(selectedCards, resultCard);
+      console.log('✅ 룰렛 카드 생성 완료:', rouletteCards?.length);
     } catch (createError) {
+      console.error('❌ 룰렛 카드 생성 에러:', createError);
       return;
     }
     
