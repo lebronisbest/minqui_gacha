@@ -2435,14 +2435,42 @@ ${skill ? skill.description : ''}
       console.warn('서버에서 받은 결과 카드가 클라이언트 데이터에 없음:', resultCard);
       allCards.push(resultCard);
     }
-    
-    // 50장의 랜덤 카드 선택 (중복 허용)
+
     const rouletteCards = [];
+
+    // 🎯 애니메이션이 멈출 위치 (35-40번째 사이)
+    const stopIndex = 35 + Math.floor(Math.random() * 5); // 35~39 중 랜덤
+
+    // 🎭 짜릿한 연출을 위한 "아슬아슬" 카드 배치
+    const getTeaseCard = () => {
+      // 높은 등급의 카드들로 유혹
+      const highRankCards = allCards.filter(card => ['SSS', 'SS', 'S'].includes(card.rank));
+      return highRankCards.length > 0 ?
+        highRankCards[Math.floor(Math.random() * highRankCards.length)] :
+        allCards[Math.floor(Math.random() * allCards.length)];
+    };
+
+    // 50장의 카드 생성
     for (let i = 0; i < 50; i++) {
-      const randomCard = allCards[Math.floor(Math.random() * allCards.length)];
-      rouletteCards.push(randomCard);
+      if (i === stopIndex) {
+        if (resultCard) {
+          // 조합 성공: 결과 카드를 배치
+          rouletteCards.push(resultCard);
+        } else {
+          // 조합 실패: 재료 카드 중 하나를 배치 (자연스러운 연출)
+          const randomMaterial = selectedCards[Math.floor(Math.random() * selectedCards.length)];
+          rouletteCards.push(randomMaterial);
+        }
+      } else if (Math.abs(i - stopIndex) <= 2 && Math.abs(i - stopIndex) > 0) {
+        // 🎭 결과 카드 주변(±1~2칸)에 좋은 카드들 배치 → "아슬아슬" 연출
+        rouletteCards.push(getTeaseCard());
+      } else {
+        // 나머지는 랜덤 카드
+        const randomCard = allCards[Math.floor(Math.random() * allCards.length)];
+        rouletteCards.push(randomCard);
+      }
     }
-    
+
     return rouletteCards;
   }
   
@@ -2464,59 +2492,97 @@ ${skill ? skill.description : ''}
     const cards = rouletteWheel.children;
     const cardWidth = 108; // 카드 너비 + 마진 (100px + 8px)
     const containerWidth = 500;
-    
-    // 결과 카드의 인덱스 찾기
-    let resultIndex = -1;
+
+    // 멈출 카드의 인덱스 찾기
+    let stopIndex = -1;
+    const targetCardId = resultCard ? resultCard.id : selectedCards[Math.floor(Math.random() * selectedCards.length)].id;
+
     for (let i = 0; i < cards.length; i++) {
-      if (cards[i].dataset.cardId === resultCard?.id) {
-        resultIndex = i;
+      if (cards[i].dataset.cardId === targetCardId) {
+        stopIndex = i;
         break;
       }
     }
-    
-    let finalPosition;
-    
-    if (resultIndex !== -1) {
-      // 결과 카드가 룰렛에 있으면 그 카드가 중앙에 오도록
-      finalPosition = -(resultIndex * cardWidth) + (containerWidth / 2) - (cardWidth / 2);
-    } else {
-      // 결과 카드가 룰렛에 없으면 랜덤한 위치에서 정지 (시각적 효과용)
-      resultIndex = Math.floor(Math.random() * cards.length);
-      finalPosition = -(resultIndex * cardWidth) + (containerWidth / 2) - (cardWidth / 2);
 
-      // ⚠️ 실제 결과는 서버에서 받은 resultCard를 사용 (룰렛 결과 무시)
-      // 룰렛은 시각적 효과일 뿐, 실제 조합 결과는 서버에서 결정됨
-    }
+    // 🎯 멈출 카드가 중앙에 정확히 오도록 계산
+    const finalPosition = -(stopIndex * cardWidth) + (containerWidth / 2) - (cardWidth / 2);
     
-    // 추가로 몇 바퀴 더 돌리기 (5-8바퀴, 50장이므로 더 많이)
-    const extraSpins = 5 + Math.random() * 3;
+    // 🎭 짜릿한 애니메이션을 위한 다단계 회전
+    const extraSpins = 6 + Math.random() * 3; // 6-9바퀴
     const extraDistance = extraSpins * cards.length * cardWidth;
     const totalDistance = finalPosition - extraDistance;
-    
+
     // 애니메이션 시작
     rouletteWheel.style.transition = 'none';
     rouletteWheel.style.transform = 'translateX(0px)';
-    
+
     // 룰렛 효과음 재생
     this.playRouletteSound();
-    
-    // 다음 프레임에서 애니메이션 시작
+
+    // 🎪 3단계 애니메이션으로 극적 효과 연출
     requestAnimationFrame(() => {
-      rouletteWheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-      rouletteWheel.style.transform = `translateX(${totalDistance}px)`;
-      
-      // 애니메이션 완료 후 결과 표시 (4초로 연장)
+      // 1단계: 빠른 회전 (2초)
+      rouletteWheel.style.transition = 'transform 2s ease-out';
+      rouletteWheel.style.transform = `translateX(${totalDistance + cardWidth * 3}px)`;
+
       setTimeout(() => {
-        this.showRouletteResult(resultCard, selectedCards);
-      }, 4000);
+        // 2단계: 망설이며 느린 회전 (1.5초)
+        rouletteWheel.style.transition = 'transform 1.5s cubic-bezier(0.45, 0.05, 0.55, 0.95)';
+        rouletteWheel.style.transform = `translateX(${totalDistance + cardWidth * 1}px)`;
+
+        setTimeout(() => {
+          // 3단계: 마지막 미세 조정 (1초) - 결과 위치에 정확히 멈춤
+          rouletteWheel.style.transition = 'transform 1s cubic-bezier(0.23, 1, 0.32, 1)';
+          rouletteWheel.style.transform = `translateX(${totalDistance}px)`;
+
+          // 최종 결과 표시
+          setTimeout(() => {
+            this.showRouletteResult(resultCard, selectedCards);
+          }, 1000);
+        }, 1500);
+      }, 2000);
     });
   }
   
   playRouletteSound() {
-    // 룰렛 회전 효과음 (기존 카드 플립 사운드 사용)
-    const audio = new Audio('sounds/card_flip.wav');
-    audio.volume = 0.3;
-    audio.play().catch(e => console.log('Audio play failed:', e));
+    // 🎵 룰렛 회전 효과음 시뮬레이션
+    const playTick = (interval) => {
+      const audio = new Audio('sounds/card_flip.wav');
+      audio.volume = 0.2;
+      audio.playbackRate = 1.5; // 조금 더 높은 음조
+      audio.play().catch(e => console.log('Audio play failed:', e));
+    };
+
+    // 점진적으로 느려지는 틱 사운드
+    let tickInterval = 50; // 시작 간격 (빠름)
+    let tickCount = 0;
+    const maxTicks = 60; // 총 틱 횟수
+
+    const tickTimer = setInterval(() => {
+      playTick();
+      tickCount++;
+
+      // 점점 느려지게
+      tickInterval += 8;
+
+      if (tickCount >= maxTicks || tickInterval > 400) {
+        clearInterval(tickTimer);
+      } else {
+        clearInterval(tickTimer);
+        setTimeout(() => {
+          if (tickCount < maxTicks) {
+            const newTimer = setInterval(() => {
+              playTick();
+              tickCount++;
+              tickInterval += 8;
+              if (tickCount >= maxTicks || tickInterval > 400) {
+                clearInterval(newTimer);
+              }
+            }, tickInterval);
+          }
+        }, tickInterval);
+      }
+    }, tickInterval);
   }
   
   showRouletteResult(resultCard, selectedCards) {
