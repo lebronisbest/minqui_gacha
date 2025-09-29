@@ -1529,7 +1529,31 @@ class MinquiCardGacha {
     // 카드 프리뷰 생성
     // 컬렉션 카드와 동일한 구조 사용
     const tempCardElement = this.createCollectionCardElement(card, true, duplicateCount);
-    detailCardDisplay.innerHTML = tempCardElement.innerHTML;
+
+    // 컬렉션 카드 비율 유지를 위한 래퍼 추가
+    detailCardDisplay.innerHTML = `
+      <div class="detail-card-wrapper" style="
+        width: 300px;
+        height: 420px;
+        margin: 0 auto;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      ">
+        ${tempCardElement.innerHTML}
+      </div>
+    `;
+
+    // 내부 카드 요소에 크기 조정
+    const cardElement = detailCardDisplay.querySelector('.collection-card');
+    if (cardElement) {
+      cardElement.style.cssText = `
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        transform: none !important;
+      `;
+    }
 
     // 스탯 정보 생성
     cardStatsInfo.innerHTML = `
@@ -1651,46 +1675,15 @@ class MinquiCardGacha {
       tempContainer.appendChild(cardElement);
       document.body.appendChild(tempContainer);
 
-      // 모든 이미지가 로드될 때까지 대기
-      const images = cardElement.querySelectorAll('img');
-      await Promise.all(Array.from(images).map(img => {
-        return new Promise((resolve) => {
-          if (img.complete) {
-            resolve();
-          } else {
-            img.onload = resolve;
-            img.onerror = resolve; // 오류가 있어도 계속 진행
-          }
-        });
-      }));
-
-      // 추가 렌더링 시간 대기
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      // Canvas 생성
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = 600;
-      canvas.height = 840;
-
-      // DOM을 Canvas로 그리기 (domtoimage 방식)
-      const svgData = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="600" height="840">
-          <foreignObject width="600" height="840">
-            ${new XMLSerializer().serializeToString(cardElement)}
-          </foreignObject>
-        </svg>
-      `;
-
-      const img = new Image();
-      img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
-
-      await new Promise((resolve, reject) => {
-        img.onload = () => {
-          ctx.drawImage(img, 0, 0);
-          resolve();
-        };
-        img.onerror = reject;
+      // html2canvas로 PNG 생성
+      const canvas = await html2canvas(cardElement, {
+        backgroundColor: null,
+        scale: 1,
+        width: 600,
+        height: 840,
+        useCORS: true,
+        allowTaint: true,
+        logging: false
       });
 
       // 임시 요소 제거
