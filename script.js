@@ -699,7 +699,8 @@ class MinquiCardGacha {
       await this.loadCollectionFromServer();
 
       // 조합탭 UI 업데이트 (카드 수량 동기화)
-      if (document.querySelector('.tab[data-tab="fusion"]').classList.contains('active')) {
+      const fusionTab = document.querySelector('.tab-button[data-tab="fusion"]');
+      if (fusionTab && fusionTab.classList.contains('active')) {
         this.renderFusionCards();
         this.updateCardCounts();
       }
