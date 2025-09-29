@@ -651,16 +651,17 @@ class MinquiCardGacha {
       // 서버에서 가챠 실행
       const result = await this.apiClient.drawGacha();
       
-      // 로딩 상태 숨기기
-      this.hideGachaLoading();
-      this.isGachaLoading = false;
-      
       if (!result.success) {
-        // 티켓 부족 등의 이유로 실패 - 로딩 상태 해제
+        // 티켓 부족 등의 이유로 실패
+        this.hideGachaLoading();
         this.isGachaLoading = false;
         alert('티켓이 부족합니다! 12시에 다시 충전됩니다.');
         return;
       }
+
+      // 로딩 상태 숨기기
+      this.hideGachaLoading();
+      this.isGachaLoading = false;
       
       // 서버에서 받은 카드 결과 처리
       const cardResult = result.cards[0];
@@ -696,7 +697,13 @@ class MinquiCardGacha {
       
       // 서버 컬렉션 데이터 다시 로드 (조합에서 사용할 수 있도록)
       await this.loadCollectionFromServer();
-      
+
+      // 조합탭 UI 업데이트 (카드 수량 동기화)
+      if (document.querySelector('.tab[data-tab="fusion"]').classList.contains('active')) {
+        this.renderFusionCards();
+        this.updateCardCounts();
+      }
+
       // 티켓 정보 업데이트
       this.tickets = result.ticketsRemaining;
       this.updateTicketDisplay();
@@ -1143,10 +1150,8 @@ class MinquiCardGacha {
   addToCollection(cardId) {
     // 서버 데이터만 사용 - 로컬 배열 제거
     // 실제 카드 추가는 서버에서 처리됨
+    // UI 업데이트는 호출하는 곳에서 필요에 따라 처리
     console.log('카드 추가됨 (서버에서 처리):', cardId);
-    
-    // 컬렉션 UI 업데이트
-    this.updateCollectionUI();
   }
   
   
@@ -1214,9 +1219,10 @@ class MinquiCardGacha {
     const totalCards = this.gameData.cards.length;
 
     if (this.serverCollectionData && this.serverCollectionData.length > 0) {
-      // 서버 데이터 기반 통계
-      const collectedCount = this.serverCollectionData.reduce((sum, card) => sum + card.count, 0);
-      const uniqueCards = this.serverCollectionData.length;
+      // 서버 데이터 기반 통계 (0장인 카드 제외)
+      const ownedCards = this.serverCollectionData.filter(card => card.count > 0);
+      const collectedCount = ownedCards.reduce((sum, card) => sum + card.count, 0);
+      const uniqueCards = ownedCards.length;
       const collectionRate = Math.round((uniqueCards / totalCards) * 100);
 
       // 웹용 통계 업데이트
@@ -1255,7 +1261,7 @@ class MinquiCardGacha {
 
     // 모든 카드 데이터 가져오기 (모인 카드 + 안 모인 카드)
     const allCards = this.gameData.cards || [];
-    
+
     // 필터 적용
     let cardsToRender = allCards;
     if (this.currentFilter !== 'all') {
@@ -1269,11 +1275,11 @@ class MinquiCardGacha {
     console.log('전체 카드 데이터:', allCards.length);
 
     cardsToRender.forEach(card => {
-      // 해당 카드를 소유하고 있는지 확인
-      const ownedCard = this.serverCollectionData ? 
+      // 해당 카드를 소유하고 있는지 확인 (0장은 소유하지 않은 것으로 처리)
+      const ownedCard = this.serverCollectionData ?
         this.serverCollectionData.find(c => c.id === card.id) : null;
-      const isOwned = !!ownedCard;
       const cardCount = ownedCard ? ownedCard.count : 0;
+      const isOwned = cardCount > 0;
       
       // 24번, 25번 카드 특별 디버깅
       if (card.id === '024' || card.id === '025') {
@@ -1389,10 +1395,10 @@ class MinquiCardGacha {
       ${isOwned && duplicateCount > 1 ? `<div class="duplicate-count-popup">${duplicateCount}</div>` : ''}
     `;
     
-    // 카드 클릭 이벤트 추가 - 카드 상세 정보 표시
+    // 카드 클릭 이벤트 추가 - 소유한 카드만 상세 정보 표시 가능
     if (isOwned) {
       cardDiv.addEventListener('click', () => {
-        this.showCardDetail(card, duplicateCount);
+        this.showCardDetail(card, cardCount);
       });
     }
     
@@ -1403,12 +1409,12 @@ class MinquiCardGacha {
   renderMobileCollectionCards() {
     const mobileList = document.getElementById('mobileCollectionList');
     if (!mobileList) return;
-    
+
     mobileList.innerHTML = '';
 
     // 모든 카드 데이터 가져오기
     const allCards = this.gameData.cards || [];
-    
+
     // 필터 적용
     let cardsToRender = allCards;
     if (this.currentFilter !== 'all') {
@@ -1419,11 +1425,11 @@ class MinquiCardGacha {
     cardsToRender.sort((a, b) => a.id.localeCompare(b.id));
 
     cardsToRender.forEach(card => {
-      // 해당 카드를 소유하고 있는지 확인
-      const ownedCard = this.serverCollectionData ? 
+      // 해당 카드를 소유하고 있는지 확인 (0장은 소유하지 않은 것으로 처리)
+      const ownedCard = this.serverCollectionData ?
         this.serverCollectionData.find(c => c.id === card.id) : null;
-      const isOwned = !!ownedCard;
       const cardCount = ownedCard ? ownedCard.count : 0;
+      const isOwned = cardCount > 0;
       
       const cardElement = this.createMobileCollectionCardElement(card, isOwned, cardCount);
       mobileList.appendChild(cardElement);
@@ -1508,16 +1514,16 @@ class MinquiCardGacha {
       ${isOwned && duplicateCount > 1 ? `<div class="mobile-duplicate-count-popup">${duplicateCount}</div>` : ''}
     `;
     
-    // 카드 클릭/터치 이벤트 추가 - 데스크톱과 동일
+    // 카드 클릭/터치 이벤트 추가 - 소유한 카드만 상세 정보 표시 가능
     if (isOwned) {
       cardDiv.addEventListener('click', () => {
-        this.showCardDetail(card, duplicateCount);
+        this.showCardDetail(card, cardCount);
       });
 
       // 모바일 터치 이벤트 추가
       cardDiv.addEventListener('touchend', (e) => {
         e.preventDefault();
-        this.showCardDetail(card, duplicateCount);
+        this.showCardDetail(card, cardCount);
       });
     }
     
@@ -1699,185 +1705,76 @@ class MinquiCardGacha {
       exportButton.textContent = '내보내는 중...';
       exportButton.disabled = true;
 
+      // 임시 컨테이너 생성 (화면 밖에 배치)
+      const tempContainer = document.createElement('div');
+      tempContainer.style.cssText = `
+        position: fixed;
+        top: -2000px;
+        left: -2000px;
+        width: 600px;
+        height: 840px;
+        background: transparent;
+        pointer-events: none;
+        z-index: -1;
+      `;
+
+      // 컬렉션 카드와 동일한 구조로 생성 (2배 크기)
+      const cardElement = this.createCollectionCardElement(card, true, duplicateCount);
+      cardElement.style.cssText = `
+        width: 600px !important;
+        height: 840px !important;
+        transform: scale(1) !important;
+        transform-origin: center !important;
+        margin: 0 !important;
+      `;
+
+      tempContainer.appendChild(cardElement);
+      document.body.appendChild(tempContainer);
+
+      // 모든 이미지가 로드될 때까지 대기
+      const images = cardElement.querySelectorAll('img');
+      await Promise.all(Array.from(images).map(img => {
+        return new Promise((resolve) => {
+          if (img.complete) {
+            resolve();
+          } else {
+            img.onload = resolve;
+            img.onerror = resolve; // 오류가 있어도 계속 진행
+          }
+        });
+      }));
+
+      // 추가 렌더링 시간 대기
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       // Canvas 생성
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
+      canvas.width = 600;
+      canvas.height = 840;
 
-      // 카드 크기 설정 (고해상도)
-      const cardWidth = 600;
-      const cardHeight = 840;
-      canvas.width = cardWidth;
-      canvas.height = cardHeight;
+      // DOM을 Canvas로 그리기 (domtoimage 방식)
+      const svgData = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="600" height="840">
+          <foreignObject width="600" height="840">
+            ${new XMLSerializer().serializeToString(cardElement)}
+          </foreignObject>
+        </svg>
+      `;
 
-      // 기본 정보 계산
-      const rankInfo = this.gameData.ranks[card.rank];
-      const typeIcon = this.gameData.typeIcons?.[card.type] || '🎨';
-      const skill = card.attacks && card.attacks[0];
-      const skillName = skill ? skill.name : '창작 마법';
-      const skillDescription = skill ? skill.description : '무한한 상상력으로 새로운 세계를 창조한다.';
+      const img = new Image();
+      img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
 
-      // 이미지 로드 함수
-      const loadImage = (src) => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          img.onload = () => resolve(img);
-          img.onerror = () => {
-            console.warn(`이미지 로드 실패: ${src}`);
-            resolve(null);
-          };
-          img.src = src;
-        });
-      };
+      await new Promise((resolve, reject) => {
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0);
+          resolve();
+        };
+        img.onerror = reject;
+      });
 
-      // 이미지들 로드
-      const [backgroundImg, characterImg, rankImg] = await Promise.all([
-        loadImage(card.image),
-        loadImage(card.image.replace('.png', '_2.png')),
-        loadImage(`illust/${card.rank}.png`)
-      ]);
-
-      // 카드 배경 그라디언트
-      const bgGradient = ctx.createLinearGradient(0, 0, 0, cardHeight);
-      bgGradient.addColorStop(0, '#16213e');
-      bgGradient.addColorStop(1, '#0f1419');
-      ctx.fillStyle = bgGradient;
-      ctx.fillRect(0, 0, cardWidth, cardHeight);
-
-      // 카드 테두리
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-      ctx.lineWidth = 4;
-      ctx.strokeRect(2, 2, cardWidth - 4, cardHeight - 4);
-
-      // 배경 일러스트
-      if (backgroundImg) {
-        ctx.save();
-        ctx.globalAlpha = 0.7;
-        ctx.drawImage(backgroundImg, 0, 0, cardWidth, cardHeight);
-        ctx.restore();
-      }
-
-      // 홀로그램 효과 (그라디언트 오버레이)
-      const holoGradient = ctx.createLinearGradient(0, 0, cardWidth, cardHeight);
-      holoGradient.addColorStop(0, 'rgba(255, 107, 107, 0.1)');
-      holoGradient.addColorStop(0.3, 'rgba(78, 205, 196, 0.1)');
-      holoGradient.addColorStop(0.7, 'rgba(255, 165, 0, 0.1)');
-      holoGradient.addColorStop(1, 'rgba(255, 107, 107, 0.1)');
-      ctx.fillStyle = holoGradient;
-      ctx.fillRect(0, 0, cardWidth, cardHeight);
-
-      // 카드 정보 박스 (상단)
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-      ctx.fillRect(40, 40, cardWidth - 80, 120);
-
-      // 카드 번호와 이름
-      ctx.fillStyle = '#333';
-      ctx.font = 'bold 24px Inter, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(`#${card.id}`, cardWidth / 2, 80);
-
-      ctx.font = 'bold 32px Inter, sans-serif';
-      ctx.fillText(card.name, cardWidth / 2, 130);
-
-      // 랭크 이미지
-      if (rankImg) {
-        ctx.drawImage(rankImg, cardWidth - 120, 40, 80, 80);
-      }
-
-      // 중복 수량 표시 (2장 이상일 때)
-      if (duplicateCount > 1) {
-        ctx.fillStyle = 'rgba(255, 107, 107, 0.9)';
-        ctx.beginPath();
-        ctx.arc(cardWidth - 60, 200, 30, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 20px Inter, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(`${duplicateCount}`, cardWidth - 60, 208);
-      }
-
-      // 캐릭터 이미지 (중앙)
-      if (characterImg) {
-        const charSize = 300;
-        const charX = (cardWidth - charSize) / 2;
-        const charY = 200;
-
-        // 캐릭터 글로우 효과
-        ctx.save();
-        ctx.shadowColor = 'rgba(255, 255, 255, 0.3)';
-        ctx.shadowBlur = 20;
-        ctx.drawImage(characterImg, charX, charY, charSize, charSize);
-        ctx.restore();
-      }
-
-      // 하단 정보 박스
-      const bottomBoxY = cardHeight - 200;
-      const bottomBoxHeight = 160;
-
-      // 반투명 배경
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-      ctx.fillRect(0, bottomBoxY, cardWidth, bottomBoxHeight);
-
-      // 스탯 정보
-      ctx.fillStyle = 'white';
-      ctx.font = '18px Inter, sans-serif';
-      ctx.textAlign = 'left';
-
-      const hp = Math.floor((card.baseHp || 100) * (rankInfo?.hpMultiplier || 1));
-      const attack = Math.floor((card.baseAttack || 100) * (rankInfo?.attackMultiplier || 1));
-
-      // HP
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-      ctx.fillText('HP', 40, bottomBoxY + 35);
-      ctx.fillStyle = 'white';
-      ctx.font = 'bold 24px Inter, sans-serif';
-      ctx.fillText(hp.toString(), 40, bottomBoxY + 65);
-
-      // 공격력
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-      ctx.font = '18px Inter, sans-serif';
-      ctx.fillText('공격력', 150, bottomBoxY + 35);
-      ctx.fillStyle = 'white';
-      ctx.font = 'bold 24px Inter, sans-serif';
-      ctx.fillText(attack.toString(), 150, bottomBoxY + 65);
-
-      // 타입
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-      ctx.font = '18px Inter, sans-serif';
-      ctx.fillText('타입', 280, bottomBoxY + 35);
-      ctx.fillStyle = 'white';
-      ctx.font = 'bold 20px Inter, sans-serif';
-      ctx.fillText(`${card.type} ${typeIcon}`, 280, bottomBoxY + 65);
-
-      // 스킬 정보
-      ctx.fillStyle = '#ff6b6b';
-      ctx.font = 'bold 20px Inter, sans-serif';
-      ctx.fillText(skillName, 40, bottomBoxY + 100);
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-      ctx.font = '14px Inter, sans-serif';
-
-      // 스킬 설명 텍스트 래핑
-      const maxWidth = cardWidth - 80;
-      const words = skillDescription.split(' ');
-      let line = '';
-      let y = bottomBoxY + 125;
-
-      for (let n = 0; n < words.length; n++) {
-        const testLine = line + words[n] + ' ';
-        const metrics = ctx.measureText(testLine);
-        const testWidth = metrics.width;
-
-        if (testWidth > maxWidth && n > 0) {
-          ctx.fillText(line, 40, y);
-          line = words[n] + ' ';
-          y += 20;
-        } else {
-          line = testLine;
-        }
-      }
-      ctx.fillText(line, 40, y);
+      // 임시 요소 제거
+      document.body.removeChild(tempContainer);
 
       // PNG 다운로드
       const dataURL = canvas.toDataURL('image/png', 1.0);
@@ -2466,6 +2363,12 @@ ${skill ? skill.description : ''}
       
       console.log('Fusion result:', result);
       
+      // 📊 디버깅: 서버에서 받은 조합 결과 로그
+      console.log('🔍 조합 결과 디버깅:');
+      console.log('서버에서 받은 resultCard:', result.data.resultCard);
+      console.log('클라이언트 gameData.cards에서 해당 카드 찾기:',
+        this.gameData.cards.find(card => card.id === result.data.resultCard?.id));
+
       // 룰렛으로 결과 표시
       this.showRoulette(filledSlots, result.data.resultCard);
       
@@ -2547,9 +2450,10 @@ ${skill ? skill.description : ''}
   createRouletteCards(selectedCards, resultCard) {
     // 모든 가능한 카드 후보들
     const allCards = [...this.gameData.cards];
-    
-    // 결과 카드가 있으면 포함 (중복 방지)
+
+    // 서버에서 받은 결과 카드가 클라이언트 데이터에 없을 경우 추가
     if (resultCard && !allCards.some(card => card.id === resultCard.id)) {
+      console.warn('서버에서 받은 결과 카드가 클라이언트 데이터에 없음:', resultCard);
       allCards.push(resultCard);
     }
     
@@ -2597,13 +2501,12 @@ ${skill ? skill.description : ''}
       // 결과 카드가 룰렛에 있으면 그 카드가 중앙에 오도록
       finalPosition = -(resultIndex * cardWidth) + (containerWidth / 2) - (cardWidth / 2);
     } else {
-      // 결과 카드가 룰렛에 없으면 랜덤한 위치에서 정지
+      // 결과 카드가 룰렛에 없으면 랜덤한 위치에서 정지 (시각적 효과용)
       resultIndex = Math.floor(Math.random() * cards.length);
       finalPosition = -(resultIndex * cardWidth) + (containerWidth / 2) - (cardWidth / 2);
-      
-      // 실제 결과는 룰렛에 표시된 카드 중에서 선택
-      const selectedCard = cards[resultIndex];
-      resultCard = this.gameData.cards.find(card => card.id === selectedCard.dataset.cardId);
+
+      // ⚠️ 실제 결과는 서버에서 받은 resultCard를 사용 (룰렛 결과 무시)
+      // 룰렛은 시각적 효과일 뿐, 실제 조합 결과는 서버에서 결정됨
     }
     
     // 추가로 몇 바퀴 더 돌리기 (5-8바퀴, 50장이므로 더 많이)
@@ -2651,10 +2554,10 @@ ${skill ? skill.description : ''}
         <p style="color: #4CAF50; font-size: 1.2rem; font-weight: 700;">조합 성공!</p>
       `;
       
-      // 컬렉션에 추가
+      // 컬렉션에 추가 (로그만 기록)
       this.addToCollection(resultCard.id);
-      
-      // 컬렉션 UI 즉시 업데이트
+
+      // 컬렉션 UI 즉시 업데이트 (서버 동기화 후)
       this.updateCollectionUI();
     } else {
       // 실패 결과
