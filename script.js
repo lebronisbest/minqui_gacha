@@ -869,13 +869,7 @@ class MinquiCardGacha {
             
             // 홀로그램 패턴 적용
             if (cardBackgroundIllustration && this.cardData.holoPattern) {
-                console.log('홀로그램 패턴 적용:', this.cardData.holoPattern);
                 cardBackgroundIllustration.setAttribute('data-pattern', this.cardData.holoPattern);
-            } else {
-                console.log('홀로그램 패턴 적용 실패:', {
-                    cardBackgroundIllustration: !!cardBackgroundIllustration,
-                    holoPattern: this.cardData.holoPattern
-                });
             }
             
             if (cardCharacter) {
@@ -1152,7 +1146,6 @@ class MinquiCardGacha {
     // 서버 데이터만 사용 - 로컬 배열 제거
     // 실제 카드 추가는 서버에서 처리됨
     // UI 업데이트는 호출하는 곳에서 필요에 따라 처리
-    console.log('카드 추가됨 (서버에서 처리):', cardId);
   }
   
   
@@ -1272,8 +1265,6 @@ class MinquiCardGacha {
     // 카드 넘버순으로 정렬 (id 기준)
     cardsToRender.sort((a, b) => a.id.localeCompare(b.id));
 
-    console.log('렌더링할 카드 수:', cardsToRender.length);
-    console.log('전체 카드 데이터:', allCards.length);
 
     cardsToRender.forEach(card => {
       // 해당 카드를 소유하고 있는지 확인 (0장은 소유하지 않은 것으로 처리)
@@ -1282,17 +1273,6 @@ class MinquiCardGacha {
       const cardCount = ownedCard ? ownedCard.count : 0;
       const isOwned = cardCount > 0;
       
-      // 24번, 25번 카드 특별 디버깅
-      if (card.id === '024' || card.id === '025') {
-        console.log(`🔍 특별 디버깅 - 카드 ${card.name} (${card.id}):`, {
-          isOwned,
-          cardCount,
-          cardData: card,
-          serverCollectionData: this.serverCollectionData
-        });
-      }
-      
-      console.log(`카드 ${card.name} (${card.id}): 소유=${isOwned}, 수량=${cardCount}`);
       const cardElement = this.createCollectionCardElement(card, isOwned);
       grid.appendChild(cardElement);
     });
@@ -1316,9 +1296,6 @@ class MinquiCardGacha {
     const rankInfo = this.gameData.ranks[card.rank];
     const typeIcon = this.gameData.typeIcons?.[card.type] || '🎨';
 
-    console.log(`카드 ${card.name}: rank=${card.rank}, rankInfo=`, rankInfo);
-    console.log(`baseHp=${card.baseHp}, baseAttack=${card.baseAttack}`);
-    console.log(`attacks=`, card.attacks);
     
     // 중복 횟수 계산
     const ownedCard = this.serverCollectionData ? 
@@ -2028,46 +2005,91 @@ ${skill ? skill.description : ''}
   }
   
   selectCardForFusion(card) {
+    console.log('🃏 [DEBUG] selectCardForFusion 시작, 카드:', card?.name, card?.id);
+
+    if (!card || !card.id) {
+      console.error('❌ [DEBUG] 유효하지 않은 카드 데이터:', card);
+      alert('유효하지 않은 카드입니다.');
+      return;
+    }
+
     // 서버 컬렉션 데이터에서만 개수 확인
-    const ownedCard = this.serverCollectionData ? 
+    console.log('🔧 [DEBUG] 서버 컬렉션 데이터 존재?', !!this.serverCollectionData);
+    console.log('🔧 [DEBUG] 서버 컬렉션 데이터 길이:', this.serverCollectionData?.length || 0);
+
+    const ownedCard = this.serverCollectionData ?
       this.serverCollectionData.find(c => c.id === card.id) : null;
     const totalCardCount = ownedCard ? ownedCard.count : 0;
-    
+
+    console.log('🔧 [DEBUG] 소유한 카드 정보:', ownedCard);
+    console.log('🔧 [DEBUG] 총 소유 수량:', totalCardCount);
+
     if (totalCardCount <= 0) {
+      console.log('❌ [DEBUG] 카드 소유 수량 부족:', totalCardCount);
       alert('해당 카드를 보유하고 있지 않습니다!');
       return;
     }
-    
+
     // 이미 선택된 해당 카드의 개수 확인
-    const selectedCardCount = this.selectedFusionCards.filter(selectedCard => 
+    console.log('🔧 [DEBUG] 현재 선택된 카드들:', this.selectedFusionCards.map(c => c ? {id: c.id, name: c.name} : null));
+
+    const selectedCardCount = this.selectedFusionCards.filter(selectedCard =>
       selectedCard && selectedCard.id === card.id
     ).length;
-    
+
+    console.log('🔧 [DEBUG] 이미 선택된 동일 카드 수:', selectedCardCount);
+
     // 보유한 카드 수를 초과해서 선택하려고 하면 차단
     if (selectedCardCount >= totalCardCount) {
+      console.log('❌ [DEBUG] 카드 선택 수량 초과:', selectedCardCount, '>=', totalCardCount);
       alert(`해당 카드는 최대 ${totalCardCount}장까지만 선택할 수 있습니다!`);
       return;
     }
-    
+
     // 좌측부터 빈 슬롯 찾기
     const emptySlotIndex = this.selectedFusionCards.findIndex(slot => slot === null);
-    
+    console.log('🔧 [DEBUG] 빈 슬롯 인덱스:', emptySlotIndex);
+
     if (emptySlotIndex === -1) {
+      console.log('❌ [DEBUG] 모든 슬롯이 가득참');
       alert('모든 슬롯이 가득 찼습니다! (최대 10장)');
       return;
     }
-    
-    // 카드 추가
-    this.selectedFusionCards[emptySlotIndex] = card;
-    this.updateFusionSlot(emptySlotIndex, card);
-    this.updateFusionInfo();
-    
-    // 카드 그리드에서 선택된 카드 표시 및 개수 업데이트
-    this.updateCardSelection();
-    this.updateCardCounts();
 
-    // 🔄 조합 카드 목록 다시 렌더링 (0장 카드 숨김 처리)
-    this.renderFusionCards();
+    // 카드 추가
+    console.log('✅ [DEBUG] 카드를 슬롯', emptySlotIndex, '에 추가:', card.name);
+    this.selectedFusionCards[emptySlotIndex] = card;
+
+    try {
+      this.updateFusionSlot(emptySlotIndex, card);
+      console.log('✅ [DEBUG] 슬롯 업데이트 완료');
+    } catch (slotError) {
+      console.error('❌ [DEBUG] 슬롯 업데이트 에러:', slotError);
+    }
+
+    try {
+      this.updateFusionInfo();
+      console.log('✅ [DEBUG] 조합 정보 업데이트 완료');
+    } catch (infoError) {
+      console.error('❌ [DEBUG] 조합 정보 업데이트 에러:', infoError);
+    }
+
+    try {
+      // 카드 그리드에서 선택된 카드 표시 및 개수 업데이트
+      this.updateCardSelection();
+      this.updateCardCounts();
+      console.log('✅ [DEBUG] 카드 선택 상태 업데이트 완료');
+    } catch (selectionError) {
+      console.error('❌ [DEBUG] 카드 선택 상태 업데이트 에러:', selectionError);
+    }
+
+    try {
+      // 🔄 조합 카드 목록 다시 렌더링 (0장 카드 숨김 처리)
+      this.renderFusionCards();
+      console.log('✅ [DEBUG] 조합 카드 목록 렌더링 완료');
+    } catch (renderError) {
+      console.error('❌ [DEBUG] 조합 카드 렌더링 에러:', renderError);
+    }
   }
   
   updateCardSelection() {
@@ -2340,15 +2362,20 @@ ${skill ? skill.description : ''}
   }
   
   async performFusion() {
+    console.log('🔧 [DEBUG] performFusion 시작');
+
     // 🛡️ 중복 실행 방지
     if (this.isFusionInProgress) {
-      console.log('조합이 이미 진행 중입니다.');
+      console.log('⚠️ [DEBUG] 조합이 이미 진행 중입니다.');
       return;
     }
 
     const filledSlots = this.selectedFusionCards.filter(card => card !== null);
+    console.log('🔧 [DEBUG] 선택된 카드:', filledSlots.length, '장');
+    console.log('🔧 [DEBUG] 선택된 카드 데이터:', filledSlots.map(c => ({id: c.id, name: c.name})));
 
     if (filledSlots.length < this.minFusionCards) {
+      console.log('❌ [DEBUG] 최소 카드 수 부족:', filledSlots.length, '/', this.minFusionCards);
       alert(`최소 ${this.minFusionCards}장의 카드를 선택해주세요!`);
       return;
     }
@@ -2356,35 +2383,68 @@ ${skill ? skill.description : ''}
     // 🔒 조합 진행 상태 설정
     this.isFusionInProgress = true;
     this.updateFusionButtonState(true);
+    console.log('🔧 [DEBUG] 조합 진행 상태 설정됨');
 
     try {
       // 서버에서 조합 실행
       const materialCardIds = filledSlots.map(card => card.id);
-      const result = await this.apiClient.commitFusion(materialCardIds);
-      
-      console.log('Fusion result:', result);
-      
-      // 📊 디버깅: 서버에서 받은 조합 결과 로그
-      console.log('🔍 조합 결과 디버깅:');
-      console.log('서버에서 받은 resultCard:', result.data.resultCard);
-      console.log('클라이언트 gameData.cards에서 해당 카드 찾기:',
-        this.gameData.cards.find(card => card.id === result.data.resultCard?.id));
+      console.log('🔧 [DEBUG] 서버로 전송할 재료 카드 IDs:', materialCardIds);
 
-      // 룰렛으로 결과 표시
-      this.showRoulette(filledSlots, result.data.resultCard);
-      
+      const result = await this.apiClient.commitFusion(materialCardIds);
+      console.log('🔧 [DEBUG] 서버 조합 응답 전체:', result);
+      console.log('🔧 [DEBUG] result.success:', result?.success);
+      console.log('🔧 [DEBUG] result.data:', result?.data);
+
+      // 조합 성공 시만 결과 표시
+      if (result && result.success && result.data) {
+        console.log('✅ [DEBUG] 조합 API 성공, 결과 표시 중');
+        console.log('🔧 [DEBUG] result.data.fusionSuccess:', result.data.fusionSuccess);
+        console.log('🔧 [DEBUG] result.data.resultCard:', result.data.resultCard);
+
+        // 룰렛으로 결과 표시
+        try {
+          this.showRoulette(filledSlots, result.data.resultCard);
+          console.log('✅ [DEBUG] 룰렛 표시 완료');
+        } catch (rouletteError) {
+          console.error('❌ [DEBUG] 룰렛 표시 에러:', rouletteError);
+        }
+
+        // 조합 결과에 따른 효과음 재생
+        try {
+          if (result.data.fusionSuccess && result.data.resultCard) {
+            this.playSound('fusion_success');
+            console.log('🔊 [DEBUG] 성공 효과음 재생');
+          } else {
+            this.playSound('fusion_fail');
+            console.log('🔊 [DEBUG] 실패 효과음 재생');
+          }
+        } catch (soundError) {
+          console.error('❌ [DEBUG] 효과음 재생 에러:', soundError);
+        }
+      } else {
+        console.log('⚠️ [DEBUG] 조합 API 실패 또는 데이터 없음');
+        console.log('🔧 [DEBUG] result가 null/undefined?', !result);
+        if (result) {
+          console.log('🔧 [DEBUG] result.success가 false?', result.success === false);
+          console.log('🔧 [DEBUG] result.data가 null/undefined?', !result.data);
+        }
+      }
+
       // 조합 결과에 관계없이 서버 컬렉션 데이터 업데이트
-      // (재료는 항상 소모되고, 성공 시에만 새 카드 추가)
-      await this.loadCollectionFromServer();
+      console.log('🔄 [DEBUG] 서버 컬렉션 데이터 재로드 중...');
+      try {
+        await this.loadCollectionFromServer();
+        console.log('✅ [DEBUG] 서버 컬렉션 데이터 재로드 완료');
+      } catch (collectionError) {
+        console.error('❌ [DEBUG] 컬렉션 데이터 로드 에러:', collectionError);
+      }
 
       // 조합창도 업데이트 (사용된 카드들이 사라지도록)
-      this.initFusionUI();
-
-      // 조합 결과에 따른 효과음 재생
-      if (result.data.fusionSuccess && result.data.resultCard) {
-        this.playSound('fusion_success');
-      } else {
-        this.playSound('fusion_fail');
+      try {
+        this.initFusionUI();
+        console.log('✅ [DEBUG] 조합 UI 초기화 완료');
+      } catch (uiError) {
+        console.error('❌ [DEBUG] 조합 UI 초기화 에러:', uiError);
       }
       
     } catch (error) {
@@ -2421,12 +2481,39 @@ ${skill ? skill.description : ''}
   }
 
   showRoulette(selectedCards, resultCard) {
+    console.log('🎰 [DEBUG] showRoulette 시작');
+    console.log('🔧 [DEBUG] selectedCards:', selectedCards?.length || 0, '장');
+    console.log('🔧 [DEBUG] resultCard:', resultCard);
+
     const rouletteModal = document.getElementById('rouletteModal');
     const rouletteWheel = document.getElementById('rouletteWheel');
     const rouletteResult = document.getElementById('rouletteResult');
-    
+
+    // DOM 요소 존재 확인
+    if (!rouletteModal) {
+      console.error('❌ [DEBUG] rouletteModal 요소를 찾을 수 없습니다');
+      return;
+    }
+    if (!rouletteWheel) {
+      console.error('❌ [DEBUG] rouletteWheel 요소를 찾을 수 없습니다');
+      return;
+    }
+    if (!rouletteResult) {
+      console.error('❌ [DEBUG] rouletteResult 요소를 찾을 수 없습니다');
+      return;
+    }
+
+    console.log('✅ [DEBUG] 룰렛 DOM 요소들 확인 완료');
+
     // 룰렛에 표시할 카드들 생성 (결과 카드 포함)
-    const rouletteCards = this.createRouletteCards(selectedCards, resultCard);
+    let rouletteCards;
+    try {
+      rouletteCards = this.createRouletteCards(selectedCards, resultCard);
+      console.log('✅ [DEBUG] 룰렛 카드 생성 완료:', rouletteCards?.length || 0, '장');
+    } catch (createError) {
+      console.error('❌ [DEBUG] 룰렛 카드 생성 에러:', createError);
+      return;
+    }
     
     // 룰렛 초기화
     rouletteWheel.innerHTML = '';
