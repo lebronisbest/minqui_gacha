@@ -85,7 +85,7 @@ class GachaSystem {
       this.isGachaLoading = false;
       
       // 서버에서 받은 카드 결과 처리
-      const selectedCard = result.data.card;
+      const selectedCard = result.card;
       const selectedRank = selectedCard.rank;
       
       // 카드 데이터 업데이트

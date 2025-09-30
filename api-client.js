@@ -146,7 +146,7 @@ class ApiClient {
   async drawGacha() {
     try {
       const response = await this.request('/gacha/draw', { method: 'POST' });
-      return response.data;
+      return response;
     } catch (error) {
       console.error('Gacha draw failed:', error);
       throw error;
