@@ -1030,6 +1030,8 @@ body {
   
   .fusion-card-image {
     height: 80px;
+    object-fit: contain;
+    overflow: hidden;
   }
   
   .fusion-card-name {
@@ -1232,6 +1234,8 @@ body {
   
   .fusion-card-image {
     height: 60px;
+    object-fit: contain;
+    overflow: hidden;
   }
   
   .fusion-card-name {
@@ -1428,6 +1432,8 @@ body {
   
   .fusion-card-image {
     height: 50px;
+    object-fit: contain;
+    overflow: hidden;
   }
   
   .fusion-card-name {
@@ -2681,6 +2687,10 @@ body {
   transition: all 0.3s ease;
   position: relative;
   border: 2px solid transparent;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .fusion-card-item:hover {
@@ -2709,9 +2719,10 @@ body {
 .fusion-card-image {
   width: 100%;
   height: 100px;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 8px;
   margin-bottom: 8px;
+  overflow: hidden;
 }
 
 .fusion-card-name {
