@@ -95,9 +95,14 @@ class GachaSystem {
       
       const selectedCard = cardResult.card;
       const selectedRank = cardResult.rank;
-      
-      // 카드 데이터 업데이트
-      this.game.cardData = selectedCard;
+
+      // 카드 데이터 업데이트 (서버에서 계산된 hp, attack 사용)
+      this.game.cardData = {
+        ...selectedCard,
+        rank: selectedRank,
+        hp: cardResult.hp,
+        attack: cardResult.attack
+      };
       this.game.cardSystem.updateCardInfo();
       
       // 이제 카드 뒤집기 (뽑기 완료 후)

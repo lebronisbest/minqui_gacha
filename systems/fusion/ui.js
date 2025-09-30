@@ -54,14 +54,27 @@ class FusionUISystem {
   renderFusionCards() {
     const container = document.querySelector('.fusion-card-grid');
     if (!container) {
+      console.error('조합 카드 컨테이너를 찾을 수 없습니다');
+      return;
+    }
+
+    if (!this.game.gameData || !this.game.gameData.cards) {
+      console.error('카드 데이터가 없습니다');
+      container.innerHTML = '<p>카드 데이터를 불러오는 중...</p>';
       return;
     }
 
     // 필터링된 카드 목록 가져오기
-    const filteredCards = this.game.fusionSystem.filterCardsForFusion(this.game.gameData.cards);
-    
+    const filteredCards = this.game.fusionSystem.filterSystem.filterCardsForFusion(this.game.gameData.cards);
+    console.log('조합 필터링된 카드:', filteredCards);
+
     // 컨테이너 초기화
     container.innerHTML = '';
+
+    if (filteredCards.length === 0) {
+      container.innerHTML = '<p style="color: white; text-align: center; padding: 20px;">조합 가능한 카드가 없습니다.</p>';
+      return;
+    }
 
     // 카드들 렌더링
     filteredCards.forEach(card => {

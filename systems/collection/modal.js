@@ -19,7 +19,7 @@ class CollectionModalSystem {
     const skill = card.attacks && card.attacks[0];
     const imagePath = card.image?.startsWith('assets/') ? card.image : `assets/${card.image || 'illust/' + card.id.toString().padStart(3, '0') + '.png'}`;
     const typeIcon = this.game.gameData?.typeIcons?.[card.type] || '';
-    const typeDisplay = typeIcon || (card.type || 'Normal');
+    const typeDisplay = typeIcon || '';
 
     // 모달 생성 - 가챠 탭과 동일한 카드 디자인 사용
     const modal = document.createElement('div');

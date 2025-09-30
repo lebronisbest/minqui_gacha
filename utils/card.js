@@ -118,6 +118,12 @@ class CardSystem {
   updateCardInfo() {
     if (!this.game.cardData) return;
 
+    console.log('카드 정보 업데이트:', {
+      hp: this.game.cardData.hp,
+      attack: this.game.cardData.attack,
+      type: this.game.cardData.type
+    });
+
     // 카드 이름 업데이트
     const cardNameElement = document.getElementById('cardName');
     const cardNameOverlayElement = document.getElementById('cardNameOverlay');
@@ -152,7 +158,7 @@ class CardSystem {
     if (typeElement) {
       // 타입 이모지만 표시
       const typeIcon = this.game.gameData?.typeIcons?.[this.game.cardData.type] || '';
-      typeElement.textContent = typeIcon || (this.game.cardData.type || 'Normal');
+      typeElement.textContent = typeIcon;
     }
 
     // 스킬 정보 업데이트

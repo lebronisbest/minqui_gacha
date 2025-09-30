@@ -214,23 +214,33 @@ class GachaService {
 
   // 다음 티켓 충전 시간 계산
   async calculateNextRefillTime() {
-    // 한국 시간 기준으로 계산
+    // 현재 UTC 시간
     const now = new Date();
+    console.log('현재 UTC 시간:', now.toISOString());
 
-    // 한국 시간으로 현재 시간을 문자열로 변환
-    const kstString = now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' });
-    const kstNow = new Date(kstString);
+    // 한국 시간으로 현재 시간 계산 (UTC+9)
+    const kstOffset = 9 * 60 * 60 * 1000;
+    const kstNow = new Date(now.getTime() + kstOffset);
+    console.log('KST 시간 (UTC 표현):', kstNow.toISOString());
 
-    // 오늘 12시 설정
-    const nextRefill = new Date(kstNow);
-    nextRefill.setHours(12, 0, 0, 0);
+    // 한국 시간 기준으로 오늘 12시를 UTC로 계산
+    const kstYear = kstNow.getUTCFullYear();
+    const kstMonth = kstNow.getUTCMonth();
+    const kstDate = kstNow.getUTCDate();
+    const kstHour = kstNow.getUTCHours();
+    console.log('KST Hour:', kstHour);
 
-    // 현재 시간이 이미 오늘 12시를 넘었다면 내일 12시로 설정
-    if (kstNow.getHours() >= 12) {
-      nextRefill.setDate(nextRefill.getDate() + 1);
+    // UTC로 한국 시간 12시 계산 (UTC 03:00 = KST 12:00)
+    let nextRefillUTC = new Date(Date.UTC(kstYear, kstMonth, kstDate, 3, 0, 0, 0));
+    console.log('오늘 12시 UTC:', nextRefillUTC.toISOString());
+
+    // 현재 한국 시간이 이미 12시를 넘었다면 내일 12시(UTC 03:00)
+    if (kstHour >= 12) {
+      nextRefillUTC = new Date(nextRefillUTC.getTime() + 24 * 60 * 60 * 1000);
+      console.log('내일 12시로 변경:', nextRefillUTC.toISOString());
     }
 
-    return nextRefill.toISOString();
+    return nextRefillUTC.toISOString();
   }
 
   // 사용자 티켓 정보 조회

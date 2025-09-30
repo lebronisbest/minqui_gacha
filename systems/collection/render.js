@@ -44,86 +44,79 @@ class CollectionRenderSystem {
   // 컬렉션 카드 요소 생성
   createCollectionCardElement(card, isOwned, overrideDuplicateCount = null) {
     const cardElement = document.createElement('div');
-    cardElement.className = `collection-card ${isOwned ? 'owned' : 'unowned'}`;
+    cardElement.className = `collection-card ${isOwned ? 'owned' : 'not-owned'}`;
     cardElement.dataset.cardId = card.id;
 
     const duplicateCount = overrideDuplicateCount !== null ? overrideDuplicateCount :
       (isOwned ? this.game.collectionSystem.serverCollectionData.find(item => item.card_id === card.id)?.duplicate_count || 1 : 0);
+
+    const imagePath = card.image?.startsWith('assets/') ? card.image : `assets/${card.image || 'illust/' + card.id.toString().padStart(3, '0') + '.png'}`;
 
     // 랭크 정보 가져오기
     const rankInfo = this.game.gameData.ranks[card.rank];
     const hp = Math.floor((card.baseHp || card.base_hp || 100) * (rankInfo?.hpMultiplier || 1));
     const attack = Math.floor((card.baseAttack || card.base_attack || 100) * (rankInfo?.attackMultiplier || 1));
     const skill = card.attacks && card.attacks[0];
-    const imagePath = card.image?.startsWith('assets/') ? card.image : `assets/${card.image || 'illust/' + card.id.toString().padStart(3, '0') + '.png'}`;
     const typeIcon = this.game.gameData?.typeIcons?.[card.type] || '';
-    const typeDisplay = typeIcon || (card.type || 'Normal');
 
-    // 가챠 탭과 동일한 카드 앞면 디자인 사용
+    // 가챠 탭과 동일한 디자인으로 렌더링 (컬렉션 전용 클래스 사용)
     cardElement.innerHTML = `
-      <div class="card-wrapper-collection">
-        <div class="card-front">
-          <!-- 배경 일러스트 -->
-          <div class="card-background-illustration">
-            <img src="${imagePath}" alt="${card.name} 배경 일러스트" class="background-illust"
-                 onload="console.log('이미지 로드 성공:', this.src)"
-                 onerror="console.error('이미지 로드 실패:', this.src); this.src='assets/illust/000.png'">
-          </div>
-          <!-- 글로스 효과 -->
-          <div class="card__gloss" aria-hidden="true"></div>
-
-          <!-- 카드 정보 박스 -->
-          <div class="card-info-box">
-            <div class="card-number-box">
-              <div class="card-number">#${card.id}</div>
-            </div>
-            <div class="card-name">${card.name}</div>
-          </div>
-
-          <!-- 카드 정보 박스 오버레이 -->
-          <div class="card-info-box-overlay">
-            <div class="card-number-box">
-              <div class="card-number">#${card.id}</div>
-            </div>
-            <div class="card-name">${card.name}</div>
-          </div>
-
-          <!-- 랭크 표시 -->
-          <div class="card-rank">
-            <img src="assets/illust/${card.rank}.png" alt="${card.rank} 랭크" class="rank-image">
-          </div>
-
-          <!-- 하단 투명 박스 -->
-          <div class="card-bottom-overlay">
-            <div class="stats-container">
-              <div class="stat-item hp-item">
-                <span class="stat-label">HP</span>
-                <span class="stat-value">${hp}</span>
-              </div>
-              <div class="stat-item attack-item">
-                <span class="stat-label">공격력</span>
-                <span class="stat-value">${attack}</span>
-              </div>
-              <div class="stat-item type-item">
-                <span class="stat-value">${typeDisplay}</span>
-              </div>
-            </div>
-
-            <!-- 스킬 박스 -->
-            <div class="skill-box">
-              <div class="skill-name">${skill?.name || '창작 마법'}</div>
-              <div class="skill-description">${skill?.description || '무한한 상상력으로 새로운 세계를 창조한다.'}</div>
-            </div>
-          </div>
-
-          <!-- 캐릭터 이미지 -->
-          <div class="card-character">
-            <img src="${imagePath.replace('.png', '_2.png')}" alt="${card.name} 캐릭터" class="character-illust" onerror="this.style.display='none'">
-          </div>
-
-          <!-- 보유 상태 배지 -->
-          ${isOwned ? `<div class="owned-badge-collection">보유 ${duplicateCount}개</div>` : '<div class="unowned-badge-collection">미보유</div>'}
+      <div class="collection-card-front">
+        <!-- 배경 일러스트 -->
+        <div class="collection-card-background-illustration">
+          <img src="${imagePath}" alt="${card.name} 배경 일러스트" class="collection-background-illust">
         </div>
+
+        <!-- 카드 정보 박스 -->
+        <div class="collection-card-info-box">
+          <div class="collection-card-number-box">
+            <div class="collection-card-number">#${card.id}</div>
+          </div>
+          <div class="collection-card-name">${card.name}</div>
+        </div>
+
+        <!-- 카드 정보 박스 오버레이 -->
+        <div class="collection-card-info-box-overlay">
+          <div class="collection-card-number-box">
+            <div class="collection-card-number">#${card.id}</div>
+          </div>
+          <div class="collection-card-name">${card.name}</div>
+        </div>
+
+        <!-- 랭크 표시 -->
+        <div class="collection-card-rank">
+          <img src="assets/illust/${card.rank}.png" alt="${card.rank} 랭크" class="collection-rank-image">
+        </div>
+
+        <!-- 하단 투명 박스 -->
+        <div class="collection-card-bottom-overlay">
+          <div class="collection-stats-container">
+            <div class="collection-stat-item collection-hp-item">
+              <span class="collection-stat-label">HP</span>
+              <span class="collection-stat-value">${hp}</span>
+            </div>
+            <div class="collection-stat-item collection-attack-item">
+              <span class="collection-stat-label">공격력</span>
+              <span class="collection-stat-value">${attack}</span>
+            </div>
+            <div class="collection-stat-item collection-type-item">
+              <span class="collection-stat-value">${typeIcon}</span>
+            </div>
+          </div>
+
+          <!-- 스킬 박스 -->
+          <div class="collection-skill-box">
+            <div class="collection-skill-name">${skill?.name || '창작 마법'}</div>
+            <div class="collection-skill-description">${skill?.description || '무한한 상상력으로 새로운 세계를 창조한다.'}</div>
+          </div>
+        </div>
+
+        <!-- 캐릭터 이미지 -->
+        <div class="collection-card-character">
+          <img src="${imagePath.replace('.png', '_2.png')}" alt="${card.name} 캐릭터" class="collection-character-illust" onerror="this.style.display='none'">
+        </div>
+
+        ${isOwned ? `<div class="collection-duplicate-badge">${duplicateCount}개 보유</div>` : ''}
       </div>
     `;
 
@@ -134,15 +127,6 @@ class CollectionRenderSystem {
       } else {
         this.game.miscSystem.showUnownedCardInfo(card);
       }
-    });
-
-    // 호버 효과
-    cardElement.addEventListener('mouseenter', () => {
-      cardElement.style.transform = 'translateY(-5px)';
-    });
-
-    cardElement.addEventListener('mouseleave', () => {
-      cardElement.style.transform = 'translateY(0)';
     });
 
     return cardElement;

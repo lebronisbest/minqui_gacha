@@ -89,9 +89,12 @@ class DataSystem {
   async initTicketSystemFromServer() {
     try {
       const ticketInfo = await this.game.apiClient.getTicketInfo();
+      console.log('서버에서 받은 티켓 정보:', ticketInfo);
       this.game.tickets = ticketInfo.current;
       this.game.maxTickets = ticketInfo.max;
       this.game.nextRefillAt = new Date(ticketInfo.nextRefillAt);
+      console.log('클라이언트 nextRefillAt:', this.game.nextRefillAt.toISOString());
+      console.log('현재 시간:', new Date().toISOString());
 
       this.updateTicketDisplay();
     } catch (error) {
