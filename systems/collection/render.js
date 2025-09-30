@@ -6,7 +6,7 @@ class CollectionRenderSystem {
 
   // 컬렉션 카드들 렌더링
   renderCollectionCards() {
-    const container = document.querySelector('.collection-cards');
+    const container = document.getElementById('collectionGrid');
     if (!container) {
       console.error('컬렉션 카드 컨테이너를 찾을 수 없습니다');
       return;
@@ -86,7 +86,7 @@ class CollectionRenderSystem {
 
   // 모바일 컬렉션 카드들 렌더링
   renderMobileCollectionCards() {
-    const container = document.querySelector('.mobile-collection-cards');
+    const container = document.getElementById('mobileCollectionList');
     if (!container) return;
 
     // 필터링된 카드 목록 가져오기
