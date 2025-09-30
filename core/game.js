@@ -37,6 +37,9 @@ class MinquiCardGacha {
     // 모달 시스템 초기화
     this.modalSystem = window.createModalSystem(this);
 
+    // 티켓 시스템 초기화
+    this.ticketSystem = window.createTicketSystem(this);
+
     // 로딩 시스템 초기화
     this.loadingSystem = window.createLoadingSystem(this);
 
@@ -109,7 +112,7 @@ class MinquiCardGacha {
       this.secretSystem.initSecretCode();
       
       // 초기 티켓 시스템 표시 설정 (가챠 탭이 기본)
-      this.updateTicketVisibility('gacha');
+      this.ticketSystem.updateTicketVisibility('gacha');
       
       // 초기 상태: 뒷면으로 시작
       this.gachaSystem.showBack();
