@@ -49,7 +49,7 @@ class MinquiCardGacha {
       try {
         await this.initializeServerConnection();
         await this.loadCardDataFromServer();
-        await this.loadCollectionFromServer();
+        await this.collectionSystem.loadCollectionFromServer();
         await this.initTicketSystemFromServer();
         console.log('서버 모드로 실행');
       } catch (error) {
@@ -60,8 +60,9 @@ class MinquiCardGacha {
       
       // 효과음 초기화는 utils.js에서 처리됨
       
-      // 컬렉션 UI 초기화
-      this.initCollectionUI();
+      // 컬렉션 시스템 초기화
+      this.collectionSystem = window.createCollectionSystem(this);
+      this.collectionSystem.initCollectionUI();
       
       // 조합 시스템 초기화
       this.fusionSystem.initFusionSystem();
@@ -718,34 +719,7 @@ class MinquiCardGacha {
   
   // createParticle, addGlowEffect, getGlowConfig 함수들은 gacha.js로 이동됨
   
-  // 서버에서 컬렉션 데이터 로드
-  async loadCollectionFromServer() {
-    try {
-      const response = await this.apiClient.getCollection();
-      // 서버에서 받은 완전한 카드 데이터를 저장
-      this.serverCollectionData = response.collection || [];
-      console.log('서버에서 컬렉션 로드 완료:', this.serverCollectionData.length, '장');
-      console.log('컬렉션 카드 데이터:', this.serverCollectionData);
-    } catch (error) {
-      console.error('컬렉션 로드 실패:', error);
-      this.serverCollectionData = [];
-    }
-  }
-
-  // 로컬 저장소 제거됨 - 서버 데이터만 사용
-  
-  addToCollection(cardId) {
-    // 서버 데이터만 사용 - 로컬 배열 제거
-    // 실제 카드 추가는 서버에서 처리됨
-    // UI 업데이트는 호출하는 곳에서 필요에 따라 처리
-  }
-  
-  
-  initCollectionUI() {
-    // 컬렉션 UI 초기화
-    this.updateCollectionStats();
-    this.renderCollectionCards();
-  }
+  // 컬렉션 관련 함수들은 collection.js로 이동됨
   
   async switchTab(tabName) {
     // 탭 전환
@@ -760,39 +734,25 @@ class MinquiCardGacha {
     
     // 컬렉션 탭으로 전환 시 UI 업데이트
     if (tabName === 'collection') {
-      this.updateCollectionUI();
+      this.collectionSystem.updateCollectionUI();
     }
     
     // 조합 탭으로 전환 시 컬렉션 데이터 다시 로드 및 조합창 초기화
     if (tabName === 'fusion') {
-      await this.loadCollectionFromServer();
+      await this.collectionSystem.loadCollectionFromServer();
       this.fusionSystem.initFusionUI();
     }
     
   }
   
   setFilter(filter) {
-    // 필터 설정
-    this.currentFilter = filter;
-    
-    // 필터 버튼 활성화 상태 업데이트
-    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
-    
-    // 컬렉션 카드 다시 렌더링
-    this.renderCollectionCards();
+    // 필터 설정을 컬렉션 시스템에 위임
+    this.collectionSystem.setFilter(filter);
   }
 
   setMobileFilter(filter) {
-    // 모바일용 필터 설정
-    this.currentFilter = filter;
-
-    // 모바일 필터 버튼 활성화 상태 업데이트
-    document.querySelectorAll('.mobile-filter-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelector(`.mobile-filter-btn[data-filter="${filter}"]`).classList.add('active');
-
-    // 모바일 컬렉션 카드 다시 렌더링
-    this.renderMobileCollectionCards();
+    // 모바일용 필터 설정을 컬렉션 시스템에 위임
+    this.collectionSystem.setMobileFilter(filter);
   }
 
   isMobileDevice() {
@@ -800,101 +760,11 @@ class MinquiCardGacha {
            (window.innerWidth <= 768);
   }
   
-  updateCollectionStats() {
-    // 컬렉션 통계 업데이트
-    const totalCards = this.gameData.cards.length;
-
-    if (this.serverCollectionData && this.serverCollectionData.length > 0) {
-      // 서버 데이터 기반 통계 (0장인 카드 제외)
-      const ownedCards = this.serverCollectionData.filter(card => card.count > 0);
-      const collectedCount = ownedCards.reduce((sum, card) => sum + card.count, 0);
-      const uniqueCards = ownedCards.length;
-      const collectionRate = Math.round((uniqueCards / totalCards) * 100);
-
-      // 웹용 통계 업데이트
-      const totalCardsEl = document.getElementById('totalCards');
-      const collectionRateEl = document.getElementById('collectionRate');
-      if (totalCardsEl) totalCardsEl.textContent = collectedCount;
-      if (collectionRateEl) collectionRateEl.textContent = `${collectionRate}% (${uniqueCards}/${totalCards})`;
-      
-      // 모바일용 통계 업데이트
-      const mobileTotalCards = document.getElementById('mobileTotalCards');
-      const mobileCollectionRate = document.getElementById('mobileCollectionRate');
-      if (mobileTotalCards) mobileTotalCards.textContent = collectedCount;
-      if (mobileCollectionRate) mobileCollectionRate.textContent = `${collectionRate}%`;
-    } else {
-      // 서버 데이터가 없을 때
-      const totalCardsEl = document.getElementById('totalCards');
-      const collectionRateEl = document.getElementById('collectionRate');
-      if (totalCardsEl) totalCardsEl.textContent = '0';
-      if (collectionRateEl) collectionRateEl.textContent = `0% (0/${totalCards})`;
-      
-      // 모바일용 통계 업데이트
-      const mobileTotalCards = document.getElementById('mobileTotalCards');
-      const mobileCollectionRate = document.getElementById('mobileCollectionRate');
-      if (mobileTotalCards) mobileTotalCards.textContent = '0';
-      if (mobileCollectionRate) mobileCollectionRate.textContent = '0%';
-    }
-  }
+  // updateCollectionStats, updateCollectionUI 함수들은 collection.js로 이동됨
   
-  updateCollectionUI() {
-    // 컬렉션 UI 전체 업데이트
-    this.updateCollectionStats();
-    this.renderCollectionCards();
-    this.renderMobileCollectionCards();
-  }
+  // renderCollectionCards 함수는 collection.js로 이동됨
   
-  renderCollectionCards() {
-    // 컬렉션 카드들 렌더링
-    const grid = document.getElementById('collectionGrid');
-    if (!grid) return;
-
-    grid.innerHTML = '';
-
-    // 모든 카드 데이터 가져오기 (모인 카드 + 안 모인 카드)
-    const allCards = this.gameData.cards || [];
-
-    // 필터 적용
-    let cardsToRender = allCards;
-    if (this.currentFilter !== 'all') {
-      cardsToRender = allCards.filter(card => card.rank === this.currentFilter);
-    }
-
-    // 카드 넘버순으로 정렬 (id 기준)
-    cardsToRender.sort((a, b) => a.id.localeCompare(b.id));
-
-
-    cardsToRender.forEach(card => {
-      // 해당 카드를 소유하고 있는지 확인 (0장은 소유하지 않은 것으로 처리)
-      const ownedCard = this.serverCollectionData ?
-        this.serverCollectionData.find(c => c.id === card.id) : null;
-      const cardCount = ownedCard ? ownedCard.count : 0;
-      const isOwned = cardCount > 0;
-      
-      const cardElement = this.createCollectionCardElement(card, isOwned);
-      grid.appendChild(cardElement);
-    });
-  }
-  
-  createCollectionCardElement(card, isOwned, overrideDuplicateCount = null) {
-    // 컬렉션 카드 요소 생성 - 가챠 카드와 동일한 구조
-    const cardDiv = document.createElement('div');
-    cardDiv.className = `collection-card ${isOwned ? 'owned' : 'not-owned'}`;
-    
-    
-    const rankInfo = this.gameData.ranks[card.rank];
-    const typeIcon = this.gameData.typeIcons?.[card.type] || '🎨';
-
-    
-    // 중복 횟수 계산
-    const ownedCard = this.serverCollectionData ?
-      this.serverCollectionData.find(c => c.id === card.id) : null;
-    const duplicateCount = overrideDuplicateCount !== null ? overrideDuplicateCount : (ownedCard ? ownedCard.count : 0);
-    
-    // 스킬 정보
-    const skill = card.attacks && card.attacks[0];
-    const skillName = skill ? skill.name : '창작 마법';
-    const skillDescription = skill ? skill.description : '무한한 상상력으로 새로운 세계를 창조한다.';
+  // createCollectionCardElement 함수는 collection.js로 이동됨
     
     
     cardDiv.innerHTML = `
@@ -1120,7 +990,7 @@ class MinquiCardGacha {
 
     // 카드 프리뷰 생성
     // 컬렉션 카드와 동일한 구조 사용
-    const tempCardElement = this.createCollectionCardElement(card, true, duplicateCount);
+    const tempCardElement = this.collectionSystem.createCollectionCardElement(card, true, duplicateCount);
 
     // 컬렉션 카드 비율 유지를 위한 래퍼 추가
     detailCardDisplay.innerHTML = `
@@ -1255,7 +1125,7 @@ class MinquiCardGacha {
       `;
 
       // 컬렉션 카드와 동일한 구조로 생성 (2배 크기)
-      const cardElement = this.createCollectionCardElement(card, true, duplicateCount);
+      const cardElement = this.collectionSystem.createCollectionCardElement(card, true, duplicateCount);
       cardElement.style.cssText = `
         width: 600px !important;
         height: 840px !important;
@@ -1775,7 +1645,7 @@ ${skill ? skill.description : ''}
 
       // 조합 결과에 관계없이 서버 컬렉션 데이터 업데이트
       try {
-        await this.loadCollectionFromServer();
+        await this.collectionSystem.loadCollectionFromServer();
       } catch (collectionError) {
       }
 
@@ -2284,10 +2154,10 @@ ${skill ? skill.description : ''}
       `;
       
       // 컬렉션에 추가 (로그만 기록)
-      this.addToCollection(resultCard.id);
+      this.collectionSystem.addToCollection(resultCard.id);
 
       // 컬렉션 UI 즉시 업데이트 (서버 동기화 후)
-      this.updateCollectionUI();
+      this.collectionSystem.updateCollectionUI();
     } else {
       // 조합 시스템에서는 항상 성공 (실패 없음)
       rouletteResult.innerHTML = `
@@ -2322,8 +2192,8 @@ ${skill ? skill.description : ''}
     this.fusionSystem.updateFusionSlots();
     
     // 컬렉션 UI 강제 업데이트
-    this.updateCollectionStats();
-    this.renderCollectionCards();
+    this.collectionSystem.updateCollectionStats();
+    this.collectionSystem.renderCollectionCards();
     
     // 조합 카드 개수 업데이트
     this.updateCardCounts();
