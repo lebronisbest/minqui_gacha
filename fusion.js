@@ -219,7 +219,7 @@ class FusionSystem {
       const cardId = item.dataset.cardId;
       
       // 서버 컬렉션에서 해당 카드의 총 수량 찾기
-      const totalCardCount = this.game.serverCollectionData.find(ownedCard => 
+      const totalCardCount = this.game.collectionSystem.serverCollectionData.find(ownedCard => 
         ownedCard.id === cardId
       )?.count || 0;
 
@@ -275,17 +275,23 @@ class FusionSystem {
   // 조합 가능한 카드 목록 가져오기
   getAvailableCardsForFusion() {
     // 서버 컬렉션 데이터만 사용
-    if (!this.game.serverCollectionData || this.game.serverCollectionData.length === 0) {
+    if (!this.game.collectionSystem.serverCollectionData || this.game.collectionSystem.serverCollectionData.length === 0) {
+      console.log('❌ 서버 컬렉션 데이터가 없습니다');
       return [];
     }
 
+    console.log('✅ 서버 컬렉션 데이터:', this.game.collectionSystem.serverCollectionData);
+
     // 🔒 1장 이상 보유한 카드만 조합에 사용 가능
-    return this.game.serverCollectionData
+    const availableCards = this.game.collectionSystem.serverCollectionData
       .filter(ownedCard => ownedCard.count > 0) // 0장인 카드 제외
       .map(ownedCard => ({
         ...ownedCard,
         count: ownedCard.count
       }));
+
+    console.log('✅ 조합 가능한 카드들:', availableCards);
+    return availableCards;
   }
 
   // 조합 확률 계산
