@@ -198,14 +198,16 @@ module.exports = async (req, res) => {
       // 🔧 Feature Flag 체크
       const useV2Engine = featureFlags.isEnabled('FUSION_ENGINE_V2', userId);
       const usePitySystem = featureFlags.isEnabled('PITY_SYSTEM', userId);
-      
+
       console.log(`🚩 Feature Flags: V2=${useV2Engine}, Pity=${usePitySystem}`);
-      
+
+      // 조합 엔진 초기화 (v1, v2 모두에서 사용)
+      const fusionEngine = new FusionFlow(pool);
+
       let isSuccess, finalSuccessRate, successRateBreakdown, engineResult;
-      
+
       if (useV2Engine) {
         // 🔧 조합 엔진 v2.0 사용
-        const fusionEngine = new FusionFlow(pool);
         
         // 사용자 등급 및 피티 정보 조회
         const userTierResult = await client.query(`
