@@ -335,6 +335,241 @@ class CollectionSystem {
     // 모바일 컬렉션 카드 다시 렌더링
     this.renderMobileCollectionCards();
   }
+
+  // 카드 상세 정보 표시
+  showCardDetail(card, duplicateCount = 1) {
+    const modal = document.getElementById('cardDetailModal');
+    const modalTitle = document.getElementById('modalCardTitle');
+    const detailCardDisplay = document.getElementById('detailCardDisplay');
+    const cardStatsInfo = document.getElementById('cardStatsInfo');
+    const exportPngButton = document.getElementById('exportPngButton');
+    const closeModalButton = document.getElementById('closeModalButton');
+    const cardDetailCloseBtn = document.getElementById('cardDetailCloseBtn');
+    const cardDetailOverlay = document.getElementById('cardDetailOverlay');
+
+    if (!modal) return;
+
+    const rankInfo = this.game.gameData.ranks[card.rank];
+    const typeIcon = this.game.gameData.typeIcons?.[card.type] || '🎨';
+    const skill = card.attacks && card.attacks[0];
+    const skillName = skill ? skill.name : '창작 마법';
+    const skillDescription = skill ? skill.description : '무한한 상상력으로 새로운 세계를 창조한다.';
+
+    // 모달 제목 설정
+    modalTitle.textContent = `${card.name} ${duplicateCount > 1 ? `(x${duplicateCount})` : ''}`;
+
+    // 카드 프리뷰 생성
+    // 컬렉션 카드와 동일한 구조 사용
+    const tempCardElement = this.createCollectionCardElement(card, true, duplicateCount);
+
+    // 컬렉션 카드 비율 유지를 위한 래퍼 추가
+    detailCardDisplay.innerHTML = `
+      <div class="detail-card-wrapper" style="
+        width: 300px;
+        height: 420px;
+        margin: 0 auto;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      ">
+        ${tempCardElement.innerHTML}
+      </div>
+    `;
+
+    // 내부 카드 요소에 크기 조정
+    const cardElement = detailCardDisplay.querySelector('.collection-card');
+    if (cardElement) {
+      cardElement.style.cssText = `
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        transform: none !important;
+      `;
+    }
+
+    // 스탯 정보 생성
+    cardStatsInfo.innerHTML = `
+      <div class="stat-section">
+        <h3>기본 정보</h3>
+        <div class="stat-row">
+          <span class="label">카드 번호</span>
+          <span class="value">#${card.id}</span>
+        </div>
+        <div class="stat-row">
+          <span class="label">등급</span>
+          <span class="value">${card.rank}</span>
+        </div>
+        <div class="stat-row">
+          <span class="label">타입</span>
+          <span class="value">${card.type} ${typeIcon}</span>
+        </div>
+        <div class="stat-row">
+          <span class="label">보유 수량</span>
+          <span class="value">${duplicateCount}장</span>
+        </div>
+      </div>
+
+      <div class="stat-section">
+        <h3>스탯 정보</h3>
+        <div class="stat-row">
+          <span class="label">HP</span>
+          <span class="value">${Math.floor((card.baseHp || 100) * (rankInfo?.hpMultiplier || 1))}</span>
+        </div>
+        <div class="stat-row">
+          <span class="label">공격력</span>
+          <span class="value">${Math.floor((card.baseAttack || 100) * (rankInfo?.attackMultiplier || 1))}</span>
+        </div>
+        <div class="stat-row">
+          <span class="label">HP 배율</span>
+          <span class="value">x${rankInfo?.hpMultiplier || 1}</span>
+        </div>
+        <div class="stat-row">
+          <span class="label">공격력 배율</span>
+          <span class="value">x${rankInfo?.attackMultiplier || 1}</span>
+        </div>
+      </div>
+
+      <div class="stat-section skill-info">
+        <h3>스킬 정보</h3>
+        <div class="stat-row">
+          <span class="label">스킬명</span>
+          <span class="value">${skillName}</span>
+        </div>
+        <div class="skill-description">${skillDescription}</div>
+      </div>
+    `;
+
+    // PNG 내보내기 버튼 이벤트
+    exportPngButton.onclick = () => {
+      this.exportCardToPNG(card, duplicateCount);
+    };
+
+    // 모달 닫기 이벤트들
+    const closeModal = () => {
+      modal.classList.remove('show');
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 300);
+    };
+
+    closeModalButton.onclick = closeModal;
+    cardDetailCloseBtn.onclick = closeModal;
+    cardDetailOverlay.onclick = closeModal;
+
+    // ESC 키로 모달 닫기
+    const handleEscKey = (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        document.removeEventListener('keydown', handleEscKey);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscKey);
+
+    // 모달 표시
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      modal.classList.add('show');
+    }, 10);
+  }
+
+  // 카드 PNG 내보내기
+  async exportCardToPNG(card, duplicateCount = 1) {
+    try {
+      // 로딩 상태 표시
+      const exportButton = document.getElementById('exportPngButton');
+      const originalText = exportButton.textContent;
+      exportButton.textContent = '내보내는 중...';
+      exportButton.disabled = true;
+
+      // 임시 컨테이너 생성 (화면 밖에 배치)
+      const tempContainer = document.createElement('div');
+      tempContainer.style.cssText = `
+        position: fixed;
+        top: -2000px;
+        left: -2000px;
+        width: 600px;
+        height: 840px;
+        background: transparent;
+        pointer-events: none;
+        z-index: -1;
+      `;
+
+      // 컬렉션 카드와 동일한 구조로 생성 (2배 크기)
+      const cardElement = this.createCollectionCardElement(card, true, duplicateCount);
+      cardElement.style.cssText = `
+        width: 600px !important;
+        height: 840px !important;
+        transform: scale(1) !important;
+        transform-origin: center !important;
+        margin: 0 !important;
+      `;
+
+      tempContainer.appendChild(cardElement);
+      document.body.appendChild(tempContainer);
+
+      // html2canvas로 PNG 생성
+      const canvas = await html2canvas(cardElement, {
+        backgroundColor: null,
+        scale: 1,
+        width: 600,
+        height: 840,
+        useCORS: true,
+        allowTaint: true,
+        logging: false
+      });
+
+      // 임시 요소 제거
+      document.body.removeChild(tempContainer);
+
+      // PNG 다운로드
+      const dataURL = canvas.toDataURL('image/png', 1.0);
+
+      // 모바일 및 데스크톱 환경에 따른 다운로드 처리
+      if (this.game.isMobileDevice()) {
+        // 모바일: 새 창에서 이미지 표시
+        const newWindow = window.open();
+        newWindow.document.write(`
+          <html>
+            <head>
+              <title>${card.name} 카드</title>
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <style>
+                body { margin: 0; padding: 20px; background: #000; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+                img { max-width: 100%; height: auto; border-radius: 10px; }
+                .download-info { color: white; text-align: center; margin-bottom: 20px; }
+              </style>
+            </head>
+            <body>
+              <div>
+                <div class="download-info">카드를 길게 눌러 저장하세요</div>
+                <img src="${dataURL}" alt="${card.name} 카드">
+              </div>
+            </body>
+          </html>
+        `);
+      } else {
+        // 데스크톱: 직접 다운로드
+        const link = document.createElement('a');
+        link.download = `${card.name}_카드.png`;
+        link.href = dataURL;
+        link.click();
+      }
+
+      // 버튼 상태 복원
+      exportButton.textContent = originalText;
+      exportButton.disabled = false;
+
+    } catch (error) {
+      console.error('PNG 내보내기 실패:', error);
+      alert('PNG 내보내기에 실패했습니다.');
+      
+      // 버튼 상태 복원
+      const exportButton = document.getElementById('exportPngButton');
+      exportButton.textContent = 'PNG로 내보내기';
+      exportButton.disabled = false;
+    }
+  }
 }
 
 // 전역 컬렉션 시스템 인스턴스 생성 함수
