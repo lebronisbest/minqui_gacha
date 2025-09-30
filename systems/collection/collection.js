@@ -23,6 +23,7 @@ class CollectionSystem {
         this.serverCollectionData = response.data.collection || [];
         console.log('서버 컬렉션 데이터 로드 완료:', this.serverCollectionData.length, '개');
         console.log('첫 번째 아이템:', this.serverCollectionData[0]);
+        console.log('첫 번째 아이템 card_id:', this.serverCollectionData[0]?.card_id, 'type:', typeof this.serverCollectionData[0]?.card_id);
       } else {
         console.error('컬렉션 데이터 로드 실패:', response);
         this.serverCollectionData = [];
