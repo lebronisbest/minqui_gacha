@@ -19,8 +19,11 @@ class CollectionSystem {
       console.log('서버 응답 전체:', response);
       
       if (response && response.success && response.data) {
-        // 서버에서 받은 컬렉션 데이터를 저장
-        this.serverCollectionData = response.data.collection || [];
+        // 서버에서 받은 컬렉션 데이터를 저장하고 이미지 경로 수정
+        this.serverCollectionData = (response.data.collection || []).map(item => ({
+          ...item,
+          image: item.image.startsWith('assets/') ? item.image : `assets/${item.image}`
+        }));
         console.log('서버 컬렉션 데이터 로드 완료:', this.serverCollectionData.length, '개');
       } else {
         console.error('컬렉션 데이터 로드 실패:', response);

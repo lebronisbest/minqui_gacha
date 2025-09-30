@@ -50,9 +50,10 @@ class CollectionRenderSystem {
     const duplicateCount = overrideDuplicateCount !== null ? overrideDuplicateCount : 
       (isOwned ? this.game.collectionSystem.serverCollectionData.find(item => item.card_id === card.id)?.duplicate_count || 1 : 0);
 
+    const imagePath = card.image.startsWith('assets/') ? card.image : `assets/${card.image}`;
     cardElement.innerHTML = `
       <div class="card-image-container">
-        <img src="${card.image}" 
+        <img src="${imagePath}" 
              alt="${card.name}" 
              class="card-image"
              loading="lazy"
