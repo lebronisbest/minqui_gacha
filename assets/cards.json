@@ -7,7 +7,7 @@
       "rank": "SSS",
       "baseHp": 999,
       "baseAttack": 999,
-      "image": "illust/010.png",
+      "image": "assets/illust/010.png",
       "attacks": [
         {
           "name": "모든 잉모노의 신",
@@ -22,7 +22,7 @@
       "rank": "S",
       "baseHp": 130,
       "baseAttack": 140,
-      "image": "illust/002.png",
+      "image": "assets/illust/002.png",
       "attacks": [
         {
           "name": "명사수",
@@ -37,7 +37,7 @@
       "rank": "A",
       "baseHp": 120,
       "baseAttack": 100,
-      "image": "illust/003.png",
+      "image": "assets/illust/003.png",
       "attacks": [
         {
           "name": "힝",
@@ -52,7 +52,7 @@
       "rank": "B",
       "baseHp": 100,
       "baseAttack": 110,
-      "image": "illust/004.png",
+      "image": "assets/illust/004.png",
       "attacks": [
         {
           "name": "전장의 지배자",
@@ -67,7 +67,7 @@
       "rank": "S",
       "baseHp": 80,
       "baseAttack": 70,
-      "image": "illust/005.png",
+      "image": "assets/illust/005.png",
       "attacks": [
         {
           "name": "설득",
@@ -82,7 +82,7 @@
       "rank": "A",
       "baseHp": 180,
       "baseAttack": 150,
-      "image": "illust/006.png",
+      "image": "assets/illust/006.png",
       "attacks": [
         {
           "name": "전설의 힘",
@@ -97,7 +97,7 @@
       "rank": "B",
       "baseHp": 160,
       "baseAttack": 130,
-      "image": "illust/007.png",
+      "image": "assets/illust/007.png",
       "attacks": [
         {
           "name": "추천",
@@ -112,7 +112,7 @@
       "rank": "B",
       "baseHp": 140,
       "baseAttack": 160,
-      "image": "illust/008.png",
+      "image": "assets/illust/008.png",
       "attacks": [
         {
           "name": "마법 폭발",
@@ -127,7 +127,7 @@
       "rank": "B",
       "baseHp": 150,
       "baseAttack": 120,
-      "image": "illust/009.png",
+      "image": "assets/illust/009.png",
       "attacks": [
         {
           "name": "도둑질질",
@@ -142,7 +142,7 @@
       "rank": "SS",
       "baseHp": 150,
       "baseAttack": 120,
-      "image": "illust/001.png",
+      "image": "assets/illust/001.png",
       "attacks": [
         {
           "name": "점령",
@@ -157,7 +157,7 @@
       "rank": "S",
       "baseHp": 110,
       "baseAttack": 130,
-      "image": "illust/011.png",
+      "image": "assets/illust/011.png",
       "attacks": [
         {
           "name": "커트",
@@ -172,7 +172,7 @@
       "rank": "A",
       "baseHp": 100,
       "baseAttack": 90,
-      "image": "illust/012.png",
+      "image": "assets/illust/012.png",
       "attacks": [
         {
           "name": "초절정아이돌",
@@ -187,7 +187,7 @@
       "rank": "B",
       "baseHp": 80,
       "baseAttack": 70,
-      "image": "illust/013.png",
+      "image": "assets/illust/013.png",
       "attacks": [
         {
           "name": "리듬 타기",
@@ -202,7 +202,7 @@
       "rank": "A",
       "baseHp": 90,
       "baseAttack": 110,
-      "image": "illust/014.png",
+      "image": "assets/illust/014.png",
       "attacks": [
         {
           "name": "도우미",
@@ -217,7 +217,7 @@
       "rank": "SS",
       "baseHp": 140,
       "baseAttack": 100,
-      "image": "illust/015.png",
+      "image": "assets/illust/015.png",
       "attacks": [
         {
           "name": "치타",
@@ -232,7 +232,7 @@
       "rank": "B",
       "baseHp": 70,
       "baseAttack": 85,
-      "image": "illust/016.png",
+      "image": "assets/illust/016.png",
       "attacks": [
         {
           "name": "초롱아귀의 응원",
@@ -247,7 +247,7 @@
       "rank": "A",
       "baseHp": 95,
       "baseAttack": 95,
-      "image": "illust/017.png",
+      "image": "assets/illust/017.png",
       "attacks": [
         {
           "name": "신조오 사사게오",
@@ -262,7 +262,7 @@
       "rank": "B",
       "baseHp": 85,
       "baseAttack": 125,
-      "image": "illust/018.png",
+      "image": "assets/illust/018.png",
       "attacks": [
         {
           "name": "료이키 텐카이이",
@@ -277,7 +277,7 @@
       "rank": "SS",
       "baseHp": 120,
       "baseAttack": 140,
-      "image": "illust/019.png",
+      "image": "assets/illust/019.png",
       "attacks": [
         {
           "name": "먹방방",
@@ -292,7 +292,7 @@
       "rank": "SS",
       "baseHp": 60,
       "baseAttack": 30,
-      "image": "illust/020.png",
+      "image": "assets/illust/020.png",
       "attacks": [
         {
           "name": "억지 유행어",
@@ -307,7 +307,7 @@
       "rank": "B",
       "baseHp": 105,
       "baseAttack": 80,
-      "image": "illust/021.png",
+      "image": "assets/illust/021.png",
       "attacks": [
         {
           "name": "퇴근",
@@ -322,7 +322,7 @@
       "rank": "B",
       "baseHp": 75,
       "baseAttack": 65,
-      "image": "illust/022.png",
+      "image": "assets/illust/022.png",
       "attacks": [
         {
           "name": "플래시",
@@ -337,7 +337,7 @@
       "rank": "B",
       "baseHp": 65,
       "baseAttack": 55,
-      "image": "illust/023.png",
+      "image": "assets/illust/023.png",
       "attacks": [
         {
           "name": "GOAT",
@@ -352,7 +352,7 @@
       "rank": "B",
       "baseHp": 85,
       "baseAttack": 75,
-      "image": "illust/024.png",
+      "image": "assets/illust/024.png",
       "attacks": [
         {
           "name": "우유",
@@ -367,7 +367,7 @@
       "rank": "S",
       "baseHp": 90,
       "baseAttack": 60,
-      "image": "illust/025.png",
+      "image": "assets/illust/025.png",
       "attacks": [
         {
           "name": "예쁨",
@@ -382,7 +382,7 @@
       "rank": "A",
       "baseHp": 110,
       "baseAttack": 70,
-      "image": "illust/026.png",
+      "image": "assets/illust/026.png",
       "attacks": [
         {
           "name": "명상",
@@ -397,7 +397,7 @@
       "rank": "SS",
       "baseHp": 130,
       "baseAttack": 150,
-      "image": "illust/027.png",
+      "image": "assets/illust/027.png",
       "attacks": [
         {
           "name": "돌진",
@@ -412,7 +412,7 @@
       "rank": "SS",
       "baseHp": 100,
       "baseAttack": 120,
-      "image": "illust/028.png",
+      "image": "assets/illust/028.png",
       "attacks": [
         {
           "name": "힐링",
@@ -427,7 +427,7 @@
       "rank": "A",
       "baseHp": 95,
       "baseAttack": 105,
-      "image": "illust/029.png",
+      "image": "assets/illust/029.png",
       "attacks": [
         {
           "name": "잉의 선물",
@@ -442,7 +442,7 @@
       "rank": "B",
       "baseHp": 180,
       "baseAttack": 160,
-      "image": "illust/030.png",
+      "image": "assets/illust/030.png",
       "attacks": [
         {
           "name": "말자하의 신",

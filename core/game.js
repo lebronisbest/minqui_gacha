@@ -111,6 +111,11 @@ class MinquiCardGacha {
       // 시크릿 코드 이벤트 리스너 등록
       this.secretSystem.initSecretCode();
       
+      // 티켓 시스템 초기화
+      this.ticketSystem.loadTicketData();
+      this.ticketSystem.updateTicketDisplay();
+      this.ticketSystem.startTicketTimer();
+      
       // 초기 티켓 시스템 표시 설정 (가챠 탭이 기본)
       this.ticketSystem.updateTicketVisibility('gacha');
       
