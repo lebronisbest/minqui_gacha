@@ -189,11 +189,9 @@ class DataSystem {
       // 12시가 되었으면 티켓 리셋
       this.game.tickets = this.game.maxTickets;
       this.saveTicketData();
-      this.updateTicketDisplay();
-      return;
     }
     
-    // 다음 리필 시간 업데이트
+    // 항상 표시 업데이트 (한 번만 호출)
     this.updateTicketDisplay();
   }
 

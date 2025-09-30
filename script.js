@@ -2006,29 +2006,7 @@ ${skill ? skill.description : ''}
     return shuffled;
   }
 
-  // 서버에서 티켓 시스템 초기화
-  async initTicketSystemFromServer() {
-    try {
-      const ticketInfo = await this.apiClient.getTicketInfo();
-      this.tickets = ticketInfo.current;
-      this.maxTickets = ticketInfo.max;
-      this.nextRefillAt = ticketInfo.nextRefillAt;
-      
-      this.updateTicketDisplay();
-      this.startTicketTimer();
-    } catch (error) {
-      console.error('티켓 정보 로드 실패:', error);
-      // 폴백: 로컬 티켓 시스템 사용
-      this.initTicketSystem();
-    }
-  }
-
-  // 기존 티켓 시스템 (폴백용)
-  initTicketSystem() {
-    this.loadTicketData();
-    this.updateTicketDisplay();
-    this.startTicketTimer();
-  }
+  // 티켓 시스템 함수들은 dataSystem으로 이동됨
 
   // 티켓 데이터 로드
   loadTicketData() {
@@ -2091,7 +2069,7 @@ ${skill ? skill.description : ''}
     if (this.tickets > 0) {
       this.tickets--;
       this.saveTicketData();
-      this.updateTicketDisplay();
+      this.dataSystem.updateTicketDisplay();
       return true;
     }
     return false;
@@ -2202,7 +2180,7 @@ ${skill ? skill.description : ''}
       // 12시가 되었으면 티켓 리셋
       this.tickets = this.maxTickets;
       this.saveTicketData();
-      this.updateTicketDisplay();
+      this.dataSystem.updateTicketDisplay();
       return;
     }
     
