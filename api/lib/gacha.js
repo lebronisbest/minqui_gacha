@@ -173,14 +173,22 @@ class GachaService {
 
   // 인벤토리에 카드 추가
   async addCardToInventory(client, userId, cardId) {
-    await client.query(`
-      INSERT INTO user_inventory (user_id, card_id, count, last_obtained_at)
-      VALUES ($1, $2, 1, CURRENT_TIMESTAMP)
-      ON CONFLICT (user_id, card_id)
-      DO UPDATE SET 
-        count = user_inventory.count + 1,
-        last_obtained_at = CURRENT_TIMESTAMP
-    `, [userId, cardId]);
+    console.log('인벤토리 추가 시도:', { userId, cardId, cardIdType: typeof cardId });
+    try {
+      const result = await client.query(`
+        INSERT INTO user_inventory (user_id, card_id, count, last_obtained_at)
+        VALUES ($1, $2, 1, CURRENT_TIMESTAMP)
+        ON CONFLICT (user_id, card_id)
+        DO UPDATE SET
+          count = user_inventory.count + 1,
+          last_obtained_at = CURRENT_TIMESTAMP
+        RETURNING *
+      `, [userId, cardId]);
+      console.log('인벤토리 추가 결과:', result.rows[0]);
+    } catch (error) {
+      console.error('인벤토리 추가 실패:', error);
+      throw error;
+    }
   }
 
   // 가챠 로그 기록

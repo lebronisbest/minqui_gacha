@@ -157,8 +157,20 @@ class CardSystem {
     }
     if (typeElement) {
       // 타입 이모지만 표시
-      const typeIcon = this.game.gameData?.typeIcons?.[this.game.cardData.type] || '';
-      typeElement.textContent = typeIcon;
+      const cardType = this.game.cardData.type;
+      const typeIcon = this.game.gameData?.typeIcons?.[cardType];
+      console.log('타입 아이콘 조회:', {
+        cardType,
+        availableTypes: Object.keys(this.game.gameData?.typeIcons || {}),
+        typeIcon
+      });
+
+      if (typeIcon) {
+        typeElement.textContent = typeIcon;
+      } else {
+        console.warn('타입 아이콘을 찾을 수 없습니다:', cardType);
+        typeElement.textContent = '❓'; // 폴백 아이콘
+      }
     }
 
     // 스킬 정보 업데이트
