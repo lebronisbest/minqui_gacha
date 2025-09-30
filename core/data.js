@@ -91,8 +91,8 @@ class DataSystem {
       const ticketInfo = await this.game.apiClient.getTicketInfo();
       this.game.tickets = ticketInfo.current;
       this.game.maxTickets = ticketInfo.max;
-      this.game.nextRefillAt = ticketInfo.nextRefillAt;
-      
+      this.game.nextRefillAt = new Date(ticketInfo.nextRefillAt);
+
       this.updateTicketDisplay();
     } catch (error) {
       console.error('티켓 정보 로드 실패:', error);
