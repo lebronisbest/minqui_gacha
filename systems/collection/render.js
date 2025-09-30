@@ -10,7 +10,7 @@ class CollectionRenderSystem {
     if (!container) return;
 
     // 필터링된 카드 목록 가져오기
-    const filteredCards = this.game.collectionStatsSystem.getFilteredCards();
+    const filteredCards = this.game.collectionSystem.statsSystem.getFilteredCards();
     
     if (!this.game.gameData || !this.game.gameData.cards) {
       container.innerHTML = '<p>카드 데이터를 불러오는 중...</p>';
@@ -83,7 +83,7 @@ class CollectionRenderSystem {
     if (!container) return;
 
     // 필터링된 카드 목록 가져오기
-    const filteredCards = this.game.collectionStatsSystem.getFilteredCards();
+    const filteredCards = this.game.collectionSystem.statsSystem.getFilteredCards();
     
     if (!this.game.gameData || !this.game.gameData.cards) {
       container.innerHTML = '<p>카드 데이터를 불러오는 중...</p>';

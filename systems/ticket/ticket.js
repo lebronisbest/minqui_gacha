@@ -209,16 +209,25 @@ class TicketSystem {
     }
 
     const ticketTimer = document.getElementById('ticketTimer');
-    if (ticketTimer && this.nextRefillAt) {
-      const now = new Date();
-      const nextRefill = new Date(this.nextRefillAt);
-      const timeLeft = Math.max(0, nextRefill - now);
-      
-      if (timeLeft > 0) {
-        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-        ticketTimer.textContent = `다음 충전: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    if (ticketTimer) {
+      if (this.nextRefillAt && this.nextRefillAt !== 'null' && this.nextRefillAt !== 'undefined') {
+        const now = new Date();
+        const nextRefill = new Date(this.nextRefillAt);
+        
+        if (!isNaN(nextRefill.getTime())) {
+          const timeLeft = Math.max(0, nextRefill - now);
+          
+          if (timeLeft > 0) {
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            ticketTimer.textContent = `다음 충전: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+          } else {
+            ticketTimer.textContent = '다음 충전: 00:00:00';
+          }
+        } else {
+          ticketTimer.textContent = '다음 충전: 00:00:00';
+        }
       } else {
         ticketTimer.textContent = '다음 충전: 00:00:00';
       }
