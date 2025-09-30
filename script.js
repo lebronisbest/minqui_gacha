@@ -2104,46 +2104,65 @@ ${skill ? skill.description : ''}
       .filter(card => card);
   }
   
-  // 🔧 서버 기반 확률 계산 (클라이언트는 표시만)
   calculateFusionProbability(selectedCards) {
     if (selectedCards.length < this.minFusionCards) {
       return { success: false, message: `최소 ${this.minFusionCards}장의 카드가 필요합니다.` };
     }
-    
-    // 클라이언트는 서버에서 받은 확률 정보만 표시
-    // 실제 계산은 서버의 조합 엔진에서 수행됨
+
+    // 1단계: 입력 카드 분석
+    const rankDistribution = {};
+    selectedCards.forEach(card => {
+      rankDistribution[card.rank] = (rankDistribution[card.rank] || 0) + 1;
+    });
+    const totalCards = selectedCards.length;
+
+    // 2단계: 기본 확률
+    const baseProb = {
+      'B': 0.50,
+      'A': 0.30,
+      'S': 0.15,
+      'SS': 0.04,
+      'SSS': 0.01
+    };
+
+    // 3단계: 등급 계층
+    const rankHierarchy = { 'B': 1, 'A': 2, 'S': 3, 'SS': 4, 'SSS': 5 };
+    const ranks = ['B', 'A', 'S', 'SS', 'SSS'];
+
+    // 4단계: 각 등급별 최종 확률 계산
+    const finalProb = {};
+
+    for (const targetRank of ranks) {
+      const targetLevel = rankHierarchy[targetRank];
+
+      // targetRank 이상인 카드들의 개수
+      let highRankCount = 0;
+      for (const [rank, count] of Object.entries(rankDistribution)) {
+        if (rankHierarchy[rank] >= targetLevel) {
+          highRankCount += count;
+        }
+      }
+
+      // 시너지 배율
+      const synergy = Math.pow(highRankCount / totalCards, 0.5);
+
+      // 최종 확률
+      finalProb[targetRank] = baseProb[targetRank] * (1 + synergy * 2.0);
+    }
+
+    // 5단계: 정규화 (합이 100%가 되도록)
+    const total = Object.values(finalProb).reduce((sum, prob) => sum + prob, 0);
+    const probabilities = {};
+    for (const rank of ranks) {
+      probabilities[rank] = (finalProb[rank] / total) * 100;
+    }
+
     return {
       success: true,
-      message: '서버에서 확률을 계산합니다...',
-      cardCount: selectedCards.length,
-      isServerCalculated: true
+      probabilities: probabilities,
+      cardCount: totalCards,
+      rankDistribution: rankDistribution
     };
-  }
-  
-  // 랭크 시너지 계산
-  calculateRankSynergy(rankDistribution, targetRank) {
-    const rankHierarchy = { 'B': 1, 'A': 2, 'S': 3, 'SS': 4, 'SSS': 5 };
-    const targetLevel = rankHierarchy[targetRank] || 1;
-    
-    let synergy = 0;
-    for (const [rank, count] of Object.entries(rankDistribution)) {
-      const rankLevel = rankHierarchy[rank] || 1;
-      // 같은 레벨이나 높은 레벨의 카드가 있으면 시너지 증가
-      if (rankLevel >= targetLevel) {
-        synergy += count * (rankLevel / targetLevel);
-      }
-    }
-    
-    return synergy;
-  }
-  
-  
-  analyzeRankDistribution(selectedCards) {
-    const distribution = {};
-    selectedCards.forEach(card => {
-      distribution[card.rank] = (distribution[card.rank] || 0) + 1;
-    });
-    return distribution;
   }
   
   
@@ -2155,69 +2174,44 @@ ${skill ? skill.description : ''}
       return;
     }
 
-    console.log('🔍 조합 정보 업데이트:', {
-      filledSlots: filledSlots.length,
-      minRequired: this.minFusionCards
-    });
-
     const result = this.calculateFusionProbability(filledSlots);
-    
+
     if (result.success) {
-      const { probabilities, cardCount, rankDistribution } = result;
-      
-      // 확률 데이터 저장 (툴팁용)
-      this.currentProbabilities = probabilities;
-      this.currentRankDistribution = rankDistribution;
-      
+      this.currentProbabilities = result.probabilities;
       fusionButton.disabled = false;
-      console.log('✅ 조합 버튼 활성화됨');
     } else {
       this.currentProbabilities = null;
-      this.currentRankDistribution = null;
       fusionButton.disabled = true;
-      console.log('❌ 조합 버튼 비활성화됨:', result.message);
     }
   }
   
   showProbabilityTooltip() {
     const tooltip = document.getElementById('probabilityTooltip');
     if (!tooltip) return;
-    
-    // 서버에서 받은 확률 정보 표시
-    if (this.currentServerProbabilities) {
-      const { successRate, successRateBreakdown, engineVersion, policyVersion } = this.currentServerProbabilities;
-      
-      let tooltipContent = `
-        <div class="server-probability-info">
-          <div class="engine-version">엔진 v${engineVersion}</div>
-          <div class="policy-version">정책 v${policyVersion}</div>
-          <div class="success-rate">성공률: ${(successRate * 100).toFixed(1)}%</div>
-      `;
-      
-      if (successRateBreakdown) {
+
+    if (!this.currentProbabilities) {
+      tooltip.innerHTML = '<div class="info-message">확률 계산 중...</div>';
+      tooltip.style.display = 'block';
+      return;
+    }
+
+    const ranks = ['B', 'A', 'S', 'SS', 'SSS'];
+    let tooltipContent = '<div class="probability-list">';
+
+    for (const rank of ranks) {
+      const prob = this.currentProbabilities[rank];
+      if (prob !== undefined) {
         tooltipContent += `
-          <div class="breakdown">
-            <div class="breakdown-item">기본: ${(successRateBreakdown.base * 100).toFixed(1)}%</div>
-            <div class="breakdown-item">카드 보너스: +${(successRateBreakdown.card_bonus * 100).toFixed(1)}%</div>
-            <div class="breakdown-item">피티 보너스: +${(successRateBreakdown.pity_bonus * 100).toFixed(1)}%</div>
-            <div class="breakdown-item">등급 보너스: +${(successRateBreakdown.tier_bonus * 100).toFixed(1)}%</div>
-            <div class="breakdown-item">레시피 보너스: +${(successRateBreakdown.recipe_bonus * 100).toFixed(1)}%</div>
+          <div class="rank-probability-item">
+            <span class="rank-name">${rank}</span>
+            <span class="rank-probability">${prob.toFixed(1)}%</span>
           </div>
         `;
       }
-      
-      tooltipContent += '</div>';
-      tooltip.innerHTML = tooltipContent;
-    } else {
-      // 서버 확률 정보가 없으면 기본 메시지
-      tooltip.innerHTML = `
-        <div class="server-probability-info">
-          <div class="info-message">서버에서 확률을 계산합니다...</div>
-          <div class="info-note">조합 실행 시 정확한 확률이 표시됩니다</div>
-        </div>
-      `;
     }
-    
+
+    tooltipContent += '</div>';
+    tooltip.innerHTML = tooltipContent;
     tooltip.style.display = 'block';
   }
   
