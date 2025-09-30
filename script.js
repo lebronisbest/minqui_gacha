@@ -47,6 +47,9 @@ class MinquiCardGacha {
       
       // 데이터 시스템 초기화 (먼저 초기화)
       this.dataSystem = window.createDataSystem(this);
+
+      // 애니메이션 시스템 초기화
+      this.animationSystem = window.createAnimationSystem(this);
       
       // 서버 연결 시도
       try {
@@ -1424,7 +1427,7 @@ ${skill ? skill.description : ''}
 
         // 룰렛으로 결과 표시
         try {
-          this.uiSystem.showRoulette(filledSlots, resultCard);
+          this.animationSystem.showRoulette(filledSlots, resultCard);
         } catch (rouletteError) {
           console.error('룰렛 표시 에러:', rouletteError);
         }
@@ -1690,7 +1693,7 @@ ${skill ? skill.description : ''}
           const totalTime = endTime - this.rouletteStartTime;
           console.log(`🎯 룰렛 애니메이션 완료: ${totalTime.toFixed(1)}ms`);
           
-          this.uiSystem.showRouletteResult(resultCard, selectedCards);
+          this.animationSystem.showRouletteResult(resultCard, selectedCards);
         }, duration);
       });
     });
