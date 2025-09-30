@@ -147,46 +147,34 @@ class GachaSystem {
     this.game.isFlipped = false;
   }
 
-  // 가챠 결과 알림 표시
+  // 가챠 결과 알림 표시 (우측 상단, 미니멀)
   showResult() {
-    if (!this.game.cardData) return;
+    if (!this.game.cardData || !this.game.gameData) return;
+    
+    const rankInfo = this.game.gameData.ranks[this.game.cardData.rank];
+    const emoji = rankInfo ? rankInfo.emoji : '⭐';
     
     const notification = document.createElement('div');
     notification.className = 'gacha-notification-minimal';
     notification.innerHTML = `
       <div class="notification-content">
-        <div class="notification-rank">${this.game.cardData.rank}</div>
-        <div class="notification-name">${this.game.cardData.name}</div>
+        <span class="rank-emoji">${emoji}</span>
+        <span class="card-name">${this.game.cardData.name}</span>
+        <span class="rank-text">${this.game.cardData.rank}</span>
       </div>
-    `;
-    
-    // 스타일 적용
-    notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 12px 16px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      z-index: 10000;
-      font-weight: bold;
-      animation: slideInRight 0.3s ease-out;
-      max-width: 200px;
     `;
     
     document.body.appendChild(notification);
     
-    // 3초 후 제거
+    // 2초 후 제거
     setTimeout(() => {
       notification.style.animation = 'slideOutRight 0.3s ease-in';
       setTimeout(() => {
         if (notification.parentNode) {
-          notification.remove();
+          notification.parentNode.removeChild(notification);
         }
       }, 300);
-    }, 3000);
+    }, 2000);
   }
 
   // 랭크별 파티클 효과
