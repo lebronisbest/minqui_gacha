@@ -2068,7 +2068,7 @@ ${skill ? skill.description : ''}
     
     if (this.tickets > 0) {
       this.tickets--;
-      this.saveTicketData();
+      this.dataSystem.saveTicketData();
       this.dataSystem.updateTicketDisplay();
       return true;
     }
@@ -2155,7 +2155,7 @@ ${skill ? skill.description : ''}
     if (timeDiff <= 0) {
       // 12시가 되었으면 티켓 리셋
       this.tickets = this.maxTickets;
-      this.saveTicketData();
+      this.dataSystem.saveTicketData();
       this.dataSystem.updateTicketDisplay();
       return;
     }
