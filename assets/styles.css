@@ -4505,3 +4505,83 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
+
+/* ================================================
+   모바일 컬렉션 카드 - 제대로 보이도록 크기 조정
+   ================================================ */
+
+@media (max-width: 768px) {
+  .collection-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 15px !important;
+    padding: 15px 10px !important;
+  }
+
+  .collection-card {
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    aspect-ratio: 280/390 !important;
+  }
+
+  .collection-card-front {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* 모든 요소들이 제대로 보이도록 크기만 조정 */
+  .collection-card-info-box {
+    padding: 8px 12px !important;
+  }
+
+  .collection-card-number {
+    font-size: 9px !important;
+  }
+
+  .collection-card-name {
+    font-size: 14px !important;
+  }
+
+  .collection-rank-image {
+    width: 45px !important;
+  }
+
+  .collection-card-bottom-overlay {
+    padding: 8px !important;
+  }
+
+  .collection-stat-label {
+    font-size: 10px !important;
+  }
+
+  .collection-stat-value {
+    font-size: 13px !important;
+  }
+
+  .collection-skill-name {
+    font-size: 11px !important;
+  }
+
+  .collection-skill-description {
+    font-size: 9px !important;
+  }
+
+  .collection-duplicate-badge {
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .collection-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+    padding: 15px !important;
+  }
+
+  .collection-card {
+    max-width: 90vw !important;
+    margin: 0 auto !important;
+  }
+}
+
