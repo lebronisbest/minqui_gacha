@@ -100,14 +100,14 @@ class EventSystem {
     // 컬렉션 필터 이벤트
     document.querySelectorAll('.filter-btn').forEach(button => {
       button.addEventListener('click', (e) => {
-        this.game.setFilter(e.target.dataset.filter);
+        this.game.collectionSystem.filterSystem.setFilter(e.target.dataset.filter);
       });
     });
     
     // 모바일 필터 이벤트
     document.querySelectorAll('.mobile-filter-btn').forEach(button => {
       button.addEventListener('click', (e) => {
-        this.game.setMobileFilter(e.target.dataset.filter);
+        this.game.collectionSystem.filterSystem.setMobileFilter(e.target.dataset.filter);
       });
     });
   }

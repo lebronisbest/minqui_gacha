@@ -81,7 +81,11 @@ class FusionUISystem {
     img.src = card.image;
     img.alt = card.name;
     img.className = 'fusion-card-image';
+    img.onload = () => {
+      console.log('조합 이미지 로드 성공:', img.src);
+    };
     img.onerror = () => {
+      console.error('조합 이미지 로드 실패:', img.src, '→ 폴백 이미지 사용');
       img.src = 'assets/illust/000.png';
     };
 

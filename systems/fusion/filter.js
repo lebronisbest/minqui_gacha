@@ -15,11 +15,11 @@ class FusionFilterSystem {
     return cards.filter(card => {
       switch (this.game.fusionSystem.currentFusionFilter) {
         case 'owned':
-          // 보유한 카드만
-          return Array.isArray(serverData) && serverData.some(item => item.card_id === card.id);
+          // 보유한 카드만 (서버 데이터가 없으면 모든 카드 표시)
+          return Array.isArray(serverData) && serverData.length > 0 ? serverData.some(item => item.id === card.id) : true;
         case 'unowned':
           // 미보유 카드만
-          return !(Array.isArray(serverData) && serverData.some(item => item.card_id === card.id));
+          return Array.isArray(serverData) && serverData.length > 0 ? !serverData.some(item => item.id === card.id) : false;
         case 'sss':
           return card.rank === 'SSS';
         case 'ss':

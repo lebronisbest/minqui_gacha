@@ -16,12 +16,14 @@ class CollectionSystem {
   async loadCollectionFromServer() {
     try {
       const response = await this.game.apiClient.request('/collection');
-      if (response.success) {
-        // 서버에서 받은 완전한 카드 데이터를 저장
-        this.serverCollectionData = response.data || [];
+      console.log('서버 응답 전체:', response);
+      
+      if (response && response.success && response.data) {
+        // 서버에서 받은 컬렉션 데이터를 저장
+        this.serverCollectionData = response.data.collection || [];
         console.log('서버 컬렉션 데이터 로드 완료:', this.serverCollectionData.length, '개');
       } else {
-        console.error('컬렉션 데이터 로드 실패:', response.message);
+        console.error('컬렉션 데이터 로드 실패:', response);
         this.serverCollectionData = [];
       }
     } catch (error) {

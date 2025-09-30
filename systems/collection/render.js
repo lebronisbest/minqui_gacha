@@ -32,9 +32,9 @@ class CollectionRenderSystem {
     console.log('서버 컬렉션 데이터:', serverData);
     
     filteredCards.forEach(card => {
-      const isOwned = Array.isArray(serverData) && serverData.some(item => item.card_id === card.id);
+      const isOwned = Array.isArray(serverData) && serverData.length > 0 && serverData.some(item => item.id === card.id);
       const duplicateCount = isOwned ? 
-        (Array.isArray(serverData) ? serverData.find(item => item.card_id === card.id)?.duplicate_count || 1 : 0) : 0;
+        (Array.isArray(serverData) ? serverData.find(item => item.id === card.id)?.count || 1 : 0) : 0;
       
       const cardElement = this.createCollectionCardElement(card, isOwned, duplicateCount);
       container.appendChild(cardElement);
@@ -55,7 +55,9 @@ class CollectionRenderSystem {
         <img src="${card.image}" 
              alt="${card.name}" 
              class="card-image"
-             onerror="this.src='assets/illust/000.png'">
+             loading="lazy"
+             onload="console.log('이미지 로드 성공:', this.src)"
+             onerror="console.error('이미지 로드 실패:', this.src, '→ 폴백 이미지 사용'); this.src='assets/illust/000.png'">
         ${isOwned ? `<div class="duplicate-count">${duplicateCount}</div>` : ''}
         ${isOwned ? '<div class="owned-badge">보유</div>' : '<div class="unowned-badge">미보유</div>'}
       </div>
