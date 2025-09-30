@@ -48,8 +48,8 @@ class MinquiCardGacha {
       // 서버 연결 시도
       try {
         await this.initializeServerConnection();
-        await this.loadCardDataFromServer();
-        await this.initTicketSystemFromServer();
+        await this.dataSystem.loadCardDataFromServer();
+        await this.dataSystem.initTicketSystemFromServer();
         
         // 컬렉션 시스템 초기화 (gameData 로드 후)
         this.collectionSystem = window.createCollectionSystem(this);
@@ -58,6 +58,9 @@ class MinquiCardGacha {
 
         // UI 시스템 초기화
         this.uiSystem = window.createUISystem(this);
+
+        // 데이터 시스템 초기화
+        this.dataSystem = window.createDataSystem(this);
         
         console.log('서버 모드로 실행');
       } catch (error) {
