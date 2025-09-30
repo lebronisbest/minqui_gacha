@@ -60,8 +60,7 @@ class MinquiCardGacha {
         return;
       }
       
-      // 효과음 초기화
-      this.initSounds();
+      // 효과음 초기화는 utils.js에서 처리됨
       
       // 컬렉션 UI 초기화
       this.initCollectionUI();
@@ -329,104 +328,11 @@ class MinquiCardGacha {
     }
   }
   
-  initSounds() {
-    // 효과음 파일들 로드 (WAV 파일 사용)
-    this.sounds = {
-      cardFlip: new Audio('sounds/card_flip.wav'),
-      sssObtain: new Audio('sounds/sss_obtain.wav'),
-      ssObtain: new Audio('sounds/ss_obtain.wav'),
-      sObtain: new Audio('sounds/s_obtain.wav'),
-      aObtain: new Audio('sounds/a_obtain.wav'),
-      bObtain: new Audio('sounds/b_obtain.wav'),
-      particle: new Audio('sounds/particle.wav'),
-      holo: new Audio('sounds/holo.wav'),
-      fusion_success: new Audio('sounds/sss_obtain.wav') // 조합 성공
-    };
-    
-    // 효과음 볼륨 설정
-    Object.values(this.sounds).forEach(sound => {
-      sound.volume = 0.5; // 기본 볼륨 50%
-      sound.preload = 'auto';
-    });
-    
-    // 특별한 효과음 볼륨 조정
-    this.sounds.sssObtain.volume = 0.7;
-    this.sounds.ssObtain.volume = 0.6;
-    this.sounds.particle.volume = 0.3;
-    this.sounds.holo.volume = 0.4;
-  }
+  // initSounds 함수는 utils.js로 이동됨
   
-  playSound(soundName, volume = null) {
-    if (this.sounds[soundName]) {
-      const sound = this.sounds[soundName];
-      if (volume !== null) {
-        sound.volume = volume;
-      }
-      sound.currentTime = 0; // 처음부터 재생
+  // playSound 함수는 utils.js로 이동됨
 
-      // 📱 모바일 호환성: AudioContext unlock 시도
-      this.ensureAudioContext();
-
-      sound.play().catch(e => {
-        console.log('효과음 재생 실패:', e);
-        // 모바일에서 첫 터치 후 재시도
-        if (!this.audioUnlocked) {
-          this.unlockAudio();
-        }
-      });
-    }
-  }
-
-  // 📱 모바일 오디오 컨텍스트 활성화
-  ensureAudioContext() {
-    if (!this.audioContext && window.AudioContext) {
-      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      if (this.audioContext.state === 'suspended') {
-        this.audioContext.resume();
-      }
-    }
-  }
-
-  // 📱 모바일 오디오 언락 (사용자 상호작용 후)
-  unlockAudio() {
-    if (!this.audioUnlocked) {
-      // 더미 오디오 재생으로 오디오 시스템 활성화
-      Object.values(this.sounds).forEach(sound => {
-        sound.play().then(() => {
-          sound.pause();
-          sound.currentTime = 0;
-        }).catch(() => {});
-      });
-      this.audioUnlocked = true;
-      console.log('📱 모바일 오디오 시스템 활성화됨');
-    }
-  }
-  
-  playRankSound(rank) {
-    // 랭크별 효과음 재생
-    switch(rank) {
-      case 'SSS':
-        this.playSound('sssObtain');
-        // 홀로그램 효과음도 함께 재생
-        setTimeout(() => this.playSound('holo'), 500);
-        break;
-      case 'SS':
-        this.playSound('ssObtain');
-        setTimeout(() => this.playSound('holo'), 300);
-        break;
-      case 'S':
-        this.playSound('sObtain');
-        break;
-      case 'A':
-        this.playSound('aObtain');
-        break;
-      case 'B':
-        this.playSound('bObtain');
-        break;
-      default:
-        // 카드 드로우 효과음 제거
-    }
-  }
+  // 오디오 관련 함수들은 utils.js로 이동됨
   
   bindEvents() {
     // 클릭 이벤트
@@ -629,7 +535,7 @@ class MinquiCardGacha {
       this.performGacha();
     } else {
       // 앞면에서 뒷면으로 - 다시 뽑기
-      this.playSound('cardFlip');
+      window.gameUtils.playSound('cardFlip');
       this.showBack();
     }
   }
@@ -675,10 +581,10 @@ class MinquiCardGacha {
       
       // 이제 카드 뒤집기 (뽑기 완료 후)
       this.showFront();
-      this.playSound('cardFlip');
+      window.gameUtils.playSound('cardFlip');
       
       // 랭크별 효과음 재생
-      this.playRankSound(selectedRank);
+      window.gameUtils.playRankSound(selectedRank);
       
       // 랭크별 파티클 효과
       this.showRankParticles(selectedRank);
@@ -986,7 +892,7 @@ class MinquiCardGacha {
     
     // 파티클 효과음 재생 (고랭크만)
     if (rank === 'SSS' || rank === 'SS') {
-      setTimeout(() => this.playSound('particle'), 200);
+      setTimeout(() => window.gameUtils.playSound('particle'), 200);
     }
     
     // 파티클 생성 - X축으로 퍼진 위치에서 시작
@@ -1714,19 +1620,19 @@ class MinquiCardGacha {
             </body>
           </html>
         `);
-        this.showNotification(`${card.name} 카드가 새 창에서 열렸습니다!`, 'success');
+        window.gameUtils.showNotification(`${card.name} 카드가 새 창에서 열렸습니다!`, 'success');
       } else {
         // 데스크톱: 직접 다운로드
         const link = document.createElement('a');
         link.download = `${card.name}_${card.id}.png`;
         link.href = dataURL;
         link.click();
-        this.showNotification(`${card.name} 카드 이미지가 다운로드되었습니다!`, 'success');
+        window.gameUtils.showNotification(`${card.name} 카드 이미지가 다운로드되었습니다!`, 'success');
       }
 
     } catch (error) {
       console.error('PNG 내보내기 오류:', error);
-      this.showNotification('이미지 내보내기 중 오류가 발생했습니다.', 'error');
+      window.gameUtils.showNotification('이미지 내보내기 중 오류가 발생했습니다.', 'error');
     } finally {
       // 버튼 상태 복원
       const exportButton = document.getElementById('exportPngButton');
@@ -1735,39 +1641,7 @@ class MinquiCardGacha {
     }
   }
 
-  showNotification(message, type = 'info') {
-    // 간단한 알림 표시
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.textContent = message;
-    notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
-      color: white;
-      padding: 15px 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      z-index: 10001;
-      font-size: 14px;
-      font-weight: 500;
-      max-width: 300px;
-      animation: slideInRight 0.3s ease-out;
-    `;
-
-    document.body.appendChild(notification);
-
-    // 3초 후 제거
-    setTimeout(() => {
-      notification.style.animation = 'slideOutRight 0.3s ease-in';
-      setTimeout(() => {
-        if (notification.parentNode) {
-          notification.parentNode.removeChild(notification);
-        }
-      }, 300);
-    }, 3000);
-  }
+  // showNotification 함수는 utils.js로 이동됨
 
   showUnownedCardInfo(card) {
     // 수집되지 않은 카드 정보 표시
@@ -2303,7 +2177,7 @@ ${skill ? skill.description : ''}
         // 조합 결과에 따른 효과음 재생 (항상 성공)
         try {
           if (resultCard) {
-            this.playSound('fusion_success');
+            window.gameUtils.playSound('fusion_success');
           }
         } catch (soundError) {
           console.error('효과음 재생 에러:', soundError);
