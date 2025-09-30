@@ -78,7 +78,7 @@ class FusionUISystem {
 
     // 카드 이미지
     const img = document.createElement('img');
-    img.src = `assets/illust/${card.id.toString().padStart(3, '0')}.png`;
+    img.src = card.image;
     img.alt = card.name;
     img.className = 'fusion-card-image';
     img.onerror = () => {
@@ -121,7 +121,7 @@ class FusionUISystem {
     if (card) {
       slot.innerHTML = `
         <div class="slot-content">
-          <img src="assets/illust/${card.id.toString().padStart(3, '0')}.png" 
+          <img src="${card.image}" 
                alt="${card.name}" 
                class="fusion-slot-card-image"
                onerror="this.src='assets/illust/000.png'">

@@ -42,7 +42,7 @@ class CollectionRenderSystem {
 
     cardElement.innerHTML = `
       <div class="card-image-container">
-        <img src="assets/illust/${card.id.toString().padStart(3, '0')}.png" 
+        <img src="${card.image}" 
              alt="${card.name}" 
              class="card-image"
              onerror="this.src='assets/illust/000.png'">
