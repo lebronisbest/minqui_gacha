@@ -142,58 +142,86 @@ class DataSystem {
     return false;
   }
 
-  // 티켓 표시 업데이트
+  // 티켓 표시 업데이트 (원래 script.js 로직)
   updateTicketDisplay() {
     const ticketCountElement = document.getElementById('ticketCount');
     const ticketTimerElement = document.getElementById('ticketTimer');
     
     if (ticketCountElement) {
       ticketCountElement.textContent = this.game.tickets;
+      
+      // 티켓이 0일 때 시각적 피드백
+      if (this.game.tickets <= 0 && !this.game.isAdminMode && !this.game.isSecretMode) {
+        ticketCountElement.style.color = '#ff6b6b';
+        ticketCountElement.style.textShadow = '0 0 10px rgba(255, 107, 107, 0.5)';
+      } else {
+        ticketCountElement.style.color = '#ffd700';
+        ticketCountElement.style.textShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+      }
     }
     
-    if (ticketTimerElement && this.game.nextRefillAt) {
-      const now = new Date();
-      const timeUntilRefill = this.game.nextRefillAt - now;
-      
-      if (timeUntilRefill > 0) {
-        const hours = Math.floor(timeUntilRefill / (1000 * 60 * 60));
-        const minutes = Math.floor((timeUntilRefill % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeUntilRefill % (1000 * 60)) / 1000);
-        
-        ticketTimerElement.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-      } else {
-        ticketTimerElement.textContent = '00:00:00';
+    if (ticketTimerElement) {
+      if (this.game.isAdminMode) {
+        ticketTimerElement.textContent = '관리자 모드 - 무한 티켓';
+        return;
       }
+      
+      if (this.game.isSecretMode) {
+        ticketTimerElement.textContent = '시크릿 모드 - 무한 가챠';
+        return;
+      }
+      
+      if (!this.game.nextRefillAt) {
+        ticketTimerElement.textContent = '다음 충전까지: --:--:--';
+        return;
+      }
+      
+      const now = new Date();
+      const timeDiff = this.game.nextRefillAt - now;
+      
+      if (timeDiff <= 0) {
+        // 12시가 되었으면 티켓 리셋
+        this.game.tickets = this.game.maxTickets;
+        this.saveTicketData();
+        return;
+      }
+      
+      const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+      const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+      
+      ticketTimerElement.textContent = `다음 충전까지: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
   }
 
-  // 티켓 타이머 시작
+  // 티켓 타이머 시작 (원래 script.js 로직)
   startTicketTimer() {
+    if (this.game.isAdminMode) {
+      const ticketTimerElement = document.getElementById('ticketTimer');
+      if (ticketTimerElement) {
+        ticketTimerElement.textContent = '관리자 모드 - 무한 티켓';
+      }
+      return;
+    }
+    
+    if (this.game.isSecretMode) {
+      const ticketTimerElement = document.getElementById('ticketTimer');
+      if (ticketTimerElement) {
+        ticketTimerElement.textContent = '시크릿 모드 - 무한 가챠';
+      }
+      return;
+    }
+    
     if (this.game.ticketTimer) {
       clearInterval(this.game.ticketTimer);
     }
     
     this.game.ticketTimer = setInterval(() => {
-      this.checkTicketRefill();
+      this.updateTicketDisplay();
     }, 1000);
   }
 
-  // 티켓 리필 체크
-  checkTicketRefill() {
-    if (!this.game.nextRefillAt) return;
-    
-    const now = new Date();
-    const timeUntilRefill = this.game.nextRefillAt - now;
-    
-    if (timeUntilRefill <= 0) {
-      // 12시가 되었으면 티켓 리셋
-      this.game.tickets = this.game.maxTickets;
-      this.saveTicketData();
-    }
-    
-    // 항상 표시 업데이트 (한 번만 호출)
-    this.updateTicketDisplay();
-  }
+  // checkTicketRefill 함수는 updateTicketDisplay에 통합됨
 
   // 카드 클릭 가능성 업데이트
   updateCardClickability() {

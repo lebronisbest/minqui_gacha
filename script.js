@@ -2075,31 +2075,7 @@ ${skill ? skill.description : ''}
     return false;
   }
 
-  // 티켓 표시 업데이트
-  updateTicketDisplay() {
-    const ticketCountElement = document.getElementById('ticketCount');
-    const ticketTimerElement = document.getElementById('ticketTimer');
-    
-    if (ticketCountElement) {
-      ticketCountElement.textContent = this.tickets;
-      
-      // 티켓이 0일 때 시각적 피드백
-      if (this.tickets <= 0 && !this.isAdminMode && !this.isSecretMode) {
-        ticketCountElement.style.color = '#ff6b6b';
-        ticketCountElement.style.textShadow = '0 0 10px rgba(255, 107, 107, 0.5)';
-      } else {
-        ticketCountElement.style.color = '#ffd700';
-        ticketCountElement.style.textShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
-      }
-    }
-    
-    if (ticketTimerElement && !this.isAdminMode) {
-      this.updateTicketTimer();
-    }
-    
-    // 카드 클릭 가능 여부 업데이트
-    this.updateCardClickability();
-  }
+  // 티켓 표시 업데이트 함수는 dataSystem으로 이동됨
 
   // 카드 클릭 가능 여부 업데이트
   updateCardClickability() {
@@ -2345,7 +2321,7 @@ ${skill ? skill.description : ''}
     this.updateCardClickability();
     
     // 티켓 표시 업데이트
-    this.updateTicketDisplay();
+    this.dataSystem.updateTicketDisplay();
   }
 
   // 시크릿 모드 알림 표시
