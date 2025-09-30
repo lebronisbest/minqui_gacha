@@ -15,7 +15,7 @@ class CollectionSystem {
   // 서버에서 컬렉션 데이터 로드
   async loadCollectionFromServer() {
     try {
-      const response = await this.game.apiClient.get('/api/collection');
+      const response = await this.game.apiClient.request('/collection');
       if (response.success) {
         // 서버에서 받은 완전한 카드 데이터를 저장
         this.serverCollectionData = response.data || [];
