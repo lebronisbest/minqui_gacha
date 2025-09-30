@@ -117,7 +117,7 @@ self.addEventListener('fetch', (event) => {
         return fetch(request)
           .then((response) => {
             // 정적 파일을 동적 캐시에 저장
-            if (response.ok) {
+            if (response.ok && response.status !== 206) {
               const responseClone = response.clone();
               caches.open(DYNAMIC_CACHE)
                 .then((cache) => {
