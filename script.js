@@ -7,9 +7,7 @@ class MinquiCardGacha {
     this.sounds = {};
     // collectedCards 배열 제거됨 - 서버 데이터만 사용
     this.currentFilter = 'all';
-    this.selectedFusionCards = [];
-    this.maxFusionCards = 10;
-    this.minFusionCards = 3;
+    // 조합 관련 변수들은 fusion.js에서 관리됨
     
     // 티켓 시스템 (서버에서 관리)
     this.tickets = 0;
@@ -29,8 +27,8 @@ class MinquiCardGacha {
     // 가챠 시스템 초기화
     this.gachaSystem = window.createGachaSystem(this);
 
-    // 조합 로딩 상태 (중복 요청 방지)
-    this.isFusionInProgress = false;
+    // 조합 시스템 초기화
+    this.fusionSystem = window.createFusionSystem(this);
 
     // 📱 모바일 오디오 관련
     this.audioContext = null;
@@ -66,7 +64,7 @@ class MinquiCardGacha {
       this.initCollectionUI();
       
       // 조합 시스템 초기화
-      this.initFusionSystem();
+      this.fusionSystem.initFusionSystem();
     
       // 시크릿 코드 이벤트 리스너 등록
       this.initSecretCode();
@@ -768,7 +766,7 @@ class MinquiCardGacha {
     // 조합 탭으로 전환 시 컬렉션 데이터 다시 로드 및 조합창 초기화
     if (tabName === 'fusion') {
       await this.loadCollectionFromServer();
-      this.initFusionUI();
+      this.fusionSystem.initFusionUI();
     }
     
   }
@@ -1348,111 +1346,11 @@ ${skill ? skill.description : ''}
   }
   
   // 조합 시스템 메서드들
-  initFusionSystem() {
-    // 조합 버튼 클릭 이벤트
-    const fusionButton = document.getElementById('fusionButton');
-    if (fusionButton) {
-      fusionButton.addEventListener('click', () => {
-        console.log('🔘 조합 버튼 클릭됨');
-        this.performFusion();
-      });
-      console.log('✅ 조합 버튼 이벤트 리스너 등록 완료');
-    } else {
-      console.error('❌ fusionButton 요소를 찾을 수 없음');
-    }
-    
-    // 확인 버튼 클릭 이벤트
-    document.getElementById('confirmButton').addEventListener('click', () => {
-      this.hideFusionResult();
-    });
-    
-    
-    // 필터 버튼 이벤트
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        this.setFusionFilter(e.target.dataset.filter);
-      });
-    });
-    
-    // 확률 정보 토글 이벤트
-    document.getElementById('infoToggle').addEventListener('mouseenter', () => {
-      this.showProbabilityTooltip();
-    });
-    
-    document.getElementById('infoToggle').addEventListener('mouseleave', () => {
-      this.hideProbabilityTooltip();
-    });
-    
-    // 초기화
-    this.currentFusionFilter = 'all';
-    this.updateFusionSlots(); // 10개 고정 슬롯 생성
-    this.renderFusionCards();
-    this.updateFusionInfo();
-  }
+  // initFusionSystem 함수는 fusion.js로 이동됨
   
-  // 조합 UI 초기화 (탭 전환 시 호출)
-  initFusionUI() {
-    // 조합 슬롯 초기화
-    this.updateFusionSlots();
-    
-    // 카드 그리드 렌더링
-    this.renderFusionCards();
-    
-    // 조합 정보 업데이트
-    this.updateFusionInfo();
-  }
+  // initFusionUI 함수는 fusion.js로 이동됨
   
-  // 10개 고정 슬롯 시스템
-  updateFusionSlots() {
-    const container = document.getElementById('fusionSlots');
-    if (!container) {
-      console.error('fusionSlots container not found!');
-      return;
-    }
-    
-    container.innerHTML = '';
-    
-    // 10개 고정 슬롯 생성
-    this.selectedFusionCards = new Array(10).fill(null);
-    
-    for (let i = 0; i < 10; i++) {
-      const slot = document.createElement('div');
-      slot.className = 'fusion-slot';
-      slot.dataset.slot = i;
-      slot.innerHTML = '<div class="slot-placeholder">카드 선택</div>';
-      
-      // 📱 데스크톱 + 모바일 터치 이벤트 지원
-      const removeCard = () => {
-        this.removeCardFromFusion(i);
-      };
-
-      slot.addEventListener('click', removeCard);
-      slot.addEventListener('touchend', (e) => {
-        e.preventDefault(); // 더블 탭 방지
-        removeCard();
-      });
-      
-      container.appendChild(slot);
-    }
-    
-    this.updateFusionInfo();
-  }
-  
-  // 카드 그리드 렌더링
-  renderFusionCards() {
-    const container = document.getElementById('fusionCardGrid');
-    if (!container) return;
-
-    const availableCards = this.getAvailableCardsForFusion();
-    const filteredCards = this.filterCardsForFusion(availableCards);
-
-    container.innerHTML = '';
-    
-    filteredCards.forEach(card => {
-      const cardElement = this.createFusionCardElement(card);
-      container.appendChild(cardElement);
-    });
-  }
+  // updateFusionSlots, renderFusionCards 함수는 fusion.js로 이동됨
   
   createFusionCardElement(card) {
     const cardDiv = document.createElement('div');
@@ -1479,7 +1377,7 @@ ${skill ? skill.description : ''}
       if (!this.audioUnlocked) {
         this.unlockAudio();
       }
-      this.selectCardForFusion(card);
+      this.fusionSystem.selectCardForFusion(card);
     };
 
     cardDiv.addEventListener('click', selectCard);
@@ -1507,7 +1405,7 @@ ${skill ? skill.description : ''}
     });
     document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
     
-    this.renderFusionCards();
+    this.fusionSystem.renderFusionCards();
   }
   
   selectCardForFusion(card) {
@@ -1572,7 +1470,7 @@ ${skill ? skill.description : ''}
 
     try {
       // 🔄 조합 카드 목록 다시 렌더링 (0장 카드 숨김 처리)
-      this.renderFusionCards();
+      this.fusionSystem.renderFusionCards();
     } catch (renderError) {
     }
   }
@@ -1624,7 +1522,7 @@ ${skill ? skill.description : ''}
       this.updateCardCounts();
 
       // 🔄 조합 카드 목록 다시 렌더링 (사용 가능한 카드 다시 표시)
-      this.renderFusionCards();
+      this.fusionSystem.renderFusionCards();
     }
   }
   
@@ -2420,8 +2318,8 @@ ${skill ? skill.description : ''}
     rouletteModal.style.display = 'none';
     
     // 조합 슬롯 초기화
-    this.selectedFusionCards = new Array(this.selectedFusionCards.length).fill(null);
-    this.updateFusionSlots();
+    this.fusionSystem.selectedFusionCards = new Array(this.fusionSystem.selectedFusionCards.length).fill(null);
+    this.fusionSystem.updateFusionSlots();
     
     // 컬렉션 UI 강제 업데이트
     this.updateCollectionStats();
