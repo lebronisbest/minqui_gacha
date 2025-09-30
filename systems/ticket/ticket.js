@@ -155,18 +155,8 @@ class TicketSystem {
     }
 
     const now = new Date();
-    const koreanTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
-    
-    // 12시가 지났는지 확인
-    if (koreanTime.getHours() >= 12) {
-      this.tickets = this.maxTickets;
-      this.nextRefillAt = this.getNextRefillTime();
-      this.saveTicketData();
-      this.updateTicketDisplay();
-      return;
-    }
-
     const timeDiff = this.nextRefillAt - now;
+
     if (timeDiff <= 0) {
       this.tickets = this.maxTickets;
       this.nextRefillAt = this.getNextRefillTime();
@@ -189,15 +179,20 @@ class TicketSystem {
   // 다음 충전 시간 계산
   getNextRefillTime() {
     const now = new Date();
-    const koreanTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
-    
-    // 오늘 12시가 지났으면 내일 12시, 아니면 오늘 12시
-    const nextRefill = new Date(koreanTime);
-    if (koreanTime.getHours() >= 12) {
+
+    // 한국 시간으로 현재 시간 가져오기
+    const kstString = now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' });
+    const kstNow = new Date(kstString);
+
+    // 오늘 12시 설정
+    const nextRefill = new Date(kstNow);
+    nextRefill.setHours(12, 0, 0, 0);
+
+    // 현재 시간이 이미 오늘 12시를 넘었다면 내일 12시로 설정
+    if (kstNow.getHours() >= 12) {
       nextRefill.setDate(nextRefill.getDate() + 1);
     }
-    nextRefill.setHours(12, 0, 0, 0);
-    
+
     return nextRefill;
   }
 

@@ -74,15 +74,14 @@ class CardSystem {
     }
     
     if (backIllust) {
-      // 절대 경로로 시도
-      backIllust.src = 'illust/000.png';
-      
+      // assets/ 경로로 설정
+      backIllust.src = 'assets/illust/000.png';
+
       // 이미지 로드 실패 시 폴백
       backIllust.onerror = () => {
-        backIllust.src = 'illust/000.png';
+        backIllust.src = 'assets/illust/000.png';
       };
-      
-      // 이미지 로드 시도 (load() 메서드는 존재하지 않음)
+
       // 이미지가 자동으로 로드됨
     }
   }
@@ -100,7 +99,7 @@ class CardSystem {
     // 이미지 경로가 없으면 기본값 설정
     if (!this.game.cardData.image) {
       console.warn('카드 이미지 경로가 없습니다:', selectedCard);
-      this.game.cardData.image = 'illust/001.png'; // 기본 이미지
+      this.game.cardData.image = 'assets/illust/001.png'; // 기본 이미지
     }
 
     // 홀로그램 패턴이 없으면 기본값 설정
@@ -121,54 +120,74 @@ class CardSystem {
 
     // 카드 이름 업데이트
     const cardNameElement = document.getElementById('cardName');
+    const cardNameOverlayElement = document.getElementById('cardNameOverlay');
     if (cardNameElement) {
       cardNameElement.textContent = this.game.cardData.name;
+    }
+    if (cardNameOverlayElement) {
+      cardNameOverlayElement.textContent = this.game.cardData.name;
     }
 
     // 카드 번호 업데이트
     const cardNumberElement = document.getElementById('cardNumber');
+    const cardNumberOverlayElement = document.getElementById('cardNumberOverlay');
     if (cardNumberElement) {
       cardNumberElement.textContent = `#${this.game.cardData.id}`;
     }
+    if (cardNumberOverlayElement) {
+      cardNumberOverlayElement.textContent = `#${this.game.cardData.id}`;
+    }
 
     // HP와 공격력 업데이트
-    const hpElement = document.getElementById('hp');
-    const attackElement = document.getElementById('attack');
+    const hpElement = document.getElementById('cardHp');
+    const attackElement = document.getElementById('cardAttack');
+    const typeElement = document.getElementById('cardType');
+
     if (hpElement) {
       hpElement.textContent = this.game.cardData.hp || 100;
     }
     if (attackElement) {
       attackElement.textContent = this.game.cardData.attack || 100;
     }
+    if (typeElement) {
+      // 타입 이모지 가져오기
+      const typeIcon = this.game.gameData?.typeIcons?.[this.game.cardData.type] || '';
+      typeElement.textContent = typeIcon ? `${typeIcon} ${this.game.cardData.type}` : (this.game.cardData.type || 'Normal');
+    }
 
     // 스킬 정보 업데이트
+    const skillNameElement = document.getElementById('skillName');
+    const skillDescElement = document.getElementById('skillDescription');
     const skill = this.game.cardData.attacks && this.game.cardData.attacks[0];
+
     if (skill) {
-      document.getElementById('skillName').textContent = skill.name || '창작 마법';
-      document.getElementById('skillDescription').textContent = skill.description || '무한한 상상력으로 새로운 세계를 창조한다.';
+      if (skillNameElement) skillNameElement.textContent = skill.name || '창작 마법';
+      if (skillDescElement) skillDescElement.textContent = skill.description || '무한한 상상력으로 새로운 세계를 창조한다.';
     } else {
       // 스킬 데이터가 없을 때 기본값 설정
-      document.getElementById('skillName').textContent = '창작 마법';
-      document.getElementById('skillDescription').textContent = '무한한 상상력으로 새로운 세계를 창조한다.';
+      if (skillNameElement) skillNameElement.textContent = '창작 마법';
+      if (skillDescElement) skillDescElement.textContent = '무한한 상상력으로 새로운 세계를 창조한다.';
     }
     
     // 배경 이미지와 캐릭터 이미지 업데이트
     const cardBackground = document.querySelector('.card-background-illustration img');
     const cardCharacter = document.querySelector('.card-character img');
     const cardBackgroundIllustration = document.querySelector('.card-background-illustration');
-    
+
     if (cardBackground) {
-      cardBackground.src = this.game.cardData.image;
+      const imagePath = this.game.cardData.image.startsWith('assets/') ? this.game.cardData.image : `assets/${this.game.cardData.image}`;
+      cardBackground.src = imagePath;
       cardBackground.alt = `${this.game.cardData.name} 배경 일러스트`;
     }
-    
+
     // 홀로그램 패턴 적용
     if (cardBackgroundIllustration && this.game.cardData.holoPattern) {
       cardBackgroundIllustration.setAttribute('data-pattern', this.game.cardData.holoPattern);
     }
-    
+
     if (cardCharacter) {
-      cardCharacter.src = this.game.cardData.image.replace('.png', '_2.png');
+      const imagePath = this.game.cardData.image.startsWith('assets/') ? this.game.cardData.image : `assets/${this.game.cardData.image}`;
+      cardCharacter.src = imagePath.replace('.png', '_2.png');
       cardCharacter.alt = `${this.game.cardData.name} 캐릭터`;
     }
     
@@ -185,25 +204,25 @@ class CardSystem {
     }
     
     const rank = this.game.cardData.rank;
-    
+
     if (rank === 'SSS') {
-      rankImage.src = 'illust/SSS.png';
+      rankImage.src = 'assets/illust/SSS.png';
       rankImage.alt = 'SSS 랭크';
     } else if (rank === 'SS') {
-      rankImage.src = 'illust/SS.png';
+      rankImage.src = 'assets/illust/SS.png';
       rankImage.alt = 'SS 랭크';
     } else if (rank === 'S') {
-      rankImage.src = 'illust/S.png';
+      rankImage.src = 'assets/illust/S.png';
       rankImage.alt = 'S 랭크';
     } else if (rank === 'A') {
-      rankImage.src = 'illust/A.png';
+      rankImage.src = 'assets/illust/A.png';
       rankImage.alt = 'A 랭크';
     } else if (rank === 'B') {
-      rankImage.src = 'illust/B.png';
+      rankImage.src = 'assets/illust/B.png';
       rankImage.alt = 'B 랭크';
     } else {
       // 기본 랭크
-      rankImage.src = 'illust/B.png';
+      rankImage.src = 'assets/illust/B.png';
       rankImage.alt = `${rank} 랭크`;
     }
   }

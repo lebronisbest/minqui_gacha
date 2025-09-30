@@ -11,23 +11,34 @@ class LoadingSystem {
     if (existingLoading) {
       existingLoading.remove();
     }
-    
-    // 로딩 화면 생성
+
+    // 로딩 화면 생성 - 완전한 검은 배경
     const loadingScreen = document.createElement('div');
     loadingScreen.id = 'loadingScreen';
+    loadingScreen.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      opacity: 1;
+    `;
+
     loadingScreen.innerHTML = `
-      <div class="loading-content">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">민킈 가챠 게임 로딩 중...</div>
-        <div class="loading-progress-container">
-          <div class="loading-progress-bar">
-            <div id="loadingProgress" class="loading-progress-fill"></div>
-          </div>
-          <div id="loadingPercentage" class="loading-percentage">0%</div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+        <div style="width: 300px; height: 8px; background: #333333; border-radius: 4px; overflow: hidden;">
+          <div id="loadingProgress" style="width: 0%; height: 100%; background: linear-gradient(90deg, #4CAF50, #8BC34A); transition: width 0.3s ease;"></div>
         </div>
+        <div id="loadingPercentage" style="color: #888888; font-size: 14px;">0%</div>
       </div>
     `;
-    
+
     document.body.appendChild(loadingScreen);
     this.simulateLoadingProgress();
   }

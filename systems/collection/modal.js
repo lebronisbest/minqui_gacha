@@ -12,7 +12,16 @@ class CollectionModalSystem {
       existingModal.remove();
     }
 
-    // 모달 생성
+    // 랭크 정보 가져오기
+    const rankInfo = this.game.gameData.ranks[card.rank];
+    const hp = Math.floor((card.baseHp || card.base_hp || 100) * (rankInfo?.hpMultiplier || 1));
+    const attack = Math.floor((card.baseAttack || card.base_attack || 100) * (rankInfo?.attackMultiplier || 1));
+    const skill = card.attacks && card.attacks[0];
+    const imagePath = card.image?.startsWith('assets/') ? card.image : `assets/${card.image || 'illust/' + card.id.toString().padStart(3, '0') + '.png'}`;
+    const typeIcon = this.game.gameData?.typeIcons?.[card.type] || '';
+    const typeDisplay = typeIcon ? `${typeIcon} ${card.type}` : (card.type || 'Normal');
+
+    // 모달 생성 - 가챠 탭과 동일한 카드 디자인 사용
     const modal = document.createElement('div');
     modal.className = 'card-detail-modal';
     modal.innerHTML = `
@@ -23,35 +32,72 @@ class CollectionModalSystem {
           <button class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
-          <div class="card-detail-image">
-            <img src="assets/illust/${card.id.toString().padStart(3, '0')}.png" 
-                 alt="${card.name}" 
-                 class="detail-card-image"
-                 onerror="this.src='assets/illust/000.png'">
-            <div class="duplicate-count-badge">${duplicateCount}개</div>
+          <div class="card-wrapper-modal">
+            <div class="card-front">
+              <!-- 배경 일러스트 -->
+              <div class="card-background-illustration">
+                <img src="${imagePath}" alt="${card.name} 배경 일러스트" class="background-illust">
+              </div>
+              <!-- 글로스 효과 -->
+              <div class="card__gloss" aria-hidden="true"></div>
+
+              <!-- 카드 정보 박스 -->
+              <div class="card-info-box">
+                <div class="card-number-box">
+                  <div class="card-number">#${card.id}</div>
+                </div>
+                <div class="card-name">${card.name}</div>
+              </div>
+
+              <!-- 카드 정보 박스 오버레이 -->
+              <div class="card-info-box-overlay">
+                <div class="card-number-box">
+                  <div class="card-number">#${card.id}</div>
+                </div>
+                <div class="card-name">${card.name}</div>
+              </div>
+
+              <!-- 랭크 표시 -->
+              <div class="card-rank">
+                <img src="assets/illust/${card.rank}.png" alt="${card.rank} 랭크" class="rank-image">
+              </div>
+
+              <!-- 하단 투명 박스 -->
+              <div class="card-bottom-overlay">
+                <div class="stats-container">
+                  <div class="stat-item hp-item">
+                    <span class="stat-label">HP</span>
+                    <span class="stat-value">${hp}</span>
+                  </div>
+                  <div class="stat-item attack-item">
+                    <span class="stat-label">공격력</span>
+                    <span class="stat-value">${attack}</span>
+                  </div>
+                  <div class="stat-item type-item">
+                    <span class="stat-value">${typeDisplay}</span>
+                  </div>
+                </div>
+
+                <!-- 스킬 박스 -->
+                <div class="skill-box">
+                  <div class="skill-name">${skill?.name || '창작 마법'}</div>
+                  <div class="skill-description">${skill?.description || '무한한 상상력으로 새로운 세계를 창조한다.'}</div>
+                </div>
+              </div>
+
+              <!-- 캐릭터 이미지 -->
+              <div class="card-character">
+                <img src="${imagePath.replace('.png', '_2.png')}" alt="${card.name} 캐릭터" class="character-illust" onerror="this.style.display='none'">
+              </div>
+
+              <!-- 중복 카운트 배지 -->
+              <div class="duplicate-count-badge-modal">${duplicateCount}개 보유</div>
+            </div>
           </div>
-          <div class="card-detail-info">
-            <div class="detail-rank rank-${card.rank.toLowerCase()}">${card.rank}</div>
-            <p class="detail-description">${card.description}</p>
-            <div class="detail-stats">
-              <div class="stat-row">
-                <span class="stat-label">카드 ID:</span>
-                <span class="stat-value">${card.id}</span>
-              </div>
-              <div class="stat-row">
-                <span class="stat-label">등급:</span>
-                <span class="stat-value">${card.rank}</span>
-              </div>
-              <div class="stat-row">
-                <span class="stat-label">보유 개수:</span>
-                <span class="stat-value">${duplicateCount}개</span>
-              </div>
-            </div>
-            <div class="modal-actions">
-              <button class="export-btn" onclick="window.game.collectionModalSystem.exportCardToPNG(${JSON.stringify(card).replace(/"/g, '&quot;')}, ${duplicateCount})">
-                PNG 내보내기
-              </button>
-            </div>
+          <div class="modal-actions">
+            <button class="export-btn" onclick="window.game.collectionSystem.modalSystem.exportCardToPNG(${JSON.stringify(card).replace(/"/g, '&quot;')}, ${duplicateCount})">
+              PNG 내보내기
+            </button>
           </div>
         </div>
       </div>

@@ -35,8 +35,8 @@ class FusionLogicSystem {
     this.updateCardSelection();
     this.updateCardCounts();
     this.updateFusionSlot(emptySlotIndex, card);
-    this.game.fusionUISystem.updateFusionButtonState();
-    this.game.fusionProbabilitySystem.updateFusionInfo();
+    this.game.fusionSystem.uiSystem.updateFusionButtonState();
+    this.game.fusionSystem.probabilitySystem.updateFusionInfo();
   }
 
   // 카드 선택 상태 업데이트
@@ -92,13 +92,13 @@ class FusionLogicSystem {
     this.updateCardSelection();
     this.updateCardCounts();
     this.updateFusionSlot(slotIndex, null);
-    this.game.fusionUISystem.updateFusionButtonState();
-    this.game.fusionProbabilitySystem.updateFusionInfo();
+    this.game.fusionSystem.uiSystem.updateFusionButtonState();
+    this.game.fusionSystem.probabilitySystem.updateFusionInfo();
   }
 
   // 조합 슬롯 업데이트
   updateFusionSlot(slotIndex, card) {
-    this.game.fusionUISystem.updateFusionSlot(slotIndex, card);
+    this.game.fusionSystem.uiSystem.updateFusionSlot(slotIndex, card);
   }
 
   // 사용 가능한 카드 목록 가져오기
@@ -107,7 +107,7 @@ class FusionLogicSystem {
       return [];
     }
 
-    return this.game.fusionFilterSystem.filterCardsForFusion(this.game.gameData.cards);
+    return this.game.fusionSystem.filterSystem.filterCardsForFusion(this.game.gameData.cards);
   }
 
   // 조합 실행
@@ -129,7 +129,7 @@ class FusionLogicSystem {
     }
 
     this.game.fusionSystem.isFusionInProgress = true;
-    this.game.fusionUISystem.updateFusionButtonState();
+    this.game.fusionSystem.uiSystem.updateFusionButtonState();
 
     try {
       // 서버에 조합 요청
@@ -152,9 +152,9 @@ class FusionLogicSystem {
         for (let i = 0; i < this.game.fusionSystem.selectedFusionCards.length; i++) {
           this.updateFusionSlot(i, null);
         }
-        
-        this.game.fusionUISystem.updateFusionButtonState();
-        this.game.fusionProbabilitySystem.updateFusionInfo();
+
+        this.game.fusionSystem.uiSystem.updateFusionButtonState();
+        this.game.fusionSystem.probabilitySystem.updateFusionInfo();
         
         // 컬렉션 업데이트
         this.game.collectionSystem.updateCollectionUI();
@@ -167,7 +167,7 @@ class FusionLogicSystem {
       this.game.gameUtils.showNotification('조합 중 오류가 발생했습니다.', 'error');
     } finally {
       this.game.fusionSystem.isFusionInProgress = false;
-      this.game.fusionUISystem.updateFusionButtonState();
+      this.game.fusionSystem.uiSystem.updateFusionButtonState();
     }
   }
 }

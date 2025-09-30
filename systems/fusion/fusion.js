@@ -2,13 +2,13 @@
 class FusionSystem {
   constructor(gameInstance) {
     this.game = gameInstance;
-    this.selectedFusionCards = [];
     this.maxFusionCards = 10;
     this.minFusionCards = 3;
+    this.selectedFusionCards = new Array(this.maxFusionCards).fill(null);
     this.isFusionInProgress = false;
     this.currentFusionFilter = 'owned';
     this.currentProbabilities = null;
-    
+
     // 하위 시스템들 초기화
     this.uiSystem = window.createFusionUISystem(gameInstance);
     this.logicSystem = window.createFusionLogicSystem(gameInstance);

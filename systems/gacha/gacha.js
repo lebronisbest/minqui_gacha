@@ -120,8 +120,8 @@ class GachaSystem {
       
       // 티켓 정보 업데이트
       this.game.tickets = result.data.ticketsRemaining;
-      this.game.nextRefillAt = result.data.nextRefillAt;
-      this.game.ticketSystem.updateTicketDisplay();
+      this.game.nextRefillAt = new Date(result.data.nextRefillAt);
+      this.game.dataSystem.updateTicketDisplay();
       
       // 컬렉션 업데이트
       this.game.collectionSystem.loadCollectionFromServer();
