@@ -413,7 +413,7 @@ class FusionSystem {
 
       // 조합 결과에 관계없이 서버 컬렉션 데이터 업데이트
       try {
-        await this.game.loadCollectionFromServer();
+        await this.game.collectionSystem.loadCollectionFromServer();
       } catch (loadError) {
         console.error('컬렉션 데이터 로드 오류:', loadError);
       }

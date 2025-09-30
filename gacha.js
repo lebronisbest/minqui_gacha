@@ -124,7 +124,7 @@ class GachaSystem {
       this.game.updateTicketDisplay();
       
       // 컬렉션 업데이트
-      this.game.loadCollectionFromServer();
+      this.game.collectionSystem.loadCollectionFromServer();
       
     } catch (error) {
       console.error('가챠 실행 실패:', error);
