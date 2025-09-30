@@ -191,6 +191,13 @@ class CollectionSystem {
       </div>
     `;
 
+    // 카드 클릭 이벤트 추가 - 소유한 카드만 상세 정보 표시 가능
+    if (isOwned) {
+      cardDiv.addEventListener('click', () => {
+        this.showCardDetail(card, duplicateCount);
+      });
+    }
+
     return cardDiv;
   }
 
@@ -291,6 +298,19 @@ class CollectionSystem {
       </div>
     `;
 
+    // 카드 클릭/터치 이벤트 추가 - 소유한 카드만 상세 정보 표시 가능
+    if (isOwned) {
+      cardDiv.addEventListener('click', () => {
+        this.showCardDetail(card, duplicateCount);
+      });
+
+      // 모바일 터치 이벤트 추가
+      cardDiv.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        this.showCardDetail(card, duplicateCount);
+      });
+    }
+
     return cardDiv;
   }
 
@@ -338,6 +358,8 @@ class CollectionSystem {
 
   // 카드 상세 정보 표시
   showCardDetail(card, duplicateCount = 1) {
+    console.log('🎯 showCardDetail 호출됨:', card, duplicateCount);
+    
     const modal = document.getElementById('cardDetailModal');
     const modalTitle = document.getElementById('modalCardTitle');
     const detailCardDisplay = document.getElementById('detailCardDisplay');
@@ -347,7 +369,12 @@ class CollectionSystem {
     const cardDetailCloseBtn = document.getElementById('cardDetailCloseBtn');
     const cardDetailOverlay = document.getElementById('cardDetailOverlay');
 
-    if (!modal) return;
+    if (!modal) {
+      console.error('❌ cardDetailModal 요소를 찾을 수 없음');
+      return;
+    }
+    
+    console.log('✅ 모달 요소들 찾음');
 
     const rankInfo = this.game.gameData.ranks[card.rank];
     const typeIcon = this.game.gameData.typeIcons?.[card.type] || '🎨';
