@@ -55,6 +55,9 @@ class MinquiCardGacha {
         this.collectionSystem = window.createCollectionSystem(this);
         await this.collectionSystem.loadCollectionFromServer();
         this.collectionSystem.initCollectionUI();
+
+        // UI 시스템 초기화
+        this.uiSystem = window.createUISystem(this);
         
         console.log('서버 모드로 실행');
       } catch (error) {
@@ -1418,7 +1421,7 @@ ${skill ? skill.description : ''}
 
         // 룰렛으로 결과 표시
         try {
-          this.showRoulette(filledSlots, resultCard);
+          this.uiSystem.showRoulette(filledSlots, resultCard);
         } catch (rouletteError) {
           console.error('룰렛 표시 에러:', rouletteError);
         }
@@ -1684,7 +1687,7 @@ ${skill ? skill.description : ''}
           const totalTime = endTime - this.rouletteStartTime;
           console.log(`🎯 룰렛 애니메이션 완료: ${totalTime.toFixed(1)}ms`);
           
-          this.showRouletteResult(resultCard, selectedCards);
+          this.uiSystem.showRouletteResult(resultCard, selectedCards);
         }, duration);
       });
     });

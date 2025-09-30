@@ -166,7 +166,7 @@ class GachaSystem {
     
     document.body.appendChild(notification);
     
-    // 2초 후 제거
+    // 4초 후 제거
     setTimeout(() => {
       notification.style.animation = 'slideOutRight 0.3s ease-in';
       setTimeout(() => {
@@ -174,7 +174,7 @@ class GachaSystem {
           notification.parentNode.removeChild(notification);
         }
       }, 300);
-    }, 2000);
+    }, 4000);
   }
 
   // 랭크별 파티클 효과
