@@ -58,7 +58,7 @@ class FusionUISystem {
     }
 
     // 필터링된 카드 목록 가져오기
-    const filteredCards = this.game.fusionFilterSystem.filterCardsForFusion(this.game.gameData.cards);
+    const filteredCards = this.game.fusionSystem.filterCardsForFusion(this.game.gameData.cards);
     
     // 컨테이너 초기화
     container.innerHTML = '';

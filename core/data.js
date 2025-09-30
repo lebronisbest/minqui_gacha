@@ -94,7 +94,6 @@ class DataSystem {
       this.game.nextRefillAt = ticketInfo.nextRefillAt;
       
       this.updateTicketDisplay();
-      this.startTicketTimer();
     } catch (error) {
       console.error('티켓 정보 로드 실패:', error);
       // 폴백: 로컬 티켓 시스템 사용
@@ -106,7 +105,6 @@ class DataSystem {
   initTicketSystem() {
     this.loadTicketData();
     this.updateTicketDisplay();
-    this.startTicketTimer();
   }
 
   // 티켓 데이터 로드

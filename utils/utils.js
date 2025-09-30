@@ -9,15 +9,15 @@ class GameUtils {
   initSounds() {
     // 효과음 파일들 로드 (WAV 파일 사용)
     this.sounds = {
-      cardFlip: new Audio('sounds/card_flip.wav'),
-      aObtain: new Audio('sounds/a_obtain.wav'),
-      bObtain: new Audio('sounds/b_obtain.wav'),
-      sObtain: new Audio('sounds/s_obtain.wav'),
-      ssObtain: new Audio('sounds/ss_obtain.wav'),
-      sssObtain: new Audio('sounds/sss_obtain.wav'),
-      holo: new Audio('sounds/holo.wav'),
-      particle: new Audio('sounds/particle.wav'),
-      fusion_success: new Audio('sounds/fusion_success.wav')
+      cardFlip: new Audio('assets/sounds/card_flip.wav'),
+      aObtain: new Audio('assets/sounds/a_obtain.wav'),
+      bObtain: new Audio('assets/sounds/b_obtain.wav'),
+      sObtain: new Audio('assets/sounds/s_obtain.wav'),
+      ssObtain: new Audio('assets/sounds/ss_obtain.wav'),
+      sssObtain: new Audio('assets/sounds/sss_obtain.wav'),
+      holo: new Audio('assets/sounds/holo.wav'),
+      particle: new Audio('assets/sounds/particle.wav'),
+      fusion_success: new Audio('assets/sounds/fusion_success.wav')
     };
 
     // 모바일에서 오디오 컨텍스트 초기화
