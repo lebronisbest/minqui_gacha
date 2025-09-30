@@ -85,20 +85,19 @@ class GachaSystem {
       this.isGachaLoading = false;
       
       // 서버에서 받은 카드 결과 처리
-      const selectedCard = result.data.cards[0];
-      console.log('선택된 카드 데이터:', selectedCard);
+      const cardResult = result.data.cards[0];
       
-      if (!selectedCard) {
+      if (!cardResult || !cardResult.card) {
         console.error('카드 데이터가 없습니다:', result);
         alert('카드 데이터를 받지 못했습니다. 다시 시도해주세요.');
         return;
       }
       
-      const selectedRank = selectedCard.rank;
+      const selectedCard = cardResult.card;
+      const selectedRank = cardResult.rank;
       
       // 카드 데이터 업데이트
       this.game.cardData = selectedCard;
-      console.log('업데이트된 cardData:', this.game.cardData);
       this.game.updateCardInfo();
       
       // 이제 카드 뒤집기 (뽑기 완료 후)
