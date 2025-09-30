@@ -68,7 +68,7 @@ class CoreSystem {
             baseHp: 150,
             baseAttack: 120,
             defense: 110,
-            image: "illust/001.png",
+            image: "assets/illust/001.png",
             description: "창작의 마법사, 무한한 상상력으로 세상을 만들어가는 존재",
             attacks: [
               {

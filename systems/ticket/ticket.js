@@ -83,7 +83,7 @@ class TicketSystem {
     if (this.tickets > 0) {
       this.tickets--;
       this.saveTicketData();
-      this.game.dataSystem.updateTicketDisplay();
+      this.updateTicketDisplay();
       return true;
     }
     return false;
@@ -162,7 +162,7 @@ class TicketSystem {
       this.tickets = this.maxTickets;
       this.nextRefillAt = this.getNextRefillTime();
       this.saveTicketData();
-      this.game.dataSystem.updateTicketDisplay();
+      this.updateTicketDisplay();
       return;
     }
 
@@ -171,7 +171,7 @@ class TicketSystem {
       this.tickets = this.maxTickets;
       this.nextRefillAt = this.getNextRefillTime();
       this.saveTicketData();
-      this.game.dataSystem.updateTicketDisplay();
+      this.updateTicketDisplay();
       return;
     }
 
@@ -199,6 +199,30 @@ class TicketSystem {
     nextRefill.setHours(12, 0, 0, 0);
     
     return nextRefill;
+  }
+
+  // 티켓 표시 업데이트
+  updateTicketDisplay() {
+    const ticketDisplay = document.getElementById('ticketDisplay');
+    if (ticketDisplay) {
+      ticketDisplay.textContent = `티켓: ${this.tickets}/${this.maxTickets}`;
+    }
+
+    const ticketTimer = document.getElementById('ticketTimer');
+    if (ticketTimer && this.nextRefillAt) {
+      const now = new Date();
+      const nextRefill = new Date(this.nextRefillAt);
+      const timeLeft = Math.max(0, nextRefill - now);
+      
+      if (timeLeft > 0) {
+        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        ticketTimer.textContent = `다음 충전: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      } else {
+        ticketTimer.textContent = '다음 충전: 00:00:00';
+      }
+    }
   }
 }
 

@@ -48,6 +48,17 @@ class EventSystem {
     this.game.cardWrapper.addEventListener('mousemove', (e) => {
       this.handleMouseMove(e);
     });
+
+    // 탭 클릭 이벤트
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const tabName = e.target.dataset.tab;
+        if (tabName) {
+          this.game.coreSystem.switchTab(tabName);
+        }
+      });
+    });
     
     this.game.cardWrapper.addEventListener('mouseleave', () => {
       this.resetTilt();
