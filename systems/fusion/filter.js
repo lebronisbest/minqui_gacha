@@ -6,6 +6,8 @@ class FusionFilterSystem {
 
   // 조합용 카드 필터링
   filterCardsForFusion(cards) {
+    const serverData = this.game.collectionSystem.serverCollectionData || [];
+    
     if (this.game.fusionSystem.currentFusionFilter === 'all') {
       return cards;
     }
@@ -14,10 +16,10 @@ class FusionFilterSystem {
       switch (this.game.fusionSystem.currentFusionFilter) {
         case 'owned':
           // 보유한 카드만
-          return this.game.collectionSystem.serverCollectionData.some(item => item.card_id === card.id);
+          return Array.isArray(serverData) && serverData.some(item => item.card_id === card.id);
         case 'unowned':
           // 미보유 카드만
-          return !this.game.collectionSystem.serverCollectionData.some(item => item.card_id === card.id);
+          return !(Array.isArray(serverData) && serverData.some(item => item.card_id === card.id));
         case 'sss':
           return card.rank === 'SSS';
         case 'ss':

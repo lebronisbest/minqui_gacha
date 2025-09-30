@@ -28,10 +28,13 @@ class CollectionRenderSystem {
     container.innerHTML = '';
 
     // 카드들 렌더링
+    const serverData = this.game.collectionSystem.serverCollectionData || [];
+    console.log('서버 컬렉션 데이터:', serverData);
+    
     filteredCards.forEach(card => {
-      const isOwned = this.game.collectionSystem.serverCollectionData.some(item => item.card_id === card.id);
+      const isOwned = Array.isArray(serverData) && serverData.some(item => item.card_id === card.id);
       const duplicateCount = isOwned ? 
-        this.game.collectionSystem.serverCollectionData.find(item => item.card_id === card.id)?.duplicate_count || 1 : 0;
+        (Array.isArray(serverData) ? serverData.find(item => item.card_id === card.id)?.duplicate_count || 1 : 0) : 0;
       
       const cardElement = this.createCollectionCardElement(card, isOwned, duplicateCount);
       container.appendChild(cardElement);

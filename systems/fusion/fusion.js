@@ -6,7 +6,7 @@ class FusionSystem {
     this.maxFusionCards = 10;
     this.minFusionCards = 3;
     this.isFusionInProgress = false;
-    this.currentFusionFilter = 'all';
+    this.currentFusionFilter = 'owned';
     this.currentProbabilities = null;
     
     // 하위 시스템들 초기화
