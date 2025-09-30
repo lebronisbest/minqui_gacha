@@ -340,8 +340,7 @@ class MinquiCardGacha {
       bObtain: new Audio('sounds/b_obtain.wav'),
       particle: new Audio('sounds/particle.wav'),
       holo: new Audio('sounds/holo.wav'),
-      fusion_success: new Audio('sounds/sss_obtain.wav'), // 조합 성공 (기존 사운드 재사용)
-      fusion_fail: new Audio('sounds/card_flip.wav') // 조합 실패 (기존 사운드 재사용)
+      fusion_success: new Audio('sounds/sss_obtain.wav') // 조합 성공
     };
     
     // 효과음 볼륨 설정
@@ -2249,25 +2248,26 @@ ${skill ? skill.description : ''}
       const result = await this.apiClient.commitFusion(materialCardIds);
       console.log('🔧 API 응답 전체:', JSON.stringify(result, null, 2));
 
-      // 🔧 조합 엔진 v2.0 응답 처리
+      // 🔧 조합 엔진 v3.0 응답 처리
       let fusionSuccess = false;
       let resultCard = null;
       let successRate = 0;
       let successRateBreakdown = null;
-      let engineVersion = '1.0.0';
-      let policyVersion = '1.0.0';
+      let engineVersion = '3.0.0';
+      let policyVersion = '3.0.0';
       
-      if (result && result.data) {
-        fusionSuccess = result.data.fusionSuccess || false;
-        resultCard = result.data.resultCard || null;
-        successRate = result.data.successRate || 0;
-        successRateBreakdown = result.data.successRateBreakdown || null;
-        engineVersion = result.data.engineVersion || '1.0.0';
-        policyVersion = result.data.policyVersion || '1.0.0';
+      if (result) {
+        // v3.0 응답 구조에 맞게 파싱
+        fusionSuccess = result.fusionSuccess || false;
+        resultCard = result.resultCard || null;
+        successRate = result.probabilities ? Object.values(result.probabilities).reduce((sum, prob) => sum + prob, 0) : 0;
+        successRateBreakdown = result.rankDistribution || null;
+        engineVersion = result.engineVersion || '3.0.0';
+        policyVersion = result.engineVersion || '3.0.0';
         
-        console.log('✅ 조합 엔진 v2.0 응답 파싱 완료');
-        console.log('📊 성공률:', successRate);
-        console.log('📊 성공률 분해:', successRateBreakdown);
+        console.log('✅ 조합 엔진 v3.0 응답 파싱 완료');
+        console.log('📊 확률:', result.probabilities);
+        console.log('📊 등급 분포:', result.rankDistribution);
         console.log('🔧 엔진 버전:', engineVersion);
         console.log('🔧 정책 버전:', policyVersion);
       }
@@ -2300,12 +2300,10 @@ ${skill ? skill.description : ''}
           console.error('룰렛 표시 에러:', rouletteError);
         }
 
-        // 조합 결과에 따른 효과음 재생
+        // 조합 결과에 따른 효과음 재생 (항상 성공)
         try {
-          if (fusionSuccess && resultCard) {
+          if (resultCard) {
             this.playSound('fusion_success');
-          } else {
-            this.playSound('fusion_fail');
           }
         } catch (soundError) {
           console.error('효과음 재생 에러:', soundError);
@@ -2830,10 +2828,10 @@ ${skill ? skill.description : ''}
       // 컬렉션 UI 즉시 업데이트 (서버 동기화 후)
       this.updateCollectionUI();
     } else {
-      // 실패 결과
+      // 조합 시스템에서는 항상 성공 (실패 없음)
       rouletteResult.innerHTML = `
-        <div style="color: #f44336; font-size: 1.2rem; font-weight: 700;">
-          💔 조합 실패... 재료만 소모되었습니다
+        <div style="color: #4caf50; font-size: 1.2rem; font-weight: 700;">
+          ✅ 조합 성공! 카드를 획득했습니다
         </div>
       `;
     }
@@ -3146,12 +3144,12 @@ ${skill ? skill.description : ''}
       resultMessage.textContent = '조합 결과 해당 카드가 나왔습니다.';
     } else {
       resultCardDiv.innerHTML = `
-        <div class="fusion-failure" style="color: #ff6b6b; font-size: 1.2rem; font-weight: 700;">
-          <div style="font-size: 3rem; margin-bottom: 10px;">❌</div>
-          <div>조합 실패!</div>
+        <div class="fusion-success" style="color: #4caf50; font-size: 1.2rem; font-weight: 700;">
+          <div style="font-size: 3rem; margin-bottom: 10px;">✅</div>
+          <div>조합 성공!</div>
         </div>
       `;
-      resultMessage.textContent = '카드가 소모되었지만 조합에 실패했습니다.';
+      resultMessage.textContent = '카드를 성공적으로 조합했습니다!';
     }
     
     modal.style.display = 'flex';

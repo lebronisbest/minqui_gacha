@@ -222,7 +222,7 @@ async function runMigrations() {
       )
     `);
 
-    // 조합 기록 테이블
+    // 조합 기록 테이블 (v3.0 스키마)
     await client.query(`
       CREATE TABLE IF NOT EXISTS fusion_logs (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -231,6 +231,9 @@ async function runMigrations() {
         materials_used JSONB NOT NULL,
         result_card JSONB,
         success BOOLEAN NOT NULL,
+        probabilities JSONB,
+        rank_distribution JSONB,
+        engine_version VARCHAR(10) DEFAULT '3.0.0',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         ip_address INET,
         user_agent TEXT
@@ -260,6 +263,9 @@ async function runMigrations() {
       CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
       CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at);
     `);
+
+    // v3.0 마이그레이션은 commit.js에서 필요시 자동 실행
+    console.log('✅ 기본 스키마 마이그레이션 완료');
 
     console.log('✅ 데이터베이스 마이그레이션 완료');
     console.log('🔒 모든 사용자 데이터 테이블이 안전하게 보호됩니다');

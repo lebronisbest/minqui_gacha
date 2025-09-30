@@ -7,8 +7,8 @@ const ENGINE_VERSION = '3.0.0';
  * 조합 확률 계산 엔진
  */
 class FusionEngine {
-  constructor(database) {
-    this.db = database;
+  constructor() {
+    // v3.0에서는 database 연결을 외부에서 관리
   }
 
   /**
@@ -26,12 +26,17 @@ class FusionEngine {
    * 등급별 확률 계산 (클라이언트와 동일한 로직)
    */
   calculateProbabilities(materialCards) {
+    console.log('FusionEngine - 입력 카드들:', materialCards);
+    
     // 1단계: 입력 카드 분석
     const rankDistribution = {};
     materialCards.forEach(card => {
       rankDistribution[card.rank] = (rankDistribution[card.rank] || 0) + 1;
     });
     const totalCards = materialCards.length;
+    
+    console.log('FusionEngine - 등급 분포:', rankDistribution);
+    console.log('FusionEngine - 총 카드 수:', totalCards);
 
     // 2단계: 기본 확률
     const baseProb = {

@@ -56,9 +56,33 @@ module.exports = async (req, res) => {
   const client = await pool.connect();
 
   try {
+    // 먼저 필요한 컬럼이 있는지 확인하고 없으면 추가
+    const columnCheck = await client.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'fusion_logs' 
+      AND column_name IN ('probabilities', 'rank_distribution', 'engine_version')
+    `);
+    
+    const existingColumns = columnCheck.rows.map(row => row.column_name);
+    
+    // 필요한 컬럼이 없으면 추가
+    if (!existingColumns.includes('probabilities') || 
+        !existingColumns.includes('rank_distribution') || 
+        !existingColumns.includes('engine_version')) {
+      console.log('🔄 fusion_logs 테이블에 필요한 컬럼 추가 중...');
+      await client.query(`
+        ALTER TABLE fusion_logs 
+        ADD COLUMN IF NOT EXISTS probabilities JSONB,
+        ADD COLUMN IF NOT EXISTS rank_distribution JSONB,
+        ADD COLUMN IF NOT EXISTS engine_version VARCHAR(10) DEFAULT '3.0.0'
+      `);
+      console.log('✅ 컬럼 추가 완료');
+    }
+
     await client.query('BEGIN');
 
-    // 멱등성 체크
+    // 멱등성 체크 (동적 쿼리)
     const existingFusion = await client.query(
       'SELECT result_card, probabilities FROM fusion_logs WHERE fusion_id = $1',
       [finalFusionId]
@@ -106,8 +130,10 @@ module.exports = async (req, res) => {
 
     const materialCards = materialCardsResult.rows;
 
+    console.log('재료 카드 정보:', materialCards);
+
     // 조합 엔진으로 확률 계산 및 결과 선택
-    const fusionEngine = new FusionEngine(pool);
+    const fusionEngine = new FusionEngine();
     const { probabilities, rankDistribution } = fusionEngine.calculateProbabilities(materialCards);
     const selectedRank = fusionEngine.selectRank(probabilities);
 
@@ -150,20 +176,41 @@ module.exports = async (req, res) => {
       [userId, resultCard.id]
     );
 
-    // 로그 기록
-    await client.query(
-      `INSERT INTO fusion_logs (user_id, fusion_id, materials_used, result_card, probabilities, rank_distribution, engine_version)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [
-        userId,
-        finalFusionId,
-        JSON.stringify(materialsToUse),
-        JSON.stringify(resultCard),
-        JSON.stringify(probabilities),
-        JSON.stringify(rankDistribution),
-        '3.0.0'
-      ]
-    );
+    // 로그 기록 (동적 쿼리 - 컬럼 존재 여부에 따라)
+    const hasNewColumns = existingColumns.includes('probabilities') && 
+                         existingColumns.includes('rank_distribution') && 
+                         existingColumns.includes('engine_version');
+    
+    if (hasNewColumns) {
+      // v3.0 스키마 - 모든 컬럼 포함
+      await client.query(
+        `INSERT INTO fusion_logs (user_id, fusion_id, materials_used, result_card, probabilities, rank_distribution, engine_version, success)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [
+          userId,
+          finalFusionId,
+          JSON.stringify(materialsToUse),
+          JSON.stringify(resultCard),
+          JSON.stringify(probabilities),
+          JSON.stringify(rankDistribution),
+          '3.0.0',
+          true
+        ]
+      );
+    } else {
+      // v1.0 스키마 - 기본 컬럼만
+      await client.query(
+        `INSERT INTO fusion_logs (user_id, fusion_id, materials_used, result_card, success)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [
+          userId,
+          finalFusionId,
+          JSON.stringify(materialsToUse),
+          JSON.stringify(resultCard),
+          true
+        ]
+      );
+    }
 
     await client.query('COMMIT');
 
@@ -183,7 +230,9 @@ module.exports = async (req, res) => {
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('=== FUSION ERROR ===');
-    console.error(error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Full error:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error',
