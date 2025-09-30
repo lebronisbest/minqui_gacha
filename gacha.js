@@ -71,6 +71,7 @@ class GachaSystem {
       
       // 서버에서 가챠 실행
       const result = await this.game.apiClient.drawGacha();
+      console.log('가챠 서버 응답:', result);
       
       if (!result.success) {
         // 티켓 부족 시 로딩 상태 해제
@@ -85,7 +86,17 @@ class GachaSystem {
       this.isGachaLoading = false;
       
       // 서버에서 받은 카드 결과 처리
-      const selectedCard = result.card;
+      console.log('result.data:', result.data);
+      console.log('result.card:', result.card);
+      const selectedCard = result.card || result.data?.card;
+      console.log('selectedCard:', selectedCard);
+      
+      if (!selectedCard) {
+        console.error('카드 데이터가 없습니다:', result);
+        alert('카드 데이터를 받지 못했습니다. 다시 시도해주세요.');
+        return;
+      }
+      
       const selectedRank = selectedCard.rank;
       
       // 카드 데이터 업데이트
