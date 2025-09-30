@@ -7,10 +7,17 @@ class CollectionRenderSystem {
   // 컬렉션 카드들 렌더링
   renderCollectionCards() {
     const container = document.querySelector('.collection-cards');
-    if (!container) return;
+    if (!container) {
+      console.error('컬렉션 카드 컨테이너를 찾을 수 없습니다');
+      return;
+    }
 
+    console.log('게임 데이터:', this.game.gameData);
+    console.log('카드 데이터:', this.game.gameData?.cards);
+    
     // 필터링된 카드 목록 가져오기
     const filteredCards = this.game.collectionSystem.statsSystem.getFilteredCards();
+    console.log('필터링된 카드:', filteredCards);
     
     if (!this.game.gameData || !this.game.gameData.cards) {
       container.innerHTML = '<p>카드 데이터를 불러오는 중...</p>';
