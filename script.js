@@ -45,9 +45,12 @@ class MinquiCardGacha {
       // 이벤트 리스너 등록
       this.bindEvents();
       
+      // 데이터 시스템 초기화 (먼저 초기화)
+      this.dataSystem = window.createDataSystem(this);
+      
       // 서버 연결 시도
       try {
-        await this.initializeServerConnection();
+        await this.dataSystem.initializeServerConnection();
         await this.dataSystem.loadCardDataFromServer();
         await this.dataSystem.initTicketSystemFromServer();
         
@@ -58,9 +61,6 @@ class MinquiCardGacha {
 
         // UI 시스템 초기화
         this.uiSystem = window.createUISystem(this);
-
-        // 데이터 시스템 초기화
-        this.dataSystem = window.createDataSystem(this);
         
         console.log('서버 모드로 실행');
       } catch (error) {

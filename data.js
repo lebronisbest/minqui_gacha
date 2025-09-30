@@ -211,12 +211,20 @@ class DataSystem {
     }
   }
 
-  // 서버 연결 초기화
+  // 서버 연결 및 인증 초기화
   async initializeServerConnection() {
     try {
-      // 서버 연결 테스트
-      const response = await this.game.apiClient.getHealth();
-      console.log('서버 연결 성공:', response);
+      // 기존 세션 복원 시도
+      const sessionValid = await this.game.apiClient.restoreSession();
+      
+      if (!sessionValid) {
+        // 새 게스트 세션 생성
+        await this.game.apiClient.guestLogin();
+        console.log('새 게스트 세션 생성됨');
+      } else {
+        console.log('기존 세션 복원됨');
+      }
+      
       return true;
     } catch (error) {
       console.error('서버 연결 실패:', error);
