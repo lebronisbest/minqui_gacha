@@ -1026,13 +1026,14 @@ body {
   
   .fusion-card-item {
     padding: 8px;
-    overflow: hidden;
+    overflow: hidden !important;
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+    contain: layout style paint;
   }
   
   .fusion-card-image {
@@ -1242,13 +1243,14 @@ body {
   
   .fusion-card-item {
     padding: 6px;
-    overflow: hidden;
+    overflow: hidden !important;
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+    contain: layout style paint;
   }
   
   .fusion-card-image {
@@ -1452,22 +1454,24 @@ body {
   
   .fusion-card-item {
     padding: 4px;
-    overflow: hidden;
+    overflow: hidden !important;
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+    contain: layout style paint;
   }
   
   .fusion-card-image {
-    height: 50px;
-    max-height: 50px;
-    max-width: 100%;
-    object-fit: contain;
-    overflow: hidden;
-    display: block;
+    height: 50px !important;
+    max-height: 50px !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    object-fit: contain !important;
+    overflow: hidden !important;
+    display: block !important;
   }
   
   .fusion-card-name {
@@ -2722,13 +2726,14 @@ body {
   transition: all 0.3s ease;
   position: relative;
   border: 2px solid transparent;
-  overflow: hidden;
+  overflow: hidden !important;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  contain: layout style paint;
 }
 
 .fusion-card-item:hover {
