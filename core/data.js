@@ -24,7 +24,7 @@ class DataSystem {
   // 로컬 카드 데이터 로드 (폴백)
   async loadCardDataFromLocal() {
     try {
-      const response = await fetch('cards.json');
+      const response = await fetch('assets/cards.json');
       if (!response.ok) {
         throw new Error('로컬 카드 데이터 로드 실패');
       }

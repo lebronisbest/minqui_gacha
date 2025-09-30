@@ -39,7 +39,7 @@
     <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png">
     <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-192x192.png">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="assets/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
@@ -333,21 +333,46 @@
     
     
     <script src="api-client.js"></script>
-    <script src="utils.js"></script>
-    <script src="gacha.js"></script>
-    <script src="fusion.js"></script>
-    <script src="collection.js"></script>
-    <script src="ui.js"></script>
-    <script src="data.js"></script>
-    <script src="animation.js"></script>
-    <script src="script.js"></script>
+    <!-- 유틸리티 모듈들 -->
+    <script src="utils/utils.js"></script>
+    <script src="utils/card.js"></script>
+    <script src="utils/events.js"></script>
+    <script src="utils/filter.js"></script>
+    <script src="utils/misc.js"></script>
+    <script src="utils/secret.js"></script>
+    <script src="utils/mobile.js"></script>
+    
+    <!-- 핵심 모듈들 -->
+    <script src="core/core.js"></script>
+    <script src="core/data.js"></script>
+    <script src="core/game.js"></script>
+    
+    <!-- 게임 시스템들 -->
+    <script src="systems/gacha/gacha.js"></script>
+    <script src="systems/fusion/ui.js"></script>
+    <script src="systems/fusion/logic.js"></script>
+    <script src="systems/fusion/filter.js"></script>
+    <script src="systems/fusion/probability.js"></script>
+    <script src="systems/fusion/fusion.js"></script>
+    <script src="systems/collection/stats.js"></script>
+    <script src="systems/collection/render.js"></script>
+    <script src="systems/collection/filter.js"></script>
+    <script src="systems/collection/modal.js"></script>
+    <script src="systems/collection/collection.js"></script>
+    <script src="systems/ticket/ticket.js"></script>
+    
+    <!-- UI 모듈들 -->
+    <script src="ui/ui.js"></script>
+    <script src="ui/modal.js"></script>
+    <script src="ui/animation.js"></script>
+    <script src="ui/loading.js"></script>
     
     <!-- PWA Service Worker 등록 -->
     <script>
       // Service Worker 등록
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
+          navigator.serviceWorker.register('/assets/sw.js')
             .then((registration) => {
               console.log('Service Worker 등록 성공:', registration.scope);
             })
