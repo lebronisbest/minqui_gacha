@@ -98,7 +98,7 @@ class GachaSystem {
       
       // 카드 데이터 업데이트
       this.game.cardData = selectedCard;
-      this.game.updateCardInfo();
+      this.game.cardSystem.updateCardInfo();
       
       // 이제 카드 뒤집기 (뽑기 완료 후)
       this.showFront();
@@ -121,7 +121,7 @@ class GachaSystem {
       // 티켓 정보 업데이트
       this.game.tickets = result.data.ticketsRemaining;
       this.game.nextRefillAt = result.data.nextRefillAt;
-      this.game.dataSystem.updateTicketDisplay();
+      this.game.ticketSystem.updateTicketDisplay();
       
       // 컬렉션 업데이트
       this.game.collectionSystem.loadCollectionFromServer();
