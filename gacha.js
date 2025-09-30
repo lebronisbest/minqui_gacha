@@ -97,7 +97,7 @@ class GachaSystem {
       
       // 카드 데이터 업데이트
       this.game.cardData = selectedCard;
-      this.game.updateCardDisplay();
+      this.game.updateCardInfo();
       
       // 이제 카드 뒤집기 (뽑기 완료 후)
       this.showFront();
