@@ -44,6 +44,10 @@ class CollectionSystem {
   // 컬렉션 통계 업데이트
   updateCollectionStats() {
     // 컬렉션 통계 업데이트
+    if (!this.game.gameData || !this.game.gameData.cards) {
+      console.warn('gameData가 아직 로드되지 않았습니다.');
+      return;
+    }
     const totalCards = this.game.gameData.cards.length;
 
     if (this.serverCollectionData && this.serverCollectionData.length > 0) {
@@ -84,6 +88,11 @@ class CollectionSystem {
     // 컬렉션 카드들 렌더링
     const grid = document.getElementById('collectionGrid');
     if (!grid) return;
+
+    if (!this.game.gameData || !this.game.gameData.cards) {
+      console.warn('gameData가 아직 로드되지 않았습니다.');
+      return;
+    }
 
     grid.innerHTML = '';
 
@@ -287,6 +296,11 @@ class CollectionSystem {
 
   // 필터링된 카드 목록 가져오기
   getFilteredCards() {
+    if (!this.game.gameData || !this.game.gameData.cards) {
+      console.warn('gameData가 아직 로드되지 않았습니다.');
+      return [];
+    }
+    
     const currentFilter = this.game.currentFilter || 'all';
     
     if (currentFilter === 'all') {

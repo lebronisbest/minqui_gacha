@@ -49,8 +49,13 @@ class MinquiCardGacha {
       try {
         await this.initializeServerConnection();
         await this.loadCardDataFromServer();
-        await this.collectionSystem.loadCollectionFromServer();
         await this.initTicketSystemFromServer();
+        
+        // 컬렉션 시스템 초기화 (gameData 로드 후)
+        this.collectionSystem = window.createCollectionSystem(this);
+        await this.collectionSystem.loadCollectionFromServer();
+        this.collectionSystem.initCollectionUI();
+        
         console.log('서버 모드로 실행');
       } catch (error) {
         console.error('서버 연결 실패:', error);
@@ -59,10 +64,6 @@ class MinquiCardGacha {
       }
       
       // 효과음 초기화는 utils.js에서 처리됨
-      
-      // 컬렉션 시스템 초기화
-      this.collectionSystem = window.createCollectionSystem(this);
-      this.collectionSystem.initCollectionUI();
       
       // 조합 시스템 초기화
       this.fusionSystem.initFusionSystem();
