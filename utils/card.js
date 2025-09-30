@@ -150,9 +150,9 @@ class CardSystem {
       attackElement.textContent = this.game.cardData.attack || 100;
     }
     if (typeElement) {
-      // 타입 이모지 가져오기
+      // 타입 이모지만 표시
       const typeIcon = this.game.gameData?.typeIcons?.[this.game.cardData.type] || '';
-      typeElement.textContent = typeIcon ? `${typeIcon} ${this.game.cardData.type}` : (this.game.cardData.type || 'Normal');
+      typeElement.textContent = typeIcon || (this.game.cardData.type || 'Normal');
     }
 
     // 스킬 정보 업데이트

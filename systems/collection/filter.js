@@ -7,35 +7,35 @@ class CollectionFilterSystem {
   // 필터 설정
   setFilter(filter) {
     this.game.collectionSystem.currentFilter = filter;
-    
+
     // 필터 버튼 상태 업데이트
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.classList.remove('active');
     });
     document.querySelector(`[data-filter="${filter}"]`)?.classList.add('active');
-    
+
     // 카드 목록 다시 렌더링
-    this.game.collectionRenderSystem.renderCollectionCards();
-    
+    this.game.collectionSystem.renderSystem.renderCollectionCards();
+
     // 통계 업데이트
-    this.game.collectionStatsSystem.updateCollectionStats();
+    this.game.collectionSystem.statsSystem.updateCollectionStats();
   }
 
   // 모바일 필터 설정
   setMobileFilter(filter) {
     this.game.collectionSystem.currentFilter = filter;
-    
+
     // 모바일 필터 버튼 상태 업데이트
     document.querySelectorAll('.mobile-filter-btn').forEach(btn => {
       btn.classList.remove('active');
     });
     document.querySelector(`[data-filter="${filter}"]`)?.classList.add('active');
-    
+
     // 모바일 카드 목록 다시 렌더링
-    this.game.collectionRenderSystem.renderMobileCollectionCards();
-    
+    this.game.collectionSystem.renderSystem.renderMobileCollectionCards();
+
     // 통계 업데이트
-    this.game.collectionStatsSystem.updateCollectionStats();
+    this.game.collectionSystem.statsSystem.updateCollectionStats();
   }
 }
 

@@ -57,7 +57,7 @@ class CollectionRenderSystem {
     const skill = card.attacks && card.attacks[0];
     const imagePath = card.image?.startsWith('assets/') ? card.image : `assets/${card.image || 'illust/' + card.id.toString().padStart(3, '0') + '.png'}`;
     const typeIcon = this.game.gameData?.typeIcons?.[card.type] || '';
-    const typeDisplay = typeIcon ? `${typeIcon} ${card.type}` : (card.type || 'Normal');
+    const typeDisplay = typeIcon || (card.type || 'Normal');
 
     // 가챠 탭과 동일한 카드 앞면 디자인 사용
     cardElement.innerHTML = `
