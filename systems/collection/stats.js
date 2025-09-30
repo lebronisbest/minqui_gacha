@@ -62,11 +62,11 @@ class CollectionStatsSystem {
       return filteredCards;
     } else if (currentFilter === 'owned') {
       // 서버 데이터에서 보유한 카드만 필터링
-      const ownedCardIds = this.game.collectionSystem.serverCollectionData.map(item => item.card_id);
+      const ownedCardIds = this.game.collectionSystem.serverCollectionData.map(item => item.id);
       filteredCards = filteredCards.filter(card => ownedCardIds.includes(card.id));
     } else if (currentFilter === 'unowned') {
       // 서버 데이터에서 보유하지 않은 카드만 필터링
-      const ownedCardIds = this.game.collectionSystem.serverCollectionData.map(item => item.card_id);
+      const ownedCardIds = this.game.collectionSystem.serverCollectionData.map(item => item.id);
       filteredCards = filteredCards.filter(card => !ownedCardIds.includes(card.id));
     }
 

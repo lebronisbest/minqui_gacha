@@ -22,12 +22,12 @@ class FusionFilterSystem {
       switch (this.game.fusionSystem.currentFusionFilter) {
         case 'owned':
           // 보유한 카드만 (서버 데이터가 없으면 모든 카드 표시)
-          const isOwned = Array.isArray(serverData) && serverData.length > 0 ? serverData.some(item => item.card_id === card.id) : true;
+          const isOwned = Array.isArray(serverData) && serverData.length > 0 ? serverData.some(item => item.id === card.id) : true;
           console.log(`카드 ${card.id} (${card.name}) 보유 여부:`, isOwned);
           return isOwned;
         case 'unowned':
           // 미보유 카드만
-          return Array.isArray(serverData) && serverData.length > 0 ? !serverData.some(item => item.card_id === card.id) : false;
+          return Array.isArray(serverData) && serverData.length > 0 ? !serverData.some(item => item.id === card.id) : false;
         case 'SSS':
           return card.rank === 'SSS';
         case 'SS':

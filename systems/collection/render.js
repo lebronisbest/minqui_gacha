@@ -30,11 +30,11 @@ class CollectionRenderSystem {
     // 카드들 렌더링
     const serverData = this.game.collectionSystem.serverCollectionData || [];
     console.log('서버 컬렉션 데이터:', serverData);
-    
+
     filteredCards.forEach(card => {
-      const isOwned = Array.isArray(serverData) && serverData.length > 0 && serverData.some(item => item.card_id === card.id);
+      const isOwned = Array.isArray(serverData) && serverData.length > 0 && serverData.some(item => item.id === card.id);
       const duplicateCount = isOwned ?
-        (Array.isArray(serverData) ? serverData.find(item => item.card_id === card.id)?.duplicate_count || 1 : 0) : 0;
+        (Array.isArray(serverData) ? serverData.find(item => item.id === card.id)?.count || 1 : 0) : 0;
 
       const cardElement = this.createCollectionCardElement(card, isOwned, duplicateCount);
       container.appendChild(cardElement);
@@ -48,7 +48,7 @@ class CollectionRenderSystem {
     cardElement.dataset.cardId = card.id;
 
     const duplicateCount = overrideDuplicateCount !== null ? overrideDuplicateCount :
-      (isOwned ? this.game.collectionSystem.serverCollectionData.find(item => item.card_id === card.id)?.duplicate_count || 1 : 0);
+      (isOwned ? this.game.collectionSystem.serverCollectionData.find(item => item.id === card.id)?.count || 1 : 0);
 
     const imagePath = card.image?.startsWith('assets/') ? card.image : `assets/${card.image || 'illust/' + card.id.toString().padStart(3, '0') + '.png'}`;
 
@@ -150,9 +150,9 @@ class CollectionRenderSystem {
 
     // 카드들 렌더링
     filteredCards.forEach(card => {
-      const isOwned = this.game.collectionSystem.serverCollectionData.some(item => item.card_id === card.id);
-      const duplicateCount = isOwned ? 
-        this.game.collectionSystem.serverCollectionData.find(item => item.card_id === card.id)?.duplicate_count || 1 : 0;
+      const isOwned = this.game.collectionSystem.serverCollectionData.some(item => item.id === card.id);
+      const duplicateCount = isOwned ?
+        this.game.collectionSystem.serverCollectionData.find(item => item.id === card.id)?.count || 1 : 0;
       
       const cardElement = this.createMobileCollectionCardElement(card, isOwned, duplicateCount);
       container.appendChild(cardElement);
