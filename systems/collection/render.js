@@ -120,14 +120,15 @@ class CollectionRenderSystem {
       </div>
     `;
 
-    // 카드 클릭 이벤트
-    cardElement.addEventListener('click', () => {
-      if (isOwned) {
+    // 카드 클릭 이벤트 - 보유한 카드만
+    if (isOwned) {
+      cardElement.addEventListener('click', () => {
         this.game.collectionSystem.modalSystem.showCardDetail(card, duplicateCount);
-      } else {
-        this.game.miscSystem.showUnownedCardInfo(card);
-      }
-    });
+      });
+      cardElement.style.cursor = 'pointer';
+    } else {
+      cardElement.style.cursor = 'default';
+    }
 
     return cardElement;
   }
@@ -167,8 +168,8 @@ class CollectionRenderSystem {
 
     cardElement.innerHTML = `
       <div class="mobile-card-image-container">
-        <img src="assets/illust/${card.id.toString().padStart(3, '0')}.png" 
-             alt="${card.name}" 
+        <img src="assets/illust/${card.id.toString().padStart(3, '0')}.png"
+             alt="${card.name}"
              class="mobile-card-image"
              onerror="this.src='assets/illust/000.png'">
         ${isOwned ? `<div class="mobile-duplicate-count">${duplicateCount}</div>` : ''}
@@ -180,14 +181,15 @@ class CollectionRenderSystem {
       </div>
     `;
 
-    // 카드 클릭 이벤트
-    cardElement.addEventListener('click', () => {
-      if (isOwned) {
+    // 카드 클릭 이벤트 - 보유한 카드만
+    if (isOwned) {
+      cardElement.addEventListener('click', () => {
         this.game.collectionSystem.modalSystem.showCardDetail(card, duplicateCount);
-      } else {
-        this.game.miscSystem.showUnownedCardInfo(card);
-      }
-    });
+      });
+      cardElement.style.cursor = 'pointer';
+    } else {
+      cardElement.style.cursor = 'default';
+    }
 
     return cardElement;
   }

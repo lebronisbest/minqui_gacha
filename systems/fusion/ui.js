@@ -89,42 +89,66 @@ class FusionUISystem {
     cardElement.className = 'fusion-card-item';
     cardElement.dataset.cardId = card.id;
 
-    // 카드 이미지
-    const img = document.createElement('img');
-    img.src = card.image.startsWith('assets/') ? card.image : `assets/${card.image}`;
-    img.alt = card.name;
-    img.className = 'fusion-card-image';
-    img.onload = () => {
-      console.log('조합 이미지 로드 성공:', img.src);
-    };
-    img.onerror = () => {
-      console.error('조합 이미지 로드 실패:', img.src, '→ 폴백 이미지 사용');
-      img.src = 'assets/illust/000.png';
-    };
+    const imagePath = card.image?.startsWith('assets/') ? card.image : `assets/${card.image || 'illust/' + card.id.toString().padStart(3, '0') + '.png'}`;
 
-    // 카드 정보
-    const info = document.createElement('div');
-    info.className = 'fusion-card-info';
-    info.innerHTML = `
-      <h4 class="fusion-card-name">${card.name}</h4>
-      <p class="fusion-card-rank rank-${card.rank.toLowerCase()}">${card.rank}</p>
+    // 랭크 정보 가져오기
+    const rankInfo = this.game.gameData.ranks[card.rank];
+    const hp = Math.floor((card.baseHp || card.base_hp || 100) * (rankInfo?.hpMultiplier || 1));
+    const attack = Math.floor((card.baseAttack || card.base_attack || 100) * (rankInfo?.attackMultiplier || 1));
+    const skill = card.attacks && card.attacks[0];
+    const typeIcon = this.game.gameData?.typeIcons?.[card.type] || '';
+
+    // 보유 개수 확인
+    const serverData = this.game.collectionSystem.serverCollectionData || [];
+    const ownedCard = serverData.find(item => item.id === card.id);
+    const count = ownedCard?.count || 0;
+
+    // 컬렉션 카드와 동일한 디자인으로 렌더링
+    cardElement.innerHTML = `
+      <div class="fusion-card-front">
+        <!-- 배경 일러스트 -->
+        <div class="fusion-card-background">
+          <img src="${imagePath}" alt="${card.name} 배경 일러스트" class="fusion-background-illust">
+        </div>
+
+        <!-- 카드 정보 박스 -->
+        <div class="fusion-card-info-box">
+          <div class="fusion-card-number-box">
+            <div class="fusion-card-number">#${card.id}</div>
+          </div>
+          <div class="fusion-card-name">${card.name}</div>
+        </div>
+
+        <!-- 랭크 표시 -->
+        <div class="fusion-card-rank">
+          <img src="assets/illust/${card.rank}.png" alt="${card.rank} 랭크" class="fusion-rank-image">
+        </div>
+
+        <!-- 하단 투명 박스 -->
+        <div class="fusion-card-bottom">
+          <div class="fusion-stats-container">
+            <div class="fusion-stat-item">
+              <span class="fusion-stat-label">HP</span>
+              <span class="fusion-stat-value">${hp}</span>
+            </div>
+            <div class="fusion-stat-item">
+              <span class="fusion-stat-label">공격력</span>
+              <span class="fusion-stat-value">${attack}</span>
+            </div>
+            <div class="fusion-stat-item">
+              <span class="fusion-stat-value">${typeIcon}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 보유 개수 배지 -->
+        <div class="fusion-count-badge">${count}개</div>
+      </div>
     `;
-
-    cardElement.appendChild(img);
-    cardElement.appendChild(info);
 
     // 카드 클릭 이벤트
     cardElement.addEventListener('click', () => {
       this.game.fusionSystem.selectCardForFusion(card);
-    });
-
-    // 호버 효과
-    cardElement.addEventListener('mouseenter', () => {
-      cardElement.style.transform = 'translateY(-2px)';
-    });
-
-    cardElement.addEventListener('mouseleave', () => {
-      cardElement.style.transform = 'translateY(0)';
     });
 
     return cardElement;

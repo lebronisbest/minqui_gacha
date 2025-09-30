@@ -19,7 +19,11 @@ class CollectionModalSystem {
     const skill = card.attacks && card.attacks[0];
     const imagePath = card.image?.startsWith('assets/') ? card.image : `assets/${card.image || 'illust/' + card.id.toString().padStart(3, '0') + '.png'}`;
     const typeIcon = this.game.gameData?.typeIcons?.[card.type] || '';
-    const typeDisplay = typeIcon || '';
+
+    // 획득 정보 가져오기
+    const collectionItem = this.game.collectionSystem.serverCollectionData.find(item => item.id === card.id);
+    const firstObtained = collectionItem?.firstObtainedAt ? new Date(collectionItem.firstObtainedAt).toLocaleString('ko-KR') : '알 수 없음';
+    const lastObtained = collectionItem?.lastObtainedAt ? new Date(collectionItem.lastObtainedAt).toLocaleString('ko-KR') : '알 수 없음';
 
     // 모달 생성 - 가챠 탭과 동일한 카드 디자인 사용
     const modal = document.createElement('div');
@@ -94,9 +98,56 @@ class CollectionModalSystem {
               <div class="duplicate-count-badge-modal">${duplicateCount}개 보유</div>
             </div>
           </div>
+          <div class="modal-info-section">
+            <div class="info-group">
+              <h3 class="info-title">📊 카드 정보</h3>
+              <div class="info-item">
+                <span class="info-label">보유 개수</span>
+                <span class="info-value">${duplicateCount}개</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">카드 등급</span>
+                <span class="info-value rank-${card.rank.toLowerCase()}">${card.rank}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">타입</span>
+                <span class="info-value">${typeIcon} ${card.type}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">HP</span>
+                <span class="info-value">${hp}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">공격력</span>
+                <span class="info-value">${attack}</span>
+              </div>
+            </div>
+            <div class="info-group">
+              <h3 class="info-title">⏰ 획득 정보</h3>
+              <div class="info-item">
+                <span class="info-label">첫 획득</span>
+                <span class="info-value">${firstObtained}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">최근 획득</span>
+                <span class="info-value">${lastObtained}</span>
+              </div>
+            </div>
+            <div class="info-group">
+              <h3 class="info-title">⚔️ 스킬 정보</h3>
+              <div class="info-item">
+                <span class="info-label">스킬명</span>
+                <span class="info-value">${skill?.name || '창작 마법'}</span>
+              </div>
+              <div class="info-item skill-desc">
+                <span class="info-label">설명</span>
+                <span class="info-value">${skill?.description || '무한한 상상력으로 새로운 세계를 창조한다.'}</span>
+              </div>
+            </div>
+          </div>
           <div class="modal-actions">
             <button class="export-btn" onclick="window.game.collectionSystem.modalSystem.exportCardToPNG(${JSON.stringify(card).replace(/"/g, '&quot;')}, ${duplicateCount})">
-              PNG 내보내기
+              📥 PNG 내보내기
             </button>
           </div>
         </div>
