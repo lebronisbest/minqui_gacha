@@ -192,32 +192,6 @@ class DataSystem {
     }
   }
 
-  // 티켓 타이머 시작 (원래 script.js 로직)
-  startTicketTimer() {
-    if (this.game.isAdminMode) {
-      const ticketTimerElement = document.getElementById('ticketTimer');
-      if (ticketTimerElement) {
-        ticketTimerElement.textContent = '관리자 모드 - 무한 티켓';
-      }
-      return;
-    }
-    
-    if (this.game.isSecretMode) {
-      const ticketTimerElement = document.getElementById('ticketTimer');
-      if (ticketTimerElement) {
-        ticketTimerElement.textContent = '시크릿 모드 - 무한 가챠';
-      }
-      return;
-    }
-    
-    if (this.game.ticketTimer) {
-      clearInterval(this.game.ticketTimer);
-    }
-    
-    this.game.ticketTimer = setInterval(() => {
-      this.updateTicketDisplay();
-    }, 1000);
-  }
 
   // checkTicketRefill 함수는 updateTicketDisplay에 통합됨
 
