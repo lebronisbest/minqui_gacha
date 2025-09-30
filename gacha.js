@@ -86,6 +86,7 @@ class GachaSystem {
       
       // 서버에서 받은 카드 결과 처리
       const selectedCard = result.data.cards[0];
+      console.log('선택된 카드 데이터:', selectedCard);
       
       if (!selectedCard) {
         console.error('카드 데이터가 없습니다:', result);
@@ -97,6 +98,7 @@ class GachaSystem {
       
       // 카드 데이터 업데이트
       this.game.cardData = selectedCard;
+      console.log('업데이트된 cardData:', this.game.cardData);
       this.game.updateCardInfo();
       
       // 이제 카드 뒤집기 (뽑기 완료 후)
