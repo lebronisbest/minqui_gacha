@@ -26,8 +26,8 @@ class MinquiCardGacha {
     this.enteredCode = '';
     this.isSecretMode = false;
 
-    // 가챠 로딩 상태 (중복 요청 방지)
-    this.isGachaLoading = false;
+    // 가챠 시스템 초기화
+    this.gachaSystem = window.createGachaSystem(this);
 
     // 조합 로딩 상태 (중복 요청 방지)
     this.isFusionInProgress = false;
@@ -75,7 +75,7 @@ class MinquiCardGacha {
       this.updateTicketVisibility('gacha');
       
       // 초기 상태: 뒷면으로 시작
-      this.showBack();
+      this.gachaSystem.showBack();
       
       // 뒷면 이미지 설정
       this.setBackImage();
@@ -130,38 +130,7 @@ class MinquiCardGacha {
   }
 
   // 가챠 로딩 상태 표시
-  showGachaLoading() {
-    const cardWrapper = this.cardWrapper;
-    if (cardWrapper) {
-      cardWrapper.classList.add('gacha-loading');
-      
-      // 로딩 스피너 추가
-      const existingSpinner = cardWrapper.querySelector('.gacha-spinner');
-      if (!existingSpinner) {
-        const spinner = document.createElement('div');
-        spinner.className = 'gacha-spinner';
-        spinner.innerHTML = `
-          <div class="spinner-ring"></div>
-          <div class="spinner-text">뽑는 중...</div>
-        `;
-        cardWrapper.appendChild(spinner);
-      }
-    }
-  }
-
-  // 가챠 로딩 상태 숨기기
-  hideGachaLoading() {
-    const cardWrapper = this.cardWrapper;
-    if (cardWrapper) {
-      cardWrapper.classList.remove('gacha-loading');
-      
-      // 로딩 스피너 제거
-      const spinner = cardWrapper.querySelector('.gacha-spinner');
-      if (spinner) {
-        spinner.remove();
-      }
-    }
-  }
+  // showGachaLoading, hideGachaLoading 함수는 gacha.js로 이동됨
 
   // 로딩 진행률 시뮬레이션
   simulateLoadingProgress() {
@@ -525,107 +494,11 @@ class MinquiCardGacha {
   }
   
   handleClick() {
-    // 가챠 로딩 중이면 클릭 무시
-    if (this.isGachaLoading) {
-      return;
-    }
-
-    if (!this.isFlipped) {
-      // 뒷면에서 앞면으로 - 가챠 실행
-      this.performGacha();
-    } else {
-      // 앞면에서 뒷면으로 - 다시 뽑기
-      window.gameUtils.playSound('cardFlip');
-      this.showBack();
-    }
+    // 가챠 시스템으로 위임
+    this.gachaSystem.handleClick();
   }
   
-  async performGacha() {
-    // 이미 로딩 중이면 실행하지 않음
-    if (this.isGachaLoading) {
-      return;
-    }
-
-    try {
-      // 로딩 상태 시작
-      this.isGachaLoading = true;
-
-      // 로딩 상태 표시 (카드 뒤집기 전에)
-      this.showGachaLoading();
-      
-      // 서버에서 가챠 실행
-      const result = await this.apiClient.drawGacha();
-      
-      if (!result.success) {
-        // 티켓 부족 등의 이유로 실패
-        this.hideGachaLoading();
-        this.isGachaLoading = false;
-        alert('티켓이 부족합니다! 12시에 다시 충전됩니다.');
-        return;
-      }
-
-      // 로딩 상태 숨기기
-      this.hideGachaLoading();
-      this.isGachaLoading = false;
-      
-      // 서버에서 받은 카드 결과 처리
-      const cardResult = result.cards[0];
-      const selectedCard = cardResult.card;
-      const selectedRank = cardResult.rank;
-      
-      // 선택된 카드와 랭크로 데이터 업데이트
-      this.updateCardData(selectedCard, selectedRank);
-      
-      // 카드 정보 업데이트
-      this.updateCardInfo();
-      
-      // 이제 카드 뒤집기 (뽑기 완료 후)
-      this.showFront();
-      window.gameUtils.playSound('cardFlip');
-      
-      // 랭크별 효과음 재생
-      window.gameUtils.playRankSound(selectedRank);
-      
-      // 랭크별 파티클 효과
-      this.showRankParticles(selectedRank);
-      
-      // SSS 랭크 특별 애니메이션
-      if (selectedRank === 'SSS') {
-        this.showSSSSpecialAnimation();
-      }
-      
-      // 가챠 결과 알림 (우측 상단, 미니멀)
-      this.showResult();
-      
-      // 카드 컬렉션에 추가 (로컬 캐시)
-      this.addToCollection(selectedCard.id);
-      
-      // 서버 컬렉션 데이터 다시 로드 (조합에서 사용할 수 있도록)
-      await this.loadCollectionFromServer();
-
-      // 조합탭 UI 업데이트 (카드 수량 동기화)
-      const fusionTab = document.querySelector('.tab-button[data-tab="fusion"]');
-      if (fusionTab && fusionTab.classList.contains('active')) {
-        this.renderFusionCards();
-        this.updateCardCounts();
-      }
-
-      // 티켓 정보 업데이트
-      this.tickets = result.ticketsRemaining;
-      this.updateTicketDisplay();
-      
-      // 다음 충전 시간 업데이트
-      this.nextRefillAt = result.nextRefillAt;
-      // updateRefillTimer 함수는 서버 모드에서는 불필요
-      
-    } catch (error) {
-      console.error('가챠 실행 실패:', error);
-      // 에러 시 로딩 상태 숨기기 및 해제
-      this.hideGachaLoading();
-      this.isGachaLoading = false;
-      alert('가챠 실행 중 오류가 발생했습니다. 다시 시도해주세요.');
-    }
-  }
+  // performGacha 함수는 gacha.js로 이동됨
   
   selectRandomCard(rank) {
     // 특정 랭크의 카드들 중에서 랜덤 선택
@@ -833,203 +706,19 @@ class MinquiCardGacha {
     }
   }
   
-  showFront() {
-    this.cardWrapper.classList.add('flipped');
-    this.isFlipped = true;
-  }
+  // showFront, showBack 함수는 gacha.js로 이동됨
   
-  showBack() {
-    this.cardWrapper.classList.remove('flipped');
-    this.isFlipped = false;
-  }
+  // showSSSSpecialAnimation 함수는 gacha.js로 이동됨
   
-  showSSSSpecialAnimation() {
-    const cardWrapper = this.cardWrapper;
-    
-    // SSS 특별 애니메이션 클래스 추가
-    cardWrapper.classList.add('sss-special-animation');
-    
-    // 애니메이션 완료 후 클래스 제거
-    setTimeout(() => {
-      cardWrapper.classList.remove('sss-special-animation');
-    }, 3000);
-  }
-  
-  showResult() {
-    if (!this.cardData || !this.gameData) return;
-    
-    const rankInfo = this.gameData.ranks[this.cardData.rank];
-    const emoji = rankInfo ? rankInfo.emoji : '⭐';
-    
-    const notification = document.createElement('div');
-    notification.className = 'gacha-notification-minimal';
-    notification.innerHTML = `
-      <div class="notification-content">
-        <span class="rank-emoji">${emoji}</span>
-        <span class="card-name">${this.cardData.name}</span>
-        <span class="rank-text">${this.cardData.rank}</span>
-      </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // 2초 후 제거
-    setTimeout(() => {
-      notification.remove();
-    }, 2000);
-  }
+  // showResult 함수는 gacha.js로 이동됨
   
   
   
-  showRankParticles(rank) {
-    const cardWrapper = this.cardWrapper;
-    const rect = cardWrapper.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const bottomY = rect.bottom; // 카드 아래쪽에서 시작
-    
-    // 랭크별 파티클 설정
-    const particleConfig = this.getParticleConfig(rank);
-    
-    // 파티클 효과음 재생 (고랭크만)
-    if (rank === 'SSS' || rank === 'SS') {
-      setTimeout(() => window.gameUtils.playSound('particle'), 200);
-    }
-    
-    // 파티클 생성 - X축으로 퍼진 위치에서 시작
-    for (let i = 0; i < particleConfig.count; i++) {
-      setTimeout(() => {
-        // X축으로 퍼진 시작 위치 계산
-        const horizontalOffset = (Math.random() - 0.5) * 200; // 좌우 더 넓은 랜덤 오프셋
-        const startX = centerX + horizontalOffset;
-        
-        this.createParticle(startX, bottomY, particleConfig);
-      }, i * particleConfig.delay);
-    }
-    
-    // 글로우 효과
-    this.addGlowEffect(rank);
-  }
+  // showRankParticles 함수는 gacha.js로 이동됨
   
-  getParticleConfig(rank) {
-    const configs = {
-      'SSS': {
-        count: 150,
-        delay: 10,
-        colors: ['#ff6b6b', '#ffa500', '#ffd700'],
-        size: { min: 4, max: 12 },
-        speed: { min: 2, max: 8 },
-        duration: 2000
-      },
-      'SS': {
-        count: 120,
-        delay: 12,
-        colors: ['#ffa500', '#ffd700'],
-        size: { min: 3, max: 8 },
-        speed: { min: 1.5, max: 6 },
-        duration: 1500
-      },
-      'S': {
-        count: 100,
-        delay: 15,
-        colors: ['#9c27b0', '#e91e63'],
-        size: { min: 2, max: 6 },
-        speed: { min: 1, max: 4 },
-        duration: 1000
-      },
-      'A': {
-        count: 80,
-        delay: 18,
-        colors: ['#2196f3', '#03a9f4'],
-        size: { min: 2, max: 5 },
-        speed: { min: 0.8, max: 3 },
-        duration: 800
-      },
-      'B': {
-        count: 60,
-        delay: 20,
-        colors: ['#4caf50', '#8bc34a'],
-        size: { min: 1, max: 4 },
-        speed: { min: 0.5, max: 2 },
-        duration: 600
-      }
-    };
-    
-    return configs[rank] || configs['B'];
-  }
+  // getParticleConfig 함수는 gacha.js로 이동됨
   
-  createParticle(x, y, config) {
-    const particle = document.createElement('div');
-    particle.className = 'gacha-particle';
-    
-    // 랜덤 속성 설정
-    const speed = config.speed.min + Math.random() * (config.speed.max - config.speed.min);
-    const size = config.size.min + Math.random() * (config.size.max - config.size.min);
-    const color = config.colors[Math.floor(Math.random() * config.colors.length)];
-    
-    // 파티클 스타일 설정
-    particle.style.cssText = `
-      position: fixed;
-      left: ${x}px;
-      top: ${y}px;
-      width: ${size}px;
-      height: ${size}px;
-      background: ${color};
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 1000;
-      box-shadow: 0 0 ${size * 2}px ${color};
-      transform: translate(-50%, -50%);
-    `;
-    
-    document.body.appendChild(particle);
-    
-    // Y축 애니메이션 (아래에서 위로만 올라감, X축은 고정)
-    const deltaY = -speed * 120; // 위로만 올라감 (음수값)
-    
-    particle.animate([
-      { 
-        transform: 'translate(-50%, -50%) scale(1)',
-        opacity: 1
-      },
-      { 
-        transform: `translate(-50%, calc(-50% + ${deltaY}px)) scale(0)`,
-        opacity: 0
-      }
-    ], {
-      duration: config.duration,
-      easing: 'ease-out'
-    }).onfinish = () => {
-      particle.remove();
-    };
-  }
-  
-  addGlowEffect(rank) {
-    const cardWrapper = this.cardWrapper;
-    const glowConfig = this.getGlowConfig(rank);
-    
-    // 기존 글로우 효과 제거
-    cardWrapper.classList.remove('glow-sss', 'glow-ss', 'glow-s', 'glow-a', 'glow-b');
-    
-    // 새로운 글로우 효과 추가
-    cardWrapper.classList.add(`glow-${rank.toLowerCase()}`);
-    
-    // 3초 후 글로우 효과 제거
-    setTimeout(() => {
-      cardWrapper.classList.remove(`glow-${rank.toLowerCase()}`);
-    }, 3000);
-  }
-  
-  getGlowConfig(rank) {
-    const configs = {
-      'SSS': { intensity: 3, duration: 3000, color: '#ff6b6b' },
-      'SS': { intensity: 2.5, duration: 2500, color: '#ffa500' },
-      'S': { intensity: 2, duration: 2000, color: '#9c27b0' },
-      'A': { intensity: 1.5, duration: 1500, color: '#2196f3' },
-      'B': { intensity: 1, duration: 1000, color: '#4caf50' }
-    };
-    
-    return configs[rank] || configs['B'];
-  }
+  // createParticle, addGlowEffect, getGlowConfig 함수들은 gacha.js로 이동됨
   
   // 서버에서 컬렉션 데이터 로드
   async loadCollectionFromServer() {
