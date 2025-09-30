@@ -7,6 +7,12 @@ class FusionFilterSystem {
   // 조합용 카드 필터링
   filterCardsForFusion(cards) {
     const serverData = this.game.collectionSystem.serverCollectionData || [];
+    console.log('조합 필터링:', {
+      filter: this.game.fusionSystem.currentFusionFilter,
+      serverDataCount: serverData.length,
+      firstItem: serverData[0],
+      cardsCount: cards.length
+    });
 
     if (this.game.fusionSystem.currentFusionFilter === 'all') {
       return cards;
@@ -16,7 +22,9 @@ class FusionFilterSystem {
       switch (this.game.fusionSystem.currentFusionFilter) {
         case 'owned':
           // 보유한 카드만 (서버 데이터가 없으면 모든 카드 표시)
-          return Array.isArray(serverData) && serverData.length > 0 ? serverData.some(item => item.card_id === card.id) : true;
+          const isOwned = Array.isArray(serverData) && serverData.length > 0 ? serverData.some(item => item.card_id === card.id) : true;
+          console.log(`카드 ${card.id} (${card.name}) 보유 여부:`, isOwned);
+          return isOwned;
         case 'unowned':
           // 미보유 카드만
           return Array.isArray(serverData) && serverData.length > 0 ? !serverData.some(item => item.card_id === card.id) : false;
