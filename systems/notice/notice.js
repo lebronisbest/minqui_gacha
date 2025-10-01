@@ -314,7 +314,7 @@ class NoticeSystem {
     if (!confirm('정말로 이 공지사항을 삭제하시겠습니까?')) return;
     
     try {
-      const response = await this.game.apiClient.request(`/notices/${noticeId}`, {
+      const response = await this.game.apiClient.request(`/notices?id=${noticeId}`, {
         method: 'DELETE'
       });
       
