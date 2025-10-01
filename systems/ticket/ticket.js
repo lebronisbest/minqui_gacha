@@ -211,20 +211,30 @@ class TicketSystem {
 
   // 티켓 표시 업데이트
   updateTicketDisplay() {
+    const ticketSystem = document.getElementById('ticketSystem');
     const ticketDisplay = document.getElementById('ticketDisplay');
+    const ticketTimer = document.getElementById('ticketTimer');
+
+    // 현재 탭이 가챠 탭인지 확인
+    const activeTab = document.querySelector('.tab-button.active');
+    if (!activeTab || activeTab.dataset.tab !== 'gacha') {
+      // 가챠 탭이 아니면 티켓 시스템 전체 숨기기
+      if (ticketSystem) {
+        ticketSystem.style.display = 'none';
+      }
+      return;
+    }
+
+    // 가챠 탭일 때만 티켓 시스템 표시
+    if (ticketSystem) {
+      ticketSystem.style.display = 'block';
+    }
+
     if (ticketDisplay) {
       ticketDisplay.textContent = `티켓: ${this.tickets}/${this.maxTickets}`;
     }
 
-    const ticketTimer = document.getElementById('ticketTimer');
     if (ticketTimer) {
-      // 현재 탭이 가챠 탭인지 확인
-      const activeTab = document.querySelector('.tab-button.active');
-      if (!activeTab || activeTab.dataset.tab !== 'gacha') {
-        ticketTimer.style.display = 'none';
-        return;
-      }
-
       // 가챠 탭일 때만 타이머 표시
       ticketTimer.style.display = 'block';
 
