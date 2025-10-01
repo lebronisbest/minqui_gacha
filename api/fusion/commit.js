@@ -40,11 +40,31 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const { materials, materialCardIds, fusionId } = req.body;
+  // 디버깅: 요청 본문 확인
+  console.log('Raw req.body:', req.body);
+  console.log('req.body type:', typeof req.body);
+  
+  // JSON 파싱 시도
+  let bodyData;
+  try {
+    bodyData = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    console.log('Parsed body:', bodyData);
+  } catch (error) {
+    console.error('JSON 파싱 오류:', error);
+    res.status(400).json({ success: false, error: 'Invalid JSON in request body' });
+    return;
+  }
+
+  const { materials, materialCardIds, fusionId } = bodyData;
   const materialsToUse = materials || materialCardIds;
   const finalFusionId = fusionId || `fusion_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+  console.log('materials:', materials);
+  console.log('materialCardIds:', materialCardIds);
+  console.log('materialsToUse:', materialsToUse);
+
   if (!materialsToUse || !Array.isArray(materialsToUse) || materialsToUse.length < 3) {
+    console.log('Invalid materials - materialsToUse:', materialsToUse);
     res.status(400).json({ success: false, error: 'Invalid materials' });
     return;
   }

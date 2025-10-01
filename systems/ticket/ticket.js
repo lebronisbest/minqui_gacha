@@ -171,10 +171,8 @@ class TicketSystem {
     const timeDiff = this.nextRefillAt - now;
 
     if (timeDiff <= 0) {
-      this.tickets = this.maxTickets;
-      this.nextRefillAt = this.getNextRefillTime();
-      this.saveTicketData();
-      this.updateTicketDisplay();
+      // 충전 시간이 지났으면 서버에서 새로 가져오기
+      this.game.dataSystem.initTicketSystemFromServer();
       return;
     }
 
