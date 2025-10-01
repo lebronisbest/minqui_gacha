@@ -12,12 +12,27 @@ module.exports = async (req, res) => {
     return;
   }
 
+  // 요청 본문 파싱 (Vercel Functions에서는 자동 파싱이 안됨)
+  let requestBody = {};
+  if (req.method === 'POST' || req.method === 'PUT') {
+    try {
+      requestBody = JSON.parse(req.body || '{}');
+    } catch (error) {
+      console.error('JSON parsing error:', error);
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid JSON in request body'
+      });
+    }
+  }
+
   // 요청 로깅
   console.log('Notices API called:', {
     method: req.method,
     url: req.url,
     headers: req.headers,
-    body: req.body
+    body: req.body,
+    parsedBody: requestBody
   });
 
   let client;
@@ -95,9 +110,9 @@ module.exports = async (req, res) => {
 
     // POST: 공지사항 생성
     if (req.method === 'POST') {
-      console.log('POST request received, body:', req.body);
+      console.log('POST request received, parsed body:', requestBody);
       
-      const { title, content, priority = 'normal' } = req.body;
+      const { title, content, priority = 'normal' } = requestBody;
 
       console.log('Parsed data:', { title, content, priority });
 
@@ -146,7 +161,7 @@ module.exports = async (req, res) => {
     // PUT: 공지사항 수정
     if (req.method === 'PUT') {
       const { id } = req.query;
-      const { title, content, priority } = req.body;
+      const { title, content, priority } = requestBody;
 
       if (!id) {
         return res.status(400).json({
