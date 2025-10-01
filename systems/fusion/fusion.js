@@ -21,9 +21,13 @@ class FusionSystem {
     // 조합 버튼 이벤트 리스너
     const fusionButton = document.getElementById('fusionButton');
     if (fusionButton) {
+      console.log('조합 버튼 이벤트 리스너 등록됨');
       fusionButton.addEventListener('click', () => {
+        console.log('조합 버튼 클릭됨');
         this.performFusion();
       });
+    } else {
+      console.error('조합 버튼을 찾을 수 없습니다!');
     }
 
     // 조합 결과 모달 이벤트 리스너
@@ -116,6 +120,7 @@ class FusionSystem {
 
   // 조합 실행 (하위 시스템으로 위임)
   async performFusion() {
+    console.log('조합 시작 - performFusion 호출됨');
     await this.logicSystem.performFusion();
   }
 
