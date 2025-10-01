@@ -9,8 +9,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 데이터베이스 연결 테스트 엔드포인트
+// 데이터베이스 연결 테스트 및 테이블 생성 엔드포인트
 app.get('/test', async (req, res) => {
+  let client;
   try {
     console.log('Testing database connection...');
     console.log('Pool exists:', !!pool);
@@ -27,7 +28,45 @@ app.get('/test', async (req, res) => {
       });
     }
 
-    const client = await pool.connect();
+    client = await pool.connect();
+    
+    // notices 테이블이 존재하는지 확인
+    const tableCheck = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'notices'
+      );
+    `);
+    
+    const tableExists = tableCheck.rows[0].exists;
+    
+    if (!tableExists) {
+      console.log('Creating notices table...');
+      // notices 테이블 생성
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS notices (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          title VARCHAR(255) NOT NULL,
+          content TEXT NOT NULL,
+          priority VARCHAR(20) DEFAULT 'normal' CHECK (priority IN ('normal', 'high', 'urgent')),
+          is_active BOOLEAN DEFAULT true,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          created_by VARCHAR(255) DEFAULT 'admin'
+        )
+      `);
+      
+      // 인덱스 생성
+      await client.query(`
+        CREATE INDEX IF NOT EXISTS idx_notices_priority ON notices(priority);
+        CREATE INDEX IF NOT EXISTS idx_notices_created_at ON notices(created_at);
+        CREATE INDEX IF NOT EXISTS idx_notices_is_active ON notices(is_active);
+      `);
+      
+      console.log('Notices table created successfully');
+    }
+    
     const result = await client.query('SELECT NOW() as current_time');
     client.release();
 
@@ -37,11 +76,16 @@ app.get('/test', async (req, res) => {
       data: {
         currentTime: result.rows[0].current_time,
         poolExists: true,
-        postgresUrlExists: !!process.env.POSTGRES_URL
+        postgresUrlExists: !!process.env.POSTGRES_URL,
+        noticesTableExists: tableExists,
+        tableCreated: !tableExists
       }
     });
   } catch (error) {
     console.error('Database test error:', error);
+    if (client) {
+      client.release();
+    }
     res.status(500).json({
       success: false,
       message: 'Database connection failed',
