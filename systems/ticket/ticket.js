@@ -162,6 +162,16 @@ class TicketSystem {
     const ticketTimerElement = document.getElementById('ticketTimer');
     if (!ticketTimerElement) return;
 
+    // 디버깅: 티켓 값들 확인
+    console.log('티켓 타이머 업데이트:', {
+      tickets: this.tickets,
+      maxTickets: this.maxTickets,
+      ticketsType: typeof this.tickets,
+      maxTicketsType: typeof this.maxTickets,
+      isEqual: this.tickets === this.maxTickets,
+      isGreaterEqual: this.tickets >= this.maxTickets
+    });
+
     if (this.tickets === this.maxTickets) {
       ticketTimerElement.innerHTML = '<div class="ticket-timer-text">티켓이 가득참</div>';
       return;
