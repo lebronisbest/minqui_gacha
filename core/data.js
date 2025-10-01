@@ -162,6 +162,16 @@ class DataSystem {
     }
 
     if (ticketTimerElement) {
+      // 현재 탭이 가챠 탭인지 확인
+      const activeTab = document.querySelector('.tab-button.active');
+      if (!activeTab || activeTab.dataset.tab !== 'gacha') {
+        ticketTimerElement.style.display = 'none';
+        return;
+      }
+
+      // 가챠 탭일 때만 타이머 표시
+      ticketTimerElement.style.display = 'block';
+
       if (this.game.isAdminMode) {
         ticketTimerElement.textContent = '관리자 모드 - 무한 티켓';
         return;

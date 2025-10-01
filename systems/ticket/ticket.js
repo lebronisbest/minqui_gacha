@@ -218,6 +218,16 @@ class TicketSystem {
 
     const ticketTimer = document.getElementById('ticketTimer');
     if (ticketTimer) {
+      // 현재 탭이 가챠 탭인지 확인
+      const activeTab = document.querySelector('.tab-button.active');
+      if (!activeTab || activeTab.dataset.tab !== 'gacha') {
+        ticketTimer.style.display = 'none';
+        return;
+      }
+
+      // 가챠 탭일 때만 타이머 표시
+      ticketTimer.style.display = 'block';
+
       if (this.nextRefillAt && this.nextRefillAt !== 'null' && this.nextRefillAt !== 'undefined') {
         const now = new Date();
         const nextRefill = new Date(this.nextRefillAt);
