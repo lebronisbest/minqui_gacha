@@ -137,6 +137,9 @@ class FusionLogicSystem {
       console.log('카드 ID들:', selectedCards.map(card => card.id));
       console.log('카드 ID 타입들:', selectedCards.map(card => typeof card.id));
       console.log('카드 ID 값들:', selectedCards.map(card => card.id));
+      console.log('전송할 데이터:', {
+        materialCardIds: selectedCards.map(card => card.id)
+      });
       
       // 서버에 조합 요청
       const response = await this.game.apiClient.request('/fusion/commit', {
@@ -165,8 +168,11 @@ class FusionLogicSystem {
         this.game.fusionSystem.uiSystem.updateFusionButtonState();
         this.game.fusionSystem.probabilitySystem.updateFusionInfo();
         
-        // 컬렉션 업데이트
-        this.game.collectionSystem.updateCollectionUI();
+        // 컬렉션 업데이트 - 서버에서 최신 데이터 가져오기
+        await this.game.collectionSystem.loadCollectionFromServer();
+        
+        // 조합 카드 목록도 새로고침 (보유한 카드가 변경되었으므로)
+        this.game.fusionSystem.uiSystem.renderFusionCards();
         
       } else {
         this.game.gameUtils.showNotification(response.message || '조합에 실패했습니다.', 'error');
