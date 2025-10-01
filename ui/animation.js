@@ -30,7 +30,7 @@ class AnimationSystem {
     const cardWidth = 200; // 카드 너비
 
     for (let i = 0; i < totalCards; i++) {
-      const cardDiv = this.createRouletteCard(i, resultCard);
+      const cardDiv = this.createRouletteCard(i, resultCard, totalCards);
       rouletteWheel.appendChild(cardDiv);
     }
 
@@ -45,7 +45,7 @@ class AnimationSystem {
   }
 
   // 룰렛 카드 생성
-  createRouletteCard(index, resultCard) {
+  createRouletteCard(index, resultCard, totalCards) {
     const cardDiv = document.createElement('div');
     cardDiv.className = 'roulette-card';
     cardDiv.style.width = '200px';

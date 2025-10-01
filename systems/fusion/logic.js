@@ -135,6 +135,8 @@ class FusionLogicSystem {
       // 디버깅: 선택된 카드들 확인
       console.log('선택된 카드들:', selectedCards);
       console.log('카드 ID들:', selectedCards.map(card => card.id));
+      console.log('카드 ID 타입들:', selectedCards.map(card => typeof card.id));
+      console.log('카드 ID 값들:', selectedCards.map(card => card.id));
       
       // 서버에 조합 요청
       const response = await this.game.apiClient.request('/fusion/commit', {
