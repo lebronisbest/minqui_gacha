@@ -12,6 +12,14 @@ module.exports = async (req, res) => {
     return;
   }
 
+  // 요청 로깅
+  console.log('Notices API called:', {
+    method: req.method,
+    url: req.url,
+    headers: req.headers,
+    body: req.body
+  });
+
   let client;
   try {
     // 데이터베이스 연결 확인
@@ -87,13 +95,19 @@ module.exports = async (req, res) => {
 
     // POST: 공지사항 생성
     if (req.method === 'POST') {
+      console.log('POST request received, body:', req.body);
+      
       const { title, content, priority = 'normal' } = req.body;
+
+      console.log('Parsed data:', { title, content, priority });
 
       // 입력 검증
       if (!title || !content) {
+        console.log('Validation failed: missing title or content');
         return res.status(400).json({
           success: false,
-          message: '제목과 내용은 필수입니다.'
+          message: '제목과 내용은 필수입니다.',
+          received: { title, content, priority }
         });
       }
 
