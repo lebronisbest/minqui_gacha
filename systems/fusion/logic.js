@@ -136,7 +136,7 @@ class FusionLogicSystem {
       const response = await this.game.apiClient.request('/fusion/commit', {
         method: 'POST',
         body: JSON.stringify({
-          cards: selectedCards.map(card => card.id)
+          materialCardIds: selectedCards.map(card => card.id)
         })
       });
 
