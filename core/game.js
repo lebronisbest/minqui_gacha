@@ -61,6 +61,9 @@ class MinquiCardGacha {
     // 핵심 시스템 초기화
     this.coreSystem = window.createCoreSystem(this);
 
+    // 공지사항 시스템 초기화
+    this.noticeSystem = window.createNoticeSystem(this);
+
     // 📱 모바일 오디오 관련
     this.audioContext = null;
     this.audioUnlocked = false;

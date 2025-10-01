@@ -254,6 +254,20 @@ async function runMigrations() {
       )
     `);
 
+    // 공지사항 테이블
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS notices (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        title VARCHAR(255) NOT NULL,
+        content TEXT NOT NULL,
+        priority VARCHAR(20) DEFAULT 'normal' CHECK (priority IN ('normal', 'high', 'urgent')),
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_by VARCHAR(255) DEFAULT 'admin'
+      )
+    `);
+
     // 인덱스 생성
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_user_inventory_user_id ON user_inventory(user_id);
@@ -262,6 +276,9 @@ async function runMigrations() {
       CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
       CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
       CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at);
+      CREATE INDEX IF NOT EXISTS idx_notices_priority ON notices(priority);
+      CREATE INDEX IF NOT EXISTS idx_notices_created_at ON notices(created_at);
+      CREATE INDEX IF NOT EXISTS idx_notices_is_active ON notices(is_active);
     `);
 
     // v3.0 마이그레이션은 commit.js에서 필요시 자동 실행
