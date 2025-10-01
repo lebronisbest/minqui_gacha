@@ -162,7 +162,7 @@ class TicketSystem {
     const ticketTimerElement = document.getElementById('ticketTimer');
     if (!ticketTimerElement) return;
 
-    if (this.tickets >= this.maxTickets) {
+    if (this.tickets === this.maxTickets) {
       ticketTimerElement.innerHTML = '<div class="ticket-timer-text">티켓이 가득참</div>';
       return;
     }
