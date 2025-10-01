@@ -113,6 +113,43 @@ app.get('/', async (req, res) => {
 
     client = await pool.connect();
     
+    // notices 테이블이 존재하는지 확인하고 없으면 생성
+    const tableCheck = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'notices'
+      );
+    `);
+    
+    const tableExists = tableCheck.rows[0].exists;
+    
+    if (!tableExists) {
+      console.log('Creating notices table...');
+      // notices 테이블 생성
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS notices (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          title VARCHAR(255) NOT NULL,
+          content TEXT NOT NULL,
+          priority VARCHAR(20) DEFAULT 'normal' CHECK (priority IN ('normal', 'high', 'urgent')),
+          is_active BOOLEAN DEFAULT true,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          created_by VARCHAR(255) DEFAULT 'admin'
+        )
+      `);
+      
+      // 인덱스 생성
+      await client.query(`
+        CREATE INDEX IF NOT EXISTS idx_notices_priority ON notices(priority);
+        CREATE INDEX IF NOT EXISTS idx_notices_created_at ON notices(created_at);
+        CREATE INDEX IF NOT EXISTS idx_notices_is_active ON notices(is_active);
+      `);
+      
+      console.log('Notices table created successfully');
+    }
+    
     // 활성화된 공지사항만 조회
     const result = await client.query(`
       SELECT id, title, content, priority, created_at, created_by
