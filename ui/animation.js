@@ -25,9 +25,9 @@ class AnimationSystem {
     // 룰렛 휠 초기화
     rouletteWheel.innerHTML = '';
 
-    // 룰렛 카드 생성
-    const totalCards = 20; // 총 카드 수
-    const cardWidth = 200; // 카드 너비
+    // 룰렛 카드 생성 (더 적은 수로 최적화)
+    const totalCards = 12; // 총 카드 수 줄임
+    const cardWidth = 100; // CSS 변수와 일치
 
     for (let i = 0; i < totalCards; i++) {
       const cardDiv = this.createRouletteCard(i, resultCard, totalCards);
@@ -38,43 +38,32 @@ class AnimationSystem {
     rouletteModal.style.display = 'flex';
     rouletteModal.classList.add('show');
 
-    // 룰렛 애니메이션 시작
+    // 룰렛 애니메이션 시작 (더 빠르게)
     setTimeout(() => {
       this.startRouletteAnimation(rouletteWheel, resultCard, selectedCards);
-    }, 500);
+    }, 300);
   }
 
   // 룰렛 카드 생성
   createRouletteCard(index, resultCard, totalCards) {
     const cardDiv = document.createElement('div');
     cardDiv.className = 'roulette-card';
-    cardDiv.style.width = '200px';
-    cardDiv.style.height = '300px';
-    cardDiv.style.marginRight = '20px';
-    cardDiv.style.flexShrink = '0';
-    cardDiv.style.borderRadius = '12px';
-    cardDiv.style.overflow = 'hidden';
-    cardDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-    cardDiv.style.position = 'relative';
+    // CSS 변수 사용으로 인라인 스타일 제거
 
     if (index === totalCards - 1) {
       // 마지막 카드는 결과 카드
       cardDiv.innerHTML = `
-        <img src="${resultCard.image}" alt="${resultCard.name}" style="width: 100%; height: 100%; object-fit: cover;">
-        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: white; padding: 10px; text-align: center;">
-          <div style="font-weight: bold; font-size: 14px;">${resultCard.name}</div>
-          <div style="font-size: 12px; color: #ffd700;">${resultCard.rank}</div>
-        </div>
+        <img src="${resultCard.image}" alt="${resultCard.name}">
+        <div class="card-name">${resultCard.name}</div>
+        <div class="card-rank">${resultCard.rank}</div>
       `;
     } else {
-      // 일반 카드들
+      // 일반 카드들 (더 빠른 렌더링을 위해 미리 선택된 카드 사용)
       const randomCard = this.game.gameData.cards[Math.floor(Math.random() * this.game.gameData.cards.length)];
       cardDiv.innerHTML = `
-        <img src="${randomCard.image}" alt="${randomCard.name}" style="width: 100%; height: 100%; object-fit: cover;">
-        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: white; padding: 10px; text-align: center;">
-          <div style="font-weight: bold; font-size: 14px;">${randomCard.name}</div>
-          <div style="font-size: 12px; color: #ffd700;">${randomCard.rank}</div>
-        </div>
+        <img src="${randomCard.image}" alt="${randomCard.name}">
+        <div class="card-name">${randomCard.name}</div>
+        <div class="card-rank">${randomCard.rank}</div>
       `;
     }
 
@@ -85,10 +74,10 @@ class AnimationSystem {
   startRouletteAnimation(rouletteWheel, resultCard, selectedCards) {
     const cards = rouletteWheel.children;
     
-    // 🔧 DOM 계측 기반 치수 계산
+    // 🔧 CSS 변수 기반 치수 계산
     const containerWidth = rouletteWheel.parentElement.offsetWidth;
-    const cardWidth = 200; // 카드 너비
-    const cardSpacing = 20; // 카드 간격
+    const cardWidth = 100; // CSS 변수와 일치
+    const cardSpacing = 8; // CSS 변수와 일치
     const totalCardWidth = cardWidth + cardSpacing;
     
     // 🎯 정확한 중앙 위치 계산
@@ -100,27 +89,22 @@ class AnimationSystem {
     // 🎪 애니메이션 시작 시간 기록
     this.rouletteStartTime = performance.now();
     
-    // 🎪 정확한 애니메이션 실행
-    requestAnimationFrame(() => {
-      // 레이아웃 강제 후 2틱 대기 (프레임 튕김 방지)
-      requestAnimationFrame(() => {
-        const duration = 4000; // 4초
-        const easing = 'cubic-bezier(0.25, 0.1, 0.25, 1)';
-        
-        rouletteWheel.style.transition = `transform ${duration}ms ${easing}`;
-        rouletteWheel.style.transform = `translateX(${endPosition}px)`;
+    // 🎪 최적화된 애니메이션 실행
+    const duration = 2500; // 2.5초로 단축
+    const easing = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'; // 더 자연스러운 이징
+    
+    rouletteWheel.style.transition = `transform ${duration}ms ${easing}`;
+    rouletteWheel.style.transform = `translateX(${endPosition}px)`;
 
-        // 애니메이션 완료 후 결과 표시
-        setTimeout(() => {
-          // 성능 측정 완료
-          const endTime = performance.now();
-          const totalTime = endTime - this.rouletteStartTime;
-          console.log(`🎯 룰렛 애니메이션 완료: ${totalTime.toFixed(1)}ms`);
-          
-          this.game.uiSystem.showRouletteResult(resultCard, selectedCards);
-        }, duration);
-      });
-    });
+    // 애니메이션 완료 후 결과 표시
+    setTimeout(() => {
+      // 성능 측정 완료
+      const endTime = performance.now();
+      const totalTime = endTime - this.rouletteStartTime;
+      console.log(`🎯 룰렛 애니메이션 완료: ${totalTime.toFixed(1)}ms`);
+      
+      this.game.uiSystem.showRouletteResult(resultCard, selectedCards);
+    }, duration);
   }
 
   // 룰렛 효과음 재생
@@ -149,6 +133,7 @@ class AnimationSystem {
       `;
       
       rouletteResult.style.display = 'block';
+      rouletteResult.classList.add('show');
       
       // 컬렉션에 카드 추가
       this.game.collectionSystem.addToCollection(resultCard.id);
@@ -156,10 +141,10 @@ class AnimationSystem {
       // 컬렉션 UI 업데이트
       this.game.collectionSystem.updateCollectionUI();
       
-      // 3초 후 룰렛 모달 닫기
+      // 2초 후 룰렛 모달 닫기 (더 빠르게)
       setTimeout(() => {
         this.hideRoulette();
-      }, 3000);
+      }, 2000);
     }
   }
 

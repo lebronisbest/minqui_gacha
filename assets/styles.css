@@ -3124,7 +3124,7 @@ body {
   --roulette-card-height: 140px;
   --roulette-card-margin: 8px;
   --roulette-pointer-offset: 20px;
-  --roulette-transition-duration: 3s;
+  --roulette-transition-duration: 2.5s;
   --roulette-transition-easing: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
@@ -3184,6 +3184,9 @@ body {
   /* transition은 JS에서 제어 */
   will-change: transform;
   contain: paint;
+  /* 부드러운 애니메이션을 위한 최적화 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .roulette-pointer {
@@ -3217,6 +3220,9 @@ body {
   border: 2px solid #ddd;
   position: relative;
   overflow: hidden;
+  /* 애니메이션 최적화 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .roulette-card img {
