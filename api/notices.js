@@ -9,41 +9,103 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 공지사항 목록 조회
-app.get('/', async (req, res) => {
+// 데이터베이스 연결 테스트 엔드포인트
+app.get('/test', async (req, res) => {
   try {
-    const client = await pool.connect();
+    console.log('Testing database connection...');
+    console.log('Pool exists:', !!pool);
+    console.log('POSTGRES_URL exists:', !!process.env.POSTGRES_URL);
     
-    try {
-      // 활성화된 공지사항만 조회
-      const result = await client.query(`
-        SELECT id, title, content, priority, created_at, created_by
-        FROM notices 
-        WHERE is_active = true
-        ORDER BY 
-          CASE priority 
-            WHEN 'urgent' THEN 1 
-            WHEN 'high' THEN 2 
-            WHEN 'normal' THEN 3 
-          END,
-          created_at DESC
-      `);
-
-      res.json({
-        success: true,
-        data: {
-          notices: result.rows
+    if (!pool) {
+      return res.status(500).json({
+        success: false,
+        message: 'Database pool not initialized',
+        details: {
+          poolExists: false,
+          postgresUrlExists: !!process.env.POSTGRES_URL
         }
       });
-    } finally {
-      client.release();
     }
+
+    const client = await pool.connect();
+    const result = await client.query('SELECT NOW() as current_time');
+    client.release();
+
+    res.json({
+      success: true,
+      message: 'Database connection successful',
+      data: {
+        currentTime: result.rows[0].current_time,
+        poolExists: true,
+        postgresUrlExists: !!process.env.POSTGRES_URL
+      }
+    });
   } catch (error) {
-    console.error('공지사항 조회 오류:', error);
+    console.error('Database test error:', error);
     res.status(500).json({
       success: false,
-      message: '공지사항을 불러올 수 없습니다.'
+      message: 'Database connection failed',
+      error: error.message,
+      details: {
+        poolExists: !!pool,
+        postgresUrlExists: !!process.env.POSTGRES_URL
+      }
     });
+  }
+});
+
+// 공지사항 목록 조회
+app.get('/', async (req, res) => {
+  let client;
+  try {
+    // 데이터베이스 연결 확인
+    if (!pool) {
+      console.error('Database pool not initialized');
+      return res.status(500).json({
+        success: false,
+        message: 'Database connection not available'
+      });
+    }
+
+    client = await pool.connect();
+    
+    // 활성화된 공지사항만 조회
+    const result = await client.query(`
+      SELECT id, title, content, priority, created_at, created_by
+      FROM notices 
+      WHERE is_active = true
+      ORDER BY 
+        CASE priority 
+          WHEN 'urgent' THEN 1 
+          WHEN 'high' THEN 2 
+          WHEN 'normal' THEN 3 
+        END,
+        created_at DESC
+    `);
+
+    res.json({
+      success: true,
+      data: {
+        notices: result.rows
+      }
+    });
+  } catch (error) {
+    console.error('공지사항 조회 오류:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      stack: error.stack
+    });
+    
+    res.status(500).json({
+      success: false,
+      message: '공지사항을 불러올 수 없습니다.',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 });
 
