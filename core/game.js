@@ -17,6 +17,9 @@ class MinquiCardGacha {
     // API 클라이언트
     this.apiClient = window.apiClient;
     
+    // 게임 유틸리티
+    this.gameUtils = window.gameUtils;
+    
     // 무한 가챠 시크릿 코드 (개발용)
     this.secretCode = 'friendshiping';
     this.enteredCode = '';

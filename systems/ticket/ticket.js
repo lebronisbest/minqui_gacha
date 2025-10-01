@@ -212,7 +212,6 @@ class TicketSystem {
   // 티켓 표시 업데이트
   updateTicketDisplay() {
     const ticketSystem = document.getElementById('ticketSystem');
-    const ticketDisplay = document.getElementById('ticketDisplay');
     const ticketTimer = document.getElementById('ticketTimer');
 
     // 현재 탭이 가챠 탭인지 확인
@@ -230,9 +229,8 @@ class TicketSystem {
       ticketSystem.style.display = 'block';
     }
 
-    if (ticketDisplay) {
-      ticketDisplay.textContent = `티켓: ${this.tickets}/${this.maxTickets}`;
-    }
+    // ticketDisplay는 HTML에 없으므로 제거
+    // 티켓 개수는 core/data.js에서 ticketCount로 업데이트됨
 
     if (ticketTimer) {
       // 가챠 탭일 때만 타이머 표시

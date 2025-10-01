@@ -133,8 +133,11 @@ class FusionLogicSystem {
 
     try {
       // 서버에 조합 요청
-      const response = await this.game.apiClient.post('/api/fusion', {
-        cards: selectedCards.map(card => card.id)
+      const response = await this.game.apiClient.request('/fusion/commit', {
+        method: 'POST',
+        body: JSON.stringify({
+          cards: selectedCards.map(card => card.id)
+        })
       });
 
       if (response.success) {
