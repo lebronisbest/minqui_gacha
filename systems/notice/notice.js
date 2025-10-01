@@ -349,7 +349,30 @@ class NoticeSystem {
 
   // 날짜 포맷팅
   formatDate(dateString) {
-    const date = new Date(dateString);
+    if (!dateString) {
+      return '날짜 없음';
+    }
+    
+    // PostgreSQL에서 받은 날짜 형식 처리
+    let date;
+    if (typeof dateString === 'string') {
+      // ISO 형식이 아닌 경우 처리
+      if (dateString.includes('T')) {
+        date = new Date(dateString);
+      } else {
+        // PostgreSQL timestamp 형식 처리
+        date = new Date(dateString + 'Z');
+      }
+    } else {
+      date = new Date(dateString);
+    }
+    
+    // 유효한 날짜인지 확인
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date string:', dateString);
+      return '날짜 오류';
+    }
+    
     return date.toLocaleDateString('ko-KR', {
       year: 'numeric',
       month: '2-digit',
