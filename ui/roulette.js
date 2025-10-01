@@ -1,16 +1,16 @@
-// 민킈 카드 가챠게임 - 새로운 룰렛 시스템
+// 민킈 카드 가챠게임 - 개선된 룰렛 시스템 (좌우 이동)
 class RouletteSystem {
   constructor(gameInstance) {
     this.game = gameInstance;
     this.isSpinning = false;
-    this.spinDuration = 3000; // 3초
+    this.spinDuration = 2500; // 2.5초
     this.cards = [];
     this.resultCard = null;
   }
 
   // 룰렛 표시
   showRoulette(selectedCards, resultCard) {
-    console.log('🎰 새로운 룰렛 시작');
+    console.log('🎰 개선된 룰렛 시작');
 
     const rouletteModal = document.getElementById('rouletteModal');
     const rouletteWheel = document.getElementById('rouletteWheel');
@@ -44,17 +44,17 @@ class RouletteSystem {
 
     // 룰렛 애니메이션 시작
     setTimeout(() => {
-      this.startRouletteSpin(selectedCards);
-    }, 500);
+      this.startRouletteAnimation(selectedCards);
+    }, 300);
   }
 
-  // 룰렛 카드 생성 (12개)
+  // 룰렛 카드 생성 (10개)
   generateRouletteCards(resultCard) {
     const cards = [];
-    const totalCards = 12;
+    const totalCards = 10;
     
-    // 결과 카드를 랜덤 위치에 배치
-    const resultPosition = Math.floor(Math.random() * totalCards);
+    // 결과 카드를 마지막에 배치
+    const resultPosition = totalCards - 1;
     
     for (let i = 0; i < totalCards; i++) {
       if (i === resultPosition) {
@@ -84,19 +84,9 @@ class RouletteSystem {
       cardDiv.classList.add('result-card');
     }
 
-    // 카드 위치 계산 (원형 배치)
-    const angle = (index * 30) * (Math.PI / 180); // 30도씩 배치
-    const radius = 150; // 룰렛 중심에서 카드까지의 거리
-    const x = Math.cos(angle) * radius;
-    const y = Math.sin(angle) * radius;
-    
-    cardDiv.style.left = `calc(50% + ${x}px)`;
-    cardDiv.style.top = `calc(50% + ${y}px)`;
-    cardDiv.style.transform = `translate(-50%, -50%) rotate(${angle * (180 / Math.PI)}deg)`;
-
     cardDiv.innerHTML = `
       <div class="card-image">
-        <img src="${card.image}" alt="${card.name}">
+        <img src="${card.image}" alt="${card.name}" onerror="this.src='assets/illust/000.png'">
       </div>
       <div class="card-info">
         <div class="card-name">${card.name}</div>
@@ -107,27 +97,76 @@ class RouletteSystem {
     return cardDiv;
   }
 
-  // 룰렛 회전 시작
-  startRouletteSpin(selectedCards) {
+  // 룰렛 애니메이션 시작 (역동적이고 짜릿한 효과)
+  startRouletteAnimation(selectedCards) {
     if (this.isSpinning) return;
     
     this.isSpinning = true;
     const rouletteWheel = document.getElementById('rouletteWheel');
+    const rouletteContainer = document.getElementById('rouletteContainer');
     
-    // 회전 각도 계산 (결과 카드가 화살표에 오도록)
-    const resultCardIndex = this.cards.findIndex(card => card.isResult);
-    const baseRotation = 360 * 5; // 5바퀴 회전
-    const finalRotation = (360 / 12) * resultCardIndex; // 결과 카드 위치
-    const totalRotation = baseRotation + finalRotation;
+    // 중앙 정렬 계산
+    const containerWidth = rouletteWheel.parentElement.offsetWidth;
+    const cardWidth = 100; // CSS 변수와 일치
+    const cardSpacing = 8; // CSS 변수와 일치
+    const totalCardWidth = cardWidth + cardSpacing;
     
-    // 회전 애니메이션
-    rouletteWheel.style.transition = `transform ${this.spinDuration}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
-    rouletteWheel.style.transform = `rotate(${totalRotation}deg)`;
+    // 결과 카드가 중앙에 오도록 계산
+    const resultCardIndex = this.cards.length - 1; // 마지막 카드가 결과 카드
+    const resultCardPosition = resultCardIndex * totalCardWidth;
+    const centerOffset = (containerWidth - cardWidth) / 2;
+    const endPosition = centerOffset - resultCardPosition;
     
-    // 회전 완료 후 결과 표시
+    // 🎪 역동적인 애니메이션 효과들
+    this.addDramaticEffects(rouletteContainer);
+    
+    // 🎰 단계별 애니메이션
+    this.startMultiStageAnimation(rouletteWheel, endPosition, selectedCards);
+  }
+
+  // 🎪 역동적인 시각 효과 추가
+  addDramaticEffects(container) {
+    // 배경 글로우 효과
+    container.style.boxShadow = `
+      0 0 50px rgba(255, 215, 0, 0.8),
+      inset 0 0 30px rgba(0, 0, 0, 0.3),
+      0 0 100px rgba(255, 215, 0, 0.4)
+    `;
+    
+    // 컨테이너 진동 효과
+    container.style.animation = 'rouletteShake 0.1s ease-in-out infinite';
+    
+    // 카드들에 개별 효과 추가
+    const cards = container.querySelectorAll('.roulette-card');
+    cards.forEach((card, index) => {
+      // 각 카드마다 다른 지연시간으로 깜빡임 효과
+      card.style.animation = `cardFlicker 0.2s ease-in-out infinite`;
+      card.style.animationDelay = `${index * 0.05}s`;
+    });
+  }
+
+  // 🎰 다단계 애니메이션 실행
+  startMultiStageAnimation(rouletteWheel, endPosition, selectedCards) {
+    // 1단계: 빠른 시작 (0.5초)
+    rouletteWheel.style.transition = `transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
+    rouletteWheel.style.transform = `translateX(-200px)`;
+    
     setTimeout(() => {
-      this.showRouletteResult(selectedCards);
-    }, this.spinDuration);
+      // 2단계: 중간 속도 (1초)
+      rouletteWheel.style.transition = `transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
+      rouletteWheel.style.transform = `translateX(-400px)`;
+      
+      setTimeout(() => {
+        // 3단계: 느린 마무리 (1초) - 결과 카드로 이동
+        rouletteWheel.style.transition = `transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
+        rouletteWheel.style.transform = `translateX(${endPosition}px)`;
+        
+        // 최종 단계: 결과 표시
+        setTimeout(() => {
+          this.showRouletteResult(selectedCards);
+        }, 1000);
+      }, 1000);
+    }, 500);
   }
 
   // 룰렛 결과 표시
@@ -160,10 +199,10 @@ class RouletteSystem {
       // 컬렉션 UI 업데이트
       this.game.collectionSystem.updateCollectionUI();
       
-      // 3초 후 룰렛 모달 닫기
+      // 2초 후 룰렛 모달 닫기
       setTimeout(() => {
         this.hideRoulette();
-      }, 3000);
+      }, 2000);
     }
     
     this.isSpinning = false;

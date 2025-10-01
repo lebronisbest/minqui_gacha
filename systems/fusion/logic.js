@@ -63,10 +63,32 @@ class FusionLogicSystem {
       }
     });
 
-    // 카드 요소들에 개수 표시
+    // 카드 요소들에 개수 표시 및 0개 카드 자동 제거
     document.querySelectorAll('.fusion-card-item').forEach(cardElement => {
       const cardId = parseInt(cardElement.dataset.cardId);
       const count = cardCounts[cardId] || 0;
+      
+      // 서버 데이터에서 실제 보유 개수 확인
+      const ownedCard = this.game.collectionSystem.serverCollectionData.find(item => item.card_id === cardId);
+      const actualCount = ownedCard?.count || 0;
+      
+      // 실제 보유 개수가 0이면 카드 제거
+      if (actualCount === 0) {
+        // 선택된 카드에서도 제거
+        const selectedIndex = this.game.fusionSystem.selectedFusionCards.findIndex(selectedCard => 
+          selectedCard && selectedCard.id === cardId
+        );
+        if (selectedIndex !== -1) {
+          this.game.fusionSystem.selectedFusionCards[selectedIndex] = null;
+          this.updateFusionSlot(selectedIndex, null);
+          this.game.fusionSystem.uiSystem.updateFusionButtonState();
+          this.game.fusionSystem.probabilitySystem.updateFusionInfo();
+        }
+        
+        // 카드 요소 제거
+        cardElement.remove();
+        return;
+      }
       
       let countElement = cardElement.querySelector('.card-count');
       if (count > 0) {

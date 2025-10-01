@@ -2946,27 +2946,43 @@ body {
   position: absolute;
   top: 100%;
   right: 0;
-  background: rgba(0, 0, 0, 0.9);
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
   color: white;
-  padding: 15px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(255, 215, 0, 0.2);
   z-index: 1000;
-  min-width: 200px;
-  margin-top: 8px;
+  min-width: 250px;
+  margin-top: 10px;
+  backdrop-filter: blur(10px);
+  animation: tooltipFadeIn 0.3s ease-out;
+}
+
+@keyframes tooltipFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .probability-tooltip::before {
   content: '';
   position: absolute;
-  top: -6px;
-  right: 20px;
+  top: -8px;
+  right: 25px;
   width: 0;
   height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-bottom: 6px solid rgba(0, 0, 0, 0.9);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid #1a1a2e;
+  filter: drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .rank-probability-item {
@@ -3115,18 +3131,20 @@ body {
   }
 }
 
-/* 새로운 룰렛 시스템 - 원형 룰렛 */
+/* 개선된 룰렛 시스템 - 좌우 이동 */
 :root {
   /* 룰렛 치수 변수 */
-  --roulette-size: 400px;
-  --roulette-card-size: 80px;
-  --roulette-card-radius: 8px;
-  --roulette-pointer-size: 20px;
-  --roulette-transition-duration: 3s;
+  --roulette-container-width: 500px;
+  --roulette-container-height: 180px;
+  --roulette-card-width: 100px;
+  --roulette-card-height: 140px;
+  --roulette-card-margin: 8px;
+  --roulette-pointer-offset: 20px;
+  --roulette-transition-duration: 2.5s;
   --roulette-transition-easing: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* 새로운 룰렛 모달 */
+/* 개선된 룰렛 모달 */
 .roulette-modal {
   position: fixed;
   top: 0;
@@ -3150,7 +3168,7 @@ body {
   background: linear-gradient(135deg, #1a1a2e, #16213e);
   border-radius: 20px;
   padding: 40px;
-  max-width: 500px;
+  max-width: 600px;
   width: 90%;
   text-align: center;
   border: 2px solid rgba(255, 255, 255, 0.1);
@@ -3178,42 +3196,48 @@ body {
   gap: 30px;
 }
 
-/* 원형 룰렛 컨테이너 */
+/* 룰렛 컨테이너 (좌우 이동) */
 .roulette-container {
   position: relative;
-  width: var(--roulette-size);
-  height: var(--roulette-size);
+  width: var(--roulette-container-width);
+  height: var(--roulette-container-height);
   margin: 0 auto;
-  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #ffd700;
+  border-radius: 15px;
   background: linear-gradient(135deg, #2c3e50, #34495e);
-  border: 4px solid #ffd700;
   box-shadow: 
     0 0 30px rgba(255, 215, 0, 0.3),
     inset 0 0 30px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
 }
 
-/* 룰렛 휠 (회전하는 부분) */
+/* 룰렛 휠 (좌우 이동) */
 .roulette-wheel {
-  position: relative;
-  width: 100%;
+  display: flex;
   height: 100%;
-  transform-origin: center;
+  align-items: center;
   transition: transform var(--roulette-transition-duration) var(--roulette-transition-easing);
   will-change: transform;
+  /* 부드러운 애니메이션을 위한 최적화 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 /* 룰렛 카드 */
 .roulette-card {
-  position: absolute;
-  width: var(--roulette-card-size);
-  height: var(--roulette-card-size);
-  border-radius: var(--roulette-card-radius);
+  flex-shrink: 0;
+  width: var(--roulette-card-width);
+  height: var(--roulette-card-height);
+  margin-right: var(--roulette-card-margin);
+  border-radius: 10px;
   background: white;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   border: 2px solid #ddd;
   overflow: hidden;
-  transform-origin: center;
+  position: relative;
+  /* 애니메이션 최적화 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 /* 결과 카드 강조 */
@@ -3224,15 +3248,15 @@ body {
 }
 
 @keyframes resultCardPulse {
-  0% { transform: translate(-50%, -50%) rotate(var(--card-angle)) scale(1); }
-  100% { transform: translate(-50%, -50%) rotate(var(--card-angle)) scale(1.1); }
+  0% { transform: scale(1); }
+  100% { transform: scale(1.05); }
 }
 
 .roulette-card .card-image {
   width: 100%;
   height: 60%;
   overflow: hidden;
-  border-radius: var(--roulette-card-radius) var(--roulette-card-radius) 0 0;
+  border-radius: 10px 10px 0 0;
 }
 
 .roulette-card img {
@@ -3243,7 +3267,7 @@ body {
 
 .roulette-card .card-info {
   height: 40%;
-  padding: 4px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -3253,44 +3277,87 @@ body {
 
 .roulette-card .card-name {
   color: #333;
-  font-size: 0.6rem;
+  font-size: 0.7rem;
   font-weight: 600;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .roulette-card .card-rank {
   background: rgba(255, 215, 0, 0.9);
   color: #000;
-  padding: 1px 4px;
-  border-radius: 3px;
-  font-size: 0.5rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.6rem;
   font-weight: 700;
 }
 
-/* 룰렛 화살표 (고정) */
+/* 룰렛 화살표 (우측 고정) */
 .roulette-pointer {
   position: absolute;
   top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  right: var(--roulette-pointer-offset);
+  transform: translateY(-50%);
   width: 0;
   height: 0;
-  border-left: var(--roulette-pointer-size) solid #ffd700;
-  border-top: var(--roulette-pointer-size) solid transparent;
-  border-bottom: var(--roulette-pointer-size) solid transparent;
+  border-top: 15px solid transparent;
+  border-bottom: 15px solid transparent;
+  border-left: 30px solid #ffd700;
   z-index: 10;
   filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
   animation: pointerPulse 2s ease-in-out infinite;
 }
 
 @keyframes pointerPulse {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-50%, -50%) scale(1.1); }
+  0%, 100% { transform: translateY(-50%) scale(1); }
+  50% { transform: translateY(-50%) scale(1.1); }
+}
+
+/* 🎪 역동적인 룰렛 애니메이션 효과들 */
+@keyframes rouletteShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px) rotate(-0.5deg); }
+  75% { transform: translateX(2px) rotate(0.5deg); }
+}
+
+@keyframes cardFlicker {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: scale(1.02);
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes resultCardGlow {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+  }
+  50% { 
+    box-shadow: 0 0 40px rgba(255, 215, 0, 1), 0 0 60px rgba(255, 215, 0, 0.8);
+  }
+}
+
+@keyframes rouletteContainerGlow {
+  0%, 100% { 
+    box-shadow: 
+      0 0 30px rgba(255, 215, 0, 0.3),
+      inset 0 0 30px rgba(0, 0, 0, 0.3);
+  }
+  50% { 
+    box-shadow: 
+      0 0 50px rgba(255, 215, 0, 0.8),
+      inset 0 0 30px rgba(0, 0, 0, 0.3),
+      0 0 100px rgba(255, 215, 0, 0.4);
+  }
 }
 
 .roulette-result {
