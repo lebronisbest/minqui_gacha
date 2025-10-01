@@ -5,43 +5,16 @@ class AnimationSystem {
     this.rouletteStartTime = 0;
   }
 
-  // 룰렛 표시
+  // 룰렛 표시 (새로운 룰렛 시스템 사용)
   showRoulette(selectedCards, resultCard) {
-    console.log('🎰 showRoulette 시작');
-
-    const rouletteModal = document.getElementById('rouletteModal');
-    const rouletteWheel = document.getElementById('rouletteWheel');
-    const rouletteResult = document.getElementById('rouletteResult');
+    console.log('🎰 새로운 룰렛 시작');
     
-    if (!rouletteModal || !rouletteWheel || !rouletteResult) {
-      console.error('룰렛 모달 요소를 찾을 수 없습니다.');
-      return;
+    // 새로운 룰렛 시스템 사용
+    if (this.game.rouletteSystem) {
+      this.game.rouletteSystem.showRoulette(selectedCards, resultCard);
+    } else {
+      console.error('룰렛 시스템이 초기화되지 않았습니다.');
     }
-
-    // 룰렛 결과 초기화
-    rouletteResult.innerHTML = '';
-    rouletteResult.style.display = 'none';
-
-    // 룰렛 휠 초기화
-    rouletteWheel.innerHTML = '';
-
-    // 룰렛 카드 생성 (더 적은 수로 최적화)
-    const totalCards = 12; // 총 카드 수 줄임
-    const cardWidth = 100; // CSS 변수와 일치
-
-    for (let i = 0; i < totalCards; i++) {
-      const cardDiv = this.createRouletteCard(i, resultCard, totalCards);
-      rouletteWheel.appendChild(cardDiv);
-    }
-
-    // 룰렛 모달 표시
-    rouletteModal.style.display = 'flex';
-    rouletteModal.classList.add('show');
-
-    // 룰렛 애니메이션 시작 (더 빠르게)
-    setTimeout(() => {
-      this.startRouletteAnimation(rouletteWheel, resultCard, selectedCards);
-    }, 300);
   }
 
   // 룰렛 카드 생성

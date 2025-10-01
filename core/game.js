@@ -67,6 +67,9 @@ class MinquiCardGacha {
     // 공지사항 시스템 초기화
     this.noticeSystem = window.createNoticeSystem(this);
 
+    // 룰렛 시스템 초기화
+    this.rouletteSystem = window.createRouletteSystem(this);
+
     // 📱 모바일 오디오 관련
     this.audioContext = null;
     this.audioUnlocked = false;
