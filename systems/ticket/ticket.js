@@ -114,8 +114,15 @@ class TicketSystem {
     if (ticketSystem) {
       if (tabName === 'gacha') {
         ticketSystem.style.display = 'block';
+        // 가챠 탭으로 전환 시 티켓 타이머 시작
+        this.startTicketTimer();
       } else {
         ticketSystem.style.display = 'none';
+        // 다른 탭으로 전환 시 티켓 타이머 숨기기
+        const ticketTimerElement = document.getElementById('ticketTimer');
+        if (ticketTimerElement) {
+          ticketTimerElement.style.display = 'none';
+        }
       }
     }
   }
@@ -123,6 +130,12 @@ class TicketSystem {
   // 티켓 타이머 시작
   startTicketTimer() {
     if (this.game.isAdminMode) {
+      return;
+    }
+
+    // 현재 탭이 가챠 탭인지 확인
+    const activeTab = document.querySelector('.tab-button.active');
+    if (!activeTab || activeTab.dataset.tab !== 'gacha') {
       return;
     }
 
