@@ -9,11 +9,11 @@ class CoreSystem {
     try {
       // 기존 세션 복원 시도
       const sessionValid = await this.game.apiClient.restoreSession();
-      
+
       if (!sessionValid) {
-        // 새 게스트 세션 생성
-        await this.game.apiClient.guestLogin();
-        console.log('새 게스트 세션 생성됨');
+        // 로그인 모달 표시 후 완료될 때까지 대기
+        await this.showAuthModal();
+        console.log('로그인 완료');
       } else {
         console.log('기존 세션 복원됨');
       }
@@ -21,6 +21,103 @@ class CoreSystem {
       console.error('서버 연결 실패:', error);
       throw error;
     }
+  }
+
+  // 로그인/회원가입 모달 표시 및 완료 대기
+  showAuthModal() {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('authModal');
+      const loginForm = document.getElementById('loginForm');
+      const registerForm = document.getElementById('registerForm');
+      const tabs = document.querySelectorAll('.auth-tab');
+
+      // 로딩 화면 숨기기
+      const loadingScreen = document.getElementById('loadingScreen');
+      if (loadingScreen) loadingScreen.style.display = 'none';
+
+      // 모달 표시
+      modal.style.display = 'flex';
+
+      // 탭 전환
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          const target = tab.dataset.tab;
+          loginForm.style.display = target === 'login' ? 'flex' : 'none';
+          registerForm.style.display = target === 'register' ? 'flex' : 'none';
+          document.getElementById('loginError').textContent = '';
+          document.getElementById('registerError').textContent = '';
+        });
+      });
+
+      // 인증 성공 처리 공통 함수
+      const onAuthSuccess = () => {
+        modal.style.display = 'none';
+        if (loadingScreen) loadingScreen.style.display = 'flex';
+        resolve();
+      };
+
+      // 로그인 폼 제출
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const errorEl = document.getElementById('loginError');
+        const btn = document.getElementById('loginSubmitBtn');
+
+        if (!username || !password) {
+          errorEl.textContent = '닉네임과 비밀번호를 입력해주세요.';
+          return;
+        }
+
+        btn.disabled = true;
+        btn.querySelector('.auth-btn-text').textContent = '로그인 중...';
+        errorEl.textContent = '';
+
+        try {
+          await this.game.apiClient.login(username, password);
+          onAuthSuccess();
+        } catch (error) {
+          errorEl.textContent = error.message || '로그인에 실패했습니다.';
+          btn.disabled = false;
+          btn.querySelector('.auth-btn-text').textContent = '로그인';
+        }
+      });
+
+      // 회원가입 폼 제출
+      registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('registerUsername').value.trim();
+        const password = document.getElementById('registerPassword').value;
+        const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+        const errorEl = document.getElementById('registerError');
+        const btn = document.getElementById('registerSubmitBtn');
+
+        if (!username || !password || !passwordConfirm) {
+          errorEl.textContent = '모든 항목을 입력해주세요.';
+          return;
+        }
+
+        if (password !== passwordConfirm) {
+          errorEl.textContent = '비밀번호가 일치하지 않습니다.';
+          return;
+        }
+
+        btn.disabled = true;
+        btn.querySelector('.auth-btn-text').textContent = '가입 중...';
+        errorEl.textContent = '';
+
+        try {
+          await this.game.apiClient.register(username, password);
+          onAuthSuccess();
+        } catch (error) {
+          errorEl.textContent = error.message || '회원가입에 실패했습니다.';
+          btn.disabled = false;
+          btn.querySelector('.auth-btn-text').textContent = '회원가입';
+        }
+      });
+    });
   }
 
   // 서버에서 카드 데이터 로드

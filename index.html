@@ -52,6 +52,54 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
+    <!-- 로그인/회원가입 모달 -->
+    <div class="auth-modal" id="authModal" style="display:none;">
+        <div class="auth-content">
+            <div class="auth-logo">
+                <div class="auth-logo-text">민킈 가챠</div>
+                <div class="auth-logo-sub">카드를 수집하고 조합하세요</div>
+            </div>
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">로그인</button>
+                <button class="auth-tab" data-tab="register">회원가입</button>
+            </div>
+            <!-- 로그인 폼 -->
+            <form id="loginForm" class="auth-form">
+                <div class="auth-field">
+                    <label>닉네임</label>
+                    <input type="text" id="loginUsername" placeholder="닉네임을 입력하세요" autocomplete="username" maxlength="20">
+                </div>
+                <div class="auth-field">
+                    <label>비밀번호</label>
+                    <input type="password" id="loginPassword" placeholder="비밀번호를 입력하세요" autocomplete="current-password">
+                </div>
+                <div class="auth-error" id="loginError"></div>
+                <button type="submit" class="auth-submit-btn" id="loginSubmitBtn">
+                    <span class="auth-btn-text">로그인</span>
+                </button>
+            </form>
+            <!-- 회원가입 폼 -->
+            <form id="registerForm" class="auth-form" style="display:none;">
+                <div class="auth-field">
+                    <label>닉네임 <span class="auth-hint">(3~20자, 한글/영문/숫자)</span></label>
+                    <input type="text" id="registerUsername" placeholder="사용할 닉네임을 입력하세요" autocomplete="username" maxlength="20">
+                </div>
+                <div class="auth-field">
+                    <label>비밀번호 <span class="auth-hint">(6자 이상)</span></label>
+                    <input type="password" id="registerPassword" placeholder="비밀번호를 입력하세요" autocomplete="new-password">
+                </div>
+                <div class="auth-field">
+                    <label>비밀번호 확인</label>
+                    <input type="password" id="registerPasswordConfirm" placeholder="비밀번호를 다시 입력하세요" autocomplete="new-password">
+                </div>
+                <div class="auth-error" id="registerError"></div>
+                <button type="submit" class="auth-submit-btn" id="registerSubmitBtn">
+                    <span class="auth-btn-text">회원가입</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- 파티클 배경 -->
     <div id="particles-js"></div>
 
@@ -279,7 +327,7 @@
                         <h2>조합 중...</h2>
                     </div>
                     <div class="roulette-body">
-                        <div class="roulette-container">
+                        <div class="roulette-container" id="rouletteContainer">
                             <div class="roulette-wheel" id="rouletteWheel">
                                 <!-- 룰렛 카드들이 여기에 표시됩니다 -->
                             </div>

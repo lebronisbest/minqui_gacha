@@ -58,6 +58,54 @@ class ApiClient {
     }
   }
 
+  // 회원가입
+  async register(username, password) {
+    try {
+      const response = await this.request('/auth/register', {
+        method: 'POST',
+        body: { username, password }
+      });
+
+      if (response.success) {
+        this.userId = response.data.userId;
+        this.sessionId = response.data.sessionId;
+        localStorage.setItem('minqui_user_id', this.userId);
+        localStorage.setItem('minqui_session_id', this.sessionId);
+        localStorage.setItem('minqui_username', response.data.username);
+        return response.data;
+      } else {
+        throw new Error(response.error || '회원가입 실패');
+      }
+    } catch (error) {
+      console.error('Register failed:', error);
+      throw error;
+    }
+  }
+
+  // 로그인
+  async login(username, password) {
+    try {
+      const response = await this.request('/auth/login', {
+        method: 'POST',
+        body: { username, password }
+      });
+
+      if (response.success) {
+        this.userId = response.data.userId;
+        this.sessionId = response.data.sessionId;
+        localStorage.setItem('minqui_user_id', this.userId);
+        localStorage.setItem('minqui_session_id', this.sessionId);
+        localStorage.setItem('minqui_username', response.data.username);
+        return response.data;
+      } else {
+        throw new Error(response.error || '로그인 실패');
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
+  }
+
   // 게스트 로그인
   async guestLogin() {
     try {

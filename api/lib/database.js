@@ -281,6 +281,15 @@ async function runMigrations() {
       CREATE INDEX IF NOT EXISTS idx_notices_is_active ON notices(is_active);
     `);
 
+    // 로그인 시스템 마이그레이션 (username, password_hash 컬럼 추가)
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(50);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT;
+    `);
+    await client.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username) WHERE username IS NOT NULL;
+    `);
+
     // v3.0 마이그레이션은 commit.js에서 필요시 자동 실행
     console.log('✅ 기본 스키마 마이그레이션 완료');
 
